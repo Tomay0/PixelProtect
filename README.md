@@ -110,6 +110,7 @@ Note that you can only update the permissions of players and levels that are low
 * *home* ability to teleport to the home(s) of the protection: Default: member.
 * *build* ability to build in the protection (both breaking and placing): Default: member.
 * *interact* ability to interact with buttons/repeaters/pressure plates: Default: member.
+* *chest* ability to interact with chests: Default: member.
 * *update* ability to use /pr move, /pr shift, /pr expand, /pr rename: Default: admin.
 * *remove* ability to use /pr remove: Default: owner.
 * *sethome* ability to set homes: Default: admin.
