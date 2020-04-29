@@ -103,6 +103,8 @@ You can also update the specific permissions of a permission level using this co
 
 Note that you can only update the permissions of players and levels that are lower or equal to your current permission level.
 
+```/pr perms``` lets you list all player permissions.
+
 #### Specific permissions
 
 * *home* ability to teleport to the home(s) of the protection: Default: member.
@@ -112,11 +114,26 @@ Note that you can only update the permissions of players and levels that are low
 * *remove* ability to use /pr remove: Default: owner.
 * *sethome* ability to set homes: Default: admin.
 * *setperms* ability to set other players permissions: Default: admin.
+* *config* ability to configure the protection: Default: admin.
 
 #### Examples
+
+```/pr setperm Protection1 User123 member``` Set a player as a member. The most common use of this command.
 
 ```/pr setperm Protection1 User123 interact true``` Imagine User123 is not a member of the protection, you can let them open doors/press buttons using this command.
 
 ```/pr setperm Protection1 none interact true``` Players with no member status can interact with this protection.
 
 ```/pr setperm Protection1 User456 update false``` Imagine User456 is an admin, you can revoke the ability to update the size of the protection.
+
+### Config
+
+```/pr config <name> <configuration> <value>``` let's you configure different settings about the protection that aren't related to permissions.
+
+#### All configurations
+
+* *creeper_damage* lets creepers explode, default: false
+* *tnt_damage* lets tnts explode, default: false
+* *piston_damage* lets pistons push blocks into the protection, default: false
+* *colour* colour on the dynmap, default: #ff0000
+* TODO: add more here
