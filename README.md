@@ -138,3 +138,7 @@ Note that you can only update the permissions of players and levels that are low
 * *piston_damage* lets pistons push blocks into the protection, default: false
 * *colour* colour on the dynmap, default: #ff0000
 * TODO: add more here
+
+### Miscellaneous commands
+
+```/pr list``` List all protections you have access to (and their respective perms)
