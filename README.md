@@ -19,7 +19,7 @@ The second parameter specifies the name of the protection (usually). If you leav
 
 #### Examples
 
-```/pr create <name> <size>``` Creates a protection with a name. The size is the radius in number of blocks from where you are standing
+```/pr create <name> <size>``` Creates a protection with a name. The size is the radius in number of blocks from where you are standing.
 
 ```/pr create <size>``` Creates a protection with your username.
 
@@ -33,14 +33,15 @@ The second parameter specifies the name of the protection (usually). If you leav
 
 ### Updating protections
 
-```/pr shift``` to shift the protection
-```/pr expand``` to expand/shrink your protection
-```/pr move``` to move the protection to where you are standing
-```/pr remove``` to remove the protection
+* ```/pr shift``` to shift the protection.
+* ```/pr expand``` to expand/shrink your protection.
+* ```/pr move``` to move the protection to where you are standing.
+* ```/pr rename``` to rename the protection.
+* ```/pr remove``` to remove the protection.
 
 You will need to type ```/pr confirm``` to confirm your update.
 
-If the protection's home is outside of the bounds of the protection after updating, it will update to where you are standing, or the centre of the protection if you aren't standing in your new boundaries.
+If the protection's home is outside of the bounds of the protection after updating, it will update to where you are standing, or the centre of the protection if you aren't standing in your new boundaries. This will be notified to you before you type ```/pr confirm```
 
 #### Examples
 
@@ -54,12 +55,31 @@ If the protection's home is outside of the bounds of the protection after updati
 
 ```/pr expand <name> auto``` Expand in all directions as much as possible, given your currency and surrounding claims.
 
-```/pr expand <name> ns<size> ewauto``` You can write the parameters similar to the creation. This expands a fixed amount north/south and automatically in other directions. If you make the expansion in one direction more than you can afford, the automatic expansion may go into negatives, and shrink your
+```/pr expand <name> ns<size> ewauto``` You can write the parameters similar to the creation. This expands a fixed amount north/south and automatically in other directions. If you make the expansion in one direction more than you can afford, the automatic expansion may go into negatives, and shrink your protection.
 
-```/pr move <name> ne``` Moves the north-eastern corner of your protection to where you are standing
+```/pr move <name> ne``` Moves the north-eastern corner of your protection to where you are standing.
 
-```/pr move <name> n``` Moves the northern-centre of your protection to where you are standing
+```/pr move <name> n``` Moves the northern-centre of your protection to where you are standing.
 
-```/pr move <name>``` Moves the centre of your protection to where you are standing
+```/pr move <name>``` Moves the centre of your protection to where you are standing.
 
 ```/pr move <name> relhome``` Moves the protection relative to where the original home is set. For example, if you stand 200 blocks east of your protections home and type this, your protection will move 200 blocks east. Note that this will only update the home of your protection if the home is outside of the bounds of the protection.
+
+### Protection home
+
+A protection may have multiple homes, but the default is called "home". All homes must be set within the boundaries of the protection. If the protection is updated and the home becomes outside, the home(s) will be moved.
+
+It can be configured that multiple homes cost extra currency, or a limit can be set.
+
+* ```/pr home``` Teleport to a home
+* ```/pr sethome``` Set a protection's home
+
+#### Examples
+
+```/pr sethome <name>``` Set the default home for a protection.
+
+```/pr home <name>``` Teleport to the default home for a protection.
+
+```/pr sethome <name> <home name>``` Set a home for a protection. (non-default)
+
+```/pr home <name> <home name>``` Teleport to a home for a protection. (non-default)
