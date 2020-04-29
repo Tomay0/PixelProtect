@@ -83,3 +83,40 @@ It can be configured that multiple homes cost extra currency, or a limit can be 
 ```/pr sethome <name> <home name>``` Set a home for a protection. (non-default)
 
 ```/pr home <name> <home name>``` Teleport to a home for a protection. (non-default)
+
+### Permissions
+
+Players can have one of three permission levels. Member, admin or owner. You can set players to these permission levels using the commands below:
+
+* ```/pr setperm <name> <username> member``` Sets a player as member.
+* ```/pr setperm <name> <username> admin``` Sets a player as admin.
+* ```/pr setperm <name> <username> owner``` Sets a player as owner. Only 1 owner per protection. If the owner types this, the owner status is revoked from the original owner.
+* ```/pr setperm <name> <username> none``` Removes member status.
+
+You can also set specific permissions of a player using this command:
+
+```/pr setperm <name> <username> <perm> true/false```
+
+You can also update the specific permissions of a permission level using this command:
+
+```/pr setperm <name> <permission level> <perm> true/false```
+
+Note that you can only update the permissions of players and levels that are lower or equal to your current permission level.
+
+#### Specific permissions
+
+* *home* ability to teleport to the home(s) of the protection: Default: member.
+* *build* ability to build in the protection (both breaking and placing): Default: member.
+* *interact* ability to interact with buttons/repeaters/pressure plates: Default: member.
+* *update* ability to use /pr move, /pr shift, /pr expand, /pr rename: Default: admin.
+* *remove* ability to use /pr remove: Default: owner.
+* *sethome* ability to set homes: Default: admin.
+* *setperms* ability to set other players permissions: Default: admin.
+
+#### Examples
+
+```/pr setperm Protection1 User123 interact true``` Imagine User123 is not a member of the protection, you can let them open doors/press buttons using this command.
+
+```/pr setperm Protection1 none interact true``` Players with no member status can interact with this protection.
+
+```/pr setperm Protection1 User456 update false``` Imagine User456 is an admin, you can revoke the ability to update the size of the protection.
