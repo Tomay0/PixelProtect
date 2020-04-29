@@ -23,9 +23,9 @@ The second parameter specifies the name of the protection (usually). If you leav
 
 ```/pr create <size>``` Creates a protection with your username.
 
-```/pr create <name> s<size> n<size> w<size> e<size>``` You can also define the expansion in all directions by typing the command like this. (North/South/East/West)
+```/pr create <name> s<size> n<size> w<size> e<size>``` You can also define how far the protection extends in all directions by typing the command like this. (North/South/East/West)
 
-```/pr create <name> ns<size> ew<size>``` You can define the expansion for east/west and north/south separately like this.
+```/pr create <name> ns<size> ew<size>``` You can define how far the protection extends for east/west and north/south separately like this.
 
 ```/pr create <name> auto``` Using the "auto" keyword for an automatic size. This creates the largest possible protection size you can, given how much currency you have and any surrounding land you can't claim. This will try to maximise the expansion of all directions rather than prioritising one direction. 
 
