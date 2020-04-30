@@ -29,19 +29,24 @@ public class Protection {
      * Validate that the state of the protection is valid. If not, an IllegalStateException will be thrown.
      */
     private void validate() {
+        // check name has no spaces
+        if (name.contains(" ")) {
+            throw new InvalidProtectionException("Protection name can't have spaces");
+        }
+
         // check world
         if (Bukkit.getServer() != null && Bukkit.getWorld(world) == null) {
-            throw new IllegalStateException("The world name is invalid");
+            throw new InvalidProtectionException("The world name is invalid");
         }
 
         // check coordinates are valid. south > north, east > west
 
-        if (east - west < MIN_SIZE) {
-            throw new IllegalStateException("Eastern boundary must be at least " + MIN_SIZE + " of the western boundary.");
+        if (east - west <= MIN_SIZE) {
+            throw new InvalidProtectionException("Eastern boundary must be at least " + MIN_SIZE + " of the western boundary.");
         }
 
-        if (south - north < MIN_SIZE) {
-            throw new IllegalStateException("Southern boundary must be at least " + MIN_SIZE + " of the northern boundary.");
+        if (south - north <= MIN_SIZE) {
+            throw new InvalidProtectionException("Southern boundary must be at least " + MIN_SIZE + " of the northern boundary.");
         }
     }
 
