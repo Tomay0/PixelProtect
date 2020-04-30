@@ -10,19 +10,12 @@ import org.bukkit.command.CommandSender;
  */
 public class CommandHandler implements CommandExecutor {
 
-    /**
-     * Command execution
-     *
-     * @param sender sender of the command
-     * @param cmd    command
-     * @param label  label used to identify the command
-     * @param args   arguments
-     * @return boolean
-     */
+    @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!label.equalsIgnoreCase("pr") && !label.equalsIgnoreCase("protect"))
             return false;
 
+        // TODO handle commands
         sender.sendMessage(ChatColor.YELLOW + "Hello world!");
 
 
