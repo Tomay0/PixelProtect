@@ -1,5 +1,6 @@
 import nz.tomay0.PixelProtect.model.InvalidProtectionException;
 import nz.tomay0.PixelProtect.model.Protection;
+import nz.tomay0.PixelProtect.model.ProtectionHandler;
 import nz.tomay0.PixelProtect.model.perms.Perm;
 import nz.tomay0.PixelProtect.model.perms.PermLevel;
 import org.bukkit.Bukkit;
@@ -12,6 +13,9 @@ import org.mockito.Mock;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
@@ -307,6 +311,103 @@ public class ProtectionTests {
 
         assertTrue(protection1.hasPermission("player1", Perm.CHEST));
         assertFalse(protection1.hasPermission("player2", Perm.CHEST));
+    }
+
+    /**
+     * Test overlap symmetrically
+     *
+     * @param pr1
+     * @param pr2
+     */
+    private void doubleOverlapTest(ProtectionHandler handler, boolean expected, Protection pr1, Protection pr2) {
+        if (expected) {
+            assertTrue(handler.isOverlapping(pr1, pr2));
+            assertTrue(handler.isOverlapping(pr2, pr1));
+        } else {
+            assertFalse(handler.isOverlapping(pr1, pr2));
+            assertFalse(handler.isOverlapping(pr2, pr1));
+        }
+    }
+
+    /**
+     * Some tests to check that protections overlap
+     */
+    @Test
+    public void testOverlapping() {
+        ProtectionHandler handler = new ProtectionHandler();
+
+        Protection pr = new Protection("pr1", "world", -10, 10, -10, 10, "owner");
+
+        doubleOverlapTest(handler, true, pr,
+                new Protection("pr2", "world", -5, 5, -5, 5, "owner"));
+        doubleOverlapTest(handler, false, pr,
+                new Protection("pr2", "world_nether", -5, 5, -5, 5, "owner"));
+        doubleOverlapTest(handler, false, pr,
+                new Protection("pr2", "world_nether", -50, -30, -5, 5, "owner"));
+        doubleOverlapTest(handler, true, pr,
+                new Protection("pr2", "world", -16, -10, -16, -10, "owner"));
+        doubleOverlapTest(handler, false, pr,
+                new Protection("pr2", "world", -16, -10, -17, -11, "owner"));
+        doubleOverlapTest(handler, false, pr,
+                new Protection("pr2", "world", -17, -11, -16, -10, "owner"));
+        doubleOverlapTest(handler, false, pr,
+                new Protection("pr2", "world", -16, -10, -17, -11, "owner"));
+        doubleOverlapTest(handler, false, pr,
+                new Protection("pr2", "world", -17, -11, -16, -10, "owner"));
+        doubleOverlapTest(handler, true, pr,
+                new Protection("pr2", "world", -10, 1000, -1000, 1000, "owner"));
+        doubleOverlapTest(handler, false, pr,
+                new Protection("pr2", "world", -10, 1000, -1000, -11, "owner"));
+        doubleOverlapTest(handler, true, pr,
+                new Protection("pr2", "world", -10, 1000, -1000, -10, "owner"));
+        doubleOverlapTest(handler, false, pr,
+                new Protection("pr2", "world", -50, -30, -5, 5, "owner"));
+    }
+
+    private List<Protection> getProtectionGrid(int west, int north, int size, int numRoot) {
+        List<Protection> prs = new ArrayList<>();
+        for (int i = 0; i < numRoot; i++) {
+            for (int j = 0; j < numRoot; j++) {
+                int w = west + i * size;
+                int e = w + size - 1;
+                int n = north + j * size;
+                int s = n + size - 1;
+
+                prs.add(new Protection("pr" + i + "," + j, "world", w, e, n, s, "owner"));
+            }
+        }
+
+        return prs;
+    }
+
+    /**
+     * Test creating protections in an environment with other protections using the protection handler
+     */
+    @Test
+    public void testCreation() {
+        // 25 protections in a grid, no errors should occur
+        ProtectionHandler handler = new ProtectionHandler();
+
+        // check valid creation
+
+        handler.addNewProtection(new Protection("pr1", "world", -20, -1, 0, 100, "owner"));
+
+        // check creation with same name - ignore case
+        try {
+            handler.addNewProtection(new Protection("PR1", "world", -40, -21, 0, 100, "owner"));
+            fail();
+        }catch(InvalidProtectionException e) {
+            assertEquals("A protection already exists with the name: PR1", e.getMessage());
+        }
+        // overlap
+        try {
+            handler.addNewProtection(new Protection("pr2", "world", -40, -20, 0, 100, "owner"));
+            fail();
+        }catch(InvalidProtectionException e) {
+            assertEquals("A protection cannot overlap another protection", e.getMessage());
+        }
+        // valid
+        handler.addNewProtection(new Protection("pr2", "world", -40, -21, 0, 100, "owner"));
     }
 
 }

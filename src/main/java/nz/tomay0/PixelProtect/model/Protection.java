@@ -46,7 +46,7 @@ public class Protection {
     private Map<Perm, PermLevel> defaultPermissions;
 
     /**
-     * Create a protection
+     * Create a protection from minimal data
      *
      * @param name      Name of the protection
      * @param world     World the protection is contained within
@@ -68,6 +68,41 @@ public class Protection {
         defaultPermissions = new HashMap<>();
 
         setPermissionLevel(ownerUuid, PermLevel.OWNER);
+
+        validate();
+    }
+
+    /**
+     * Create a protection from all data
+     *
+     * @param name               Name of the protection
+     * @param world              World the protection is contained within
+     * @param west               Western boundary coordinate
+     * @param east               Eastern boundary coordinate
+     * @param north              Northern boundary coordinate
+     * @param south              Southern boundary coordinate
+     * @param playerPermissions  playerPerms
+     * @param defaultPermissions defaultPerms
+     */
+    public Protection(String name, String world, int west, int east, int north, int south,
+                      Map<String, PlayerPerms> playerPermissions, Map<Perm, PermLevel> defaultPermissions) {
+        this.name = name;
+        this.world = world;
+        this.west = west;
+        this.north = north;
+        this.east = east;
+        this.south = south;
+
+        // TODO implement cloning
+        this.playerPermissions = playerPermissions;
+        this.defaultPermissions = defaultPermissions;
+
+        // get owner
+        for (PlayerPerms perms : playerPermissions.values()) {
+            if(perms.getPermissionLevel() == PermLevel.OWNER) {
+                ownerUuid = perms.getPlayerUUID();
+            }
+        }
 
         validate();
     }
@@ -261,5 +296,50 @@ public class Protection {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Get the world name of the protection
+     *
+     * @return string
+     */
+    public String getWorld() {
+        return world;
+    }
+
+    /**
+     * Get the western border of the protection
+     *
+     * @return int
+     */
+    public int getWest() {
+        return west;
+    }
+
+    /**
+     * Get the eastern border of the protection
+     *
+     * @return int
+     */
+    public int getEast() {
+        return east;
+    }
+
+    /**
+     * Get the northern border of the protection
+     *
+     * @return int
+     */
+    public int getNorth() {
+        return north;
+    }
+
+    /**
+     * Get the southern border of the protection
+     *
+     * @return int
+     */
+    public int getSouth() {
+        return south;
     }
 }

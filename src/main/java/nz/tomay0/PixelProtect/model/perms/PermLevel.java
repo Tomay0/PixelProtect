@@ -20,4 +20,19 @@ public enum PermLevel {
     public boolean hasPermissionsOfLevel(PermLevel otherLevel) {
         return level >= otherLevel.level;
     }
+
+
+    /**
+     * Get a PermLevel from a string
+     *
+     * @param s string to check
+     * @return null if nothing found
+     */
+    public static PermLevel fromString(String s) {
+        try {
+            return PermLevel.valueOf(s.toUpperCase());
+        }catch(IllegalArgumentException e) {
+            return null;
+        }
+    }
 }

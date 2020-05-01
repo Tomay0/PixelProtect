@@ -1,6 +1,7 @@
 main: nz.tomay0.PixelProtect.PixelProtectPlugin
 name: PixelProtect
 version: 1
+author: Tomay0
 api-version: 1.15
 description: >
   Grief Protection plugin

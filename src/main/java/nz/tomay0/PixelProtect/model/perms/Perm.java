@@ -25,4 +25,18 @@ public enum Perm {
         return defaultLevelRequired;
     }
 
+
+    /**
+     * Get a Perm from a string
+     *
+     * @param s string to check
+     * @return null if nothing found
+     */
+    public static Perm fromString(String s) {
+        try {
+            return Perm.valueOf(s.toUpperCase());
+        }catch(IllegalArgumentException e) {
+            return null;
+        }
+    }
 }
