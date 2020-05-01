@@ -2,17 +2,23 @@ import nz.tomay0.PixelProtect.model.InvalidProtectionException;
 import nz.tomay0.PixelProtect.model.Protection;
 import nz.tomay0.PixelProtect.model.perms.Perm;
 import nz.tomay0.PixelProtect.model.perms.PermLevel;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import sun.plugin.dom.exception.InvalidStateException;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(Bukkit.class)
 public class ProtectionTests {
 
     /**
@@ -21,13 +27,22 @@ public class ProtectionTests {
     @Mock
     private World overworld, nether;
 
+    /**
+     * Create mock objects and method calls
+     */
     @Before
-    public void create() {
+    public void initMocks() {
+        // mock world classes
         overworld = mock(World.class);
         when(overworld.getName()).thenReturn("world");
 
         nether = mock(World.class);
         when(nether.getName()).thenReturn("world_nether");
+
+        // mock Bukkit.getWorld() call
+        PowerMockito.mockStatic(Bukkit.class);
+        when(Bukkit.getWorld("world")).thenReturn(overworld);
+        when(Bukkit.getWorld("world_nether")).thenReturn(nether);
     }
 
     /**

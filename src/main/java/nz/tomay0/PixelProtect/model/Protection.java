@@ -91,7 +91,7 @@ public class Protection {
         }
 
         // check world
-        if (Bukkit.getServer() != null && Bukkit.getWorld(world) == null) {
+        if (Bukkit.getWorld(world) == null) {
             throw new InvalidProtectionException("The world name is invalid");
         }
 
