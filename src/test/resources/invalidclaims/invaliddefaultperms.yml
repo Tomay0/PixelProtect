@@ -1,0 +1,11 @@
+name: hey
+world: world
+west: -10
+east: 10
+north: -10
+south: 10
+player-perms:
+  00000000-0000-0064-0000-0000000000c8:
+    level: MEMBER
+default-perms:
+  HURR: DURR

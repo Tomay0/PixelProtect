@@ -1,11 +1,13 @@
 import nz.tomay0.PixelProtect.model.InvalidProtectionException;
 import nz.tomay0.PixelProtect.model.Protection;
+import nz.tomay0.PixelProtect.model.ProtectionBuilder;
 import nz.tomay0.PixelProtect.model.ProtectionHandler;
 import nz.tomay0.PixelProtect.model.perms.Perm;
 import nz.tomay0.PixelProtect.model.perms.PermLevel;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.junit.Before;
 import org.junit.Test;
@@ -107,6 +109,7 @@ public class ProtectionTests {
 
     /**
      * Get a file from the test resources
+     *
      * @param dir
      * @return
      */
@@ -473,6 +476,24 @@ public class ProtectionTests {
         assertTrue(protection.hasPermission(adminUUID.toString(), Perm.BUILD));
         assertFalse(protection.hasPermission(adminUUID.toString(), Perm.UPDATE));
         assertTrue(protection.hasPermission(ownerUUID.toString(), Perm.UPDATE));
+    }
+
+    /**
+     * Test various invalid yml files as contained within the invalidclaims/ dir
+     */
+    @Test
+    public void testInvalidYaml() {
+        File dir = getTestResource("invalidclaims");
+
+        for (File yml : dir.listFiles()) {
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(yml);
+
+            try {
+                ProtectionBuilder.fromYaml(config);
+                fail();
+            } catch (InvalidProtectionException e) {
+            }
+        }
     }
 
 }

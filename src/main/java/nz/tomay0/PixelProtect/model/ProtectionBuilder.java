@@ -54,12 +54,15 @@ public class ProtectionBuilder {
 
             PermLevel level = PermLevel.fromString(section.getString("level"));
 
+            if (level == null)
+                throw new InvalidProtectionException("Invalid Protection yml. Unknown perm level.");
+
             PlayerPerms perms = new PlayerPerms(uuid, level);
 
             if (section.contains("perms")) {
                 ConfigurationSection permSection = section.getConfigurationSection("perms");
 
-                if (section == null)
+                if (permSection == null)
                     throw new InvalidProtectionException("Invalid Protection yml. Player perms not formatted correctly.");
 
                 for (String permName : permSection.getKeys(false)) {
