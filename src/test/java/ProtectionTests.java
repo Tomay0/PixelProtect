@@ -6,6 +6,7 @@ import nz.tomay0.PixelProtect.model.perms.PermLevel;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,8 +15,11 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
@@ -31,6 +35,15 @@ public class ProtectionTests {
     @Mock
     private World overworld, nether;
 
+    @Mock
+    private Player ownerPlayer, noonePlayer, memberPlayer, adminPlayer;
+
+
+    private UUID ownerUUID = new UUID(100, 200);
+    private UUID nooneUUID = new UUID(100, 201);
+    private UUID memberUUID = new UUID(100, 202);
+    private UUID adminUUID = new UUID(100, 203);
+
     /**
      * Create mock objects and method calls
      */
@@ -43,11 +56,66 @@ public class ProtectionTests {
         nether = mock(World.class);
         when(nether.getName()).thenReturn("world_nether");
 
+        // mock players
+        ownerPlayer = mock(Player.class);
+        noonePlayer = mock(Player.class);
+        memberPlayer = mock(Player.class);
+        adminPlayer = mock(Player.class);
+        when(ownerPlayer.getUniqueId()).thenReturn(ownerUUID);
+        when(noonePlayer.getUniqueId()).thenReturn(nooneUUID);
+        when(memberPlayer.getUniqueId()).thenReturn(memberUUID);
+        when(adminPlayer.getUniqueId()).thenReturn(adminUUID);
+
         // mock Bukkit.getWorld() call
         PowerMockito.mockStatic(Bukkit.class);
         when(Bukkit.getWorld("world")).thenReturn(overworld);
         when(Bukkit.getWorld("world_nether")).thenReturn(nether);
     }
+
+
+    private static List<Protection> getProtectionGrid(int west, int north, int size, int numRoot) {
+        List<Protection> prs = new ArrayList<>();
+        for (int i = 0; i < numRoot; i++) {
+            for (int j = 0; j < numRoot; j++) {
+                int w = west + i * size;
+                int e = w + size - 1;
+                int n = north + j * size;
+                int s = n + size - 1;
+
+                prs.add(new Protection("pr" + i + "," + j, "world", w, e, n, s, "owner"));
+            }
+        }
+
+        return prs;
+    }
+
+    /**
+     * Test overlap symmetrically
+     *
+     * @param pr1
+     * @param pr2
+     */
+    private static void doubleOverlapTest(ProtectionHandler handler, boolean expected, Protection pr1, Protection pr2) {
+        if (expected) {
+            assertTrue(handler.isOverlapping(pr1, pr2));
+            assertTrue(handler.isOverlapping(pr2, pr1));
+        } else {
+            assertFalse(handler.isOverlapping(pr1, pr2));
+            assertFalse(handler.isOverlapping(pr2, pr1));
+        }
+    }
+
+    /**
+     * Get a file from the test resources
+     * @param dir
+     * @return
+     */
+    private File getTestResource(String dir) {
+        URL url = ProtectionTests.class.getResource(dir);
+
+        return new File(url.getFile());
+    }
+
 
     /**
      * Test the boundaries of a protection centred at 0,0 with boundaries at -100,-100 to 100,100
@@ -314,22 +382,6 @@ public class ProtectionTests {
     }
 
     /**
-     * Test overlap symmetrically
-     *
-     * @param pr1
-     * @param pr2
-     */
-    private void doubleOverlapTest(ProtectionHandler handler, boolean expected, Protection pr1, Protection pr2) {
-        if (expected) {
-            assertTrue(handler.isOverlapping(pr1, pr2));
-            assertTrue(handler.isOverlapping(pr2, pr1));
-        } else {
-            assertFalse(handler.isOverlapping(pr1, pr2));
-            assertFalse(handler.isOverlapping(pr2, pr1));
-        }
-    }
-
-    /**
      * Some tests to check that protections overlap
      */
     @Test
@@ -364,22 +416,6 @@ public class ProtectionTests {
                 new Protection("pr2", "world", -50, -30, -5, 5, "owner"));
     }
 
-    private List<Protection> getProtectionGrid(int west, int north, int size, int numRoot) {
-        List<Protection> prs = new ArrayList<>();
-        for (int i = 0; i < numRoot; i++) {
-            for (int j = 0; j < numRoot; j++) {
-                int w = west + i * size;
-                int e = w + size - 1;
-                int n = north + j * size;
-                int s = n + size - 1;
-
-                prs.add(new Protection("pr" + i + "," + j, "world", w, e, n, s, "owner"));
-            }
-        }
-
-        return prs;
-    }
-
     /**
      * Test creating protections in an environment with other protections using the protection handler
      */
@@ -396,18 +432,47 @@ public class ProtectionTests {
         try {
             handler.addNewProtection(new Protection("PR1", "world", -40, -21, 0, 100, "owner"));
             fail();
-        }catch(InvalidProtectionException e) {
+        } catch (InvalidProtectionException e) {
             assertEquals("A protection already exists with the name: PR1", e.getMessage());
         }
         // overlap
         try {
             handler.addNewProtection(new Protection("pr2", "world", -40, -20, 0, 100, "owner"));
             fail();
-        }catch(InvalidProtectionException e) {
+        } catch (InvalidProtectionException e) {
             assertEquals("A protection cannot overlap another protection", e.getMessage());
         }
         // valid
         handler.addNewProtection(new Protection("pr2", "world", -40, -21, 0, 100, "owner"));
+    }
+
+    /**
+     * Test creation from yml file
+     */
+    @Test
+    public void testYaml() {
+        ProtectionHandler handler = new ProtectionHandler(getTestResource("claims1"));
+
+        // check that the protection is added
+
+        Location l1 = new Location(overworld, -10, 20, -10);
+        Location l2 = new Location(overworld, -11, 20, -10);
+
+        Protection protection = handler.getProtectionAt(l1);
+
+        assertEquals("BigProtection", protection.getName());
+
+        // check build permissions
+        assertTrue(handler.hasPermission(ownerPlayer, l1, Perm.BUILD));
+        assertTrue(handler.hasPermission(ownerPlayer, l2, Perm.BUILD));
+        assertFalse(handler.hasPermission(noonePlayer, l1, Perm.BUILD));
+        assertTrue(handler.hasPermission(noonePlayer, l2, Perm.BUILD));
+        assertTrue(handler.hasPermission(noonePlayer, l1, Perm.INTERACT));
+        assertTrue(handler.hasPermission(noonePlayer, l1, Perm.CHEST));
+        assertFalse(protection.hasPermission(memberUUID.toString(), Perm.BUILD));
+        assertTrue(protection.hasPermission(adminUUID.toString(), Perm.BUILD));
+        assertFalse(protection.hasPermission(adminUUID.toString(), Perm.UPDATE));
+        assertTrue(protection.hasPermission(ownerUUID.toString(), Perm.UPDATE));
     }
 
 }

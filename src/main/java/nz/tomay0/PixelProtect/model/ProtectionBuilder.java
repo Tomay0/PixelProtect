@@ -24,12 +24,18 @@ public class ProtectionBuilder {
                 || !yml.contains("player-perms"))
             throw new InvalidProtectionException("Invalid Protection yml. Missing values.");
 
+        // name
         String name = yml.getString("name");
+
+        // location
         String world = yml.getString("world");
         int west = yml.getInt("west");
         int east = yml.getInt("east");
         int north = yml.getInt("north");
         int south = yml.getInt("south");
+
+
+        // player perms
 
         Map<String, PlayerPerms> playerPermissions = new HashMap<>();
 
@@ -59,7 +65,8 @@ public class ProtectionBuilder {
                 for (String permName : permSection.getKeys(false)) {
                     Perm perm = Perm.fromString(permName);
 
-                    if(perm == null) throw new InvalidProtectionException("Invalid Protection yml. Unknown perm " + permName + ".");
+                    if (perm == null)
+                        throw new InvalidProtectionException("Invalid Protection yml. Unknown perm " + permName + ".");
 
                     boolean value = permSection.getBoolean(permName);
 
@@ -72,6 +79,26 @@ public class ProtectionBuilder {
 
         }
 
-        return new Protection(name, world, west, east, north, south, playerPermissions, new HashMap<Perm, PermLevel>());
+        // level perms
+        Map<Perm, PermLevel> defaultPermissions = new HashMap<>();
+
+        ConfigurationSection levelPerms = yml.getConfigurationSection("default-perms");
+
+        if (levelPerms != null) {
+            for (String permName : levelPerms.getKeys(false)) {
+                String permLevelName = levelPerms.getString(permName);
+
+                Perm perm = Perm.fromString(permName);
+                PermLevel permLevel = PermLevel.fromString(permLevelName);
+
+                if (perm == null || permLevel == null)
+                    throw new InvalidProtectionException("Invalid Protection yml. Unknown perm/perm level.");
+
+                defaultPermissions.put(perm, permLevel);
+
+            }
+        }
+
+        return new Protection(name, world, west, east, north, south, playerPermissions, defaultPermissions);
     }
 }

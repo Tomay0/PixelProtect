@@ -1,7 +1,9 @@
 package nz.tomay0.PixelProtect.model;
 
+import nz.tomay0.PixelProtect.model.perms.Perm;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.util.*;
@@ -115,6 +117,22 @@ public class ProtectionHandler {
             }
         }
         return null;
+    }
+
+    /**
+     * Test if a player has permission to do an action at a location
+     *
+     * @param player   player to test
+     * @param location location to test
+     * @param perm     permission to test
+     * @return boolean if allowed
+     */
+    public boolean hasPermission(Player player, Location location, Perm perm) {
+        Protection protection = getProtectionAt(location);
+
+        if (protection == null) return true; // you have permission if there is no protection
+
+        return protection.hasPermission(player.getUniqueId().toString(), perm);
     }
 
 
