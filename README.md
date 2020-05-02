@@ -97,9 +97,9 @@ You can also set specific permissions of a player using this command:
 
 ```/pr setperm <name> <username> <perm> true/false```
 
-You can also update the specific permissions of a permission level using this command:
+If you would like to update the minimum permission required to access a specific permission, you can type this command:
 
-```/pr setperm <name> <permission level> <perm> true/false```
+```/pr setpermlevel <name> <perm> <permission level>```
 
 Note that you can only update the permissions of players and levels that are lower or equal to your current permission level.
 
@@ -123,9 +123,12 @@ Note that you can only update the permissions of players and levels that are low
 
 ```/pr setperm Protection1 User123 interact true``` Imagine User123 is not a member of the protection, you can let them open doors/press buttons using this command.
 
-```/pr setperm Protection1 none interact true``` Players with no member status can interact with this protection.
-
 ```/pr setperm Protection1 User456 update false``` Imagine User456 is an admin, you can revoke the ability to update the size of the protection.
+
+```/pr setpermlevel Protection1 interact none``` This updates the interact permission's default minimum level to "none". This means that anyone can interact with the protection.
+
+```/pr setpermlevel Protection1 sethome member``` This updates the sethome permission's default minimum level to "member". This means that members can use /pr sethome as well as admins.
+
 
 ### Config
 
