@@ -14,4 +14,12 @@ public class InvalidProtectionException extends RuntimeException {
 
     }
 
+    /**
+     * Exception with cause
+     * @param cause cause
+     */
+    public InvalidProtectionException(Exception cause) {
+        super(cause);
+    }
+
 }

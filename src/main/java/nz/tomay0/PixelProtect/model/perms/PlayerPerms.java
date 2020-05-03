@@ -1,6 +1,7 @@
 package nz.tomay0.PixelProtect.model.perms;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -105,5 +106,13 @@ public class PlayerPerms {
      */
     public void clearSpecificPermissions() {
         specificPermissions.clear();
+    }
+
+    /**
+     * Iterable for specific permissions
+     * @return an iterable for all specific permissions
+     */
+    public Iterable<Perm> getSpecificPermissions() {
+        return specificPermissions.keySet();
     }
 }

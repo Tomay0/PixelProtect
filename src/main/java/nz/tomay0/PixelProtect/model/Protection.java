@@ -5,7 +5,10 @@ import nz.tomay0.PixelProtect.model.perms.PermLevel;
 import nz.tomay0.PixelProtect.model.perms.PlayerPerms;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,6 +49,16 @@ public class Protection {
     private Map<Perm, PermLevel> defaultPermissions;
 
     /**
+     * Yml configuration to save to
+     */
+    private YamlConfiguration yml = null;
+
+    /**
+     * Directory to save yml configuration to
+     */
+    private File dir = null;
+
+    /**
      * Create a protection from minimal data
      *
      * @param name      Name of the protection
@@ -63,6 +76,7 @@ public class Protection {
         this.north = north;
         this.east = east;
         this.south = south;
+
 
         playerPermissions = new HashMap<>();
         defaultPermissions = new HashMap<>();
@@ -83,9 +97,11 @@ public class Protection {
      * @param south              Southern boundary coordinate
      * @param playerPermissions  playerPerms
      * @param defaultPermissions defaultPerms
+     * @param yml                yml config file
+     * @param dir                directory containing config files
      */
     public Protection(String name, String world, int west, int east, int north, int south,
-                      Map<String, PlayerPerms> playerPermissions, Map<Perm, PermLevel> defaultPermissions) {
+                      Map<String, PlayerPerms> playerPermissions, Map<Perm, PermLevel> defaultPermissions, YamlConfiguration yml, File dir) {
         this.name = name;
         this.world = world;
         this.west = west;
@@ -93,13 +109,15 @@ public class Protection {
         this.east = east;
         this.south = south;
 
-        // TODO implement cloning
         this.playerPermissions = playerPermissions;
         this.defaultPermissions = defaultPermissions;
 
+        this.yml = yml;
+        this.dir = dir;
+
         // get owner
         for (PlayerPerms perms : playerPermissions.values()) {
-            if(perms.getPermissionLevel() == PermLevel.OWNER) {
+            if (perms.getPermissionLevel() == PermLevel.OWNER) {
                 ownerUuid = perms.getPlayerUUID();
             }
         }
@@ -111,9 +129,46 @@ public class Protection {
      * Update the protection by updating the config file and validating the data
      */
     private void update() {
-        // TODO update config
-
         validate();
+
+        // update the yml file
+        if (yml != null) {
+            yml.set("name", name);
+            yml.set("world", world);
+            yml.set("west", west);
+            yml.set("east", east);
+            yml.set("north", north);
+            yml.set("south", south);
+            yml.set("player-perms", null);
+            yml.set("default-perms", null);
+
+            // player perms
+            for (String uuid : playerPermissions.keySet()) {
+                PlayerPerms perms = playerPermissions.get(uuid);
+
+                yml.set("player-perms." + uuid + ".level", perms.getPermissionLevel().toString());
+
+                for (Perm perm : perms.getSpecificPermissions()) {
+                    yml.set("player-perms." + uuid + ".perms." + perm.toString(), perms.getSpecificPermission(perm));
+                }
+            }
+
+            // default perms
+            for (Perm perm : defaultPermissions.keySet()) {
+                PermLevel defaultLevel = defaultPermissions.get(perm);
+
+                yml.set("default-perms." + perm.toString(), defaultLevel.toString());
+            }
+
+            try {
+                File file = getFile();
+
+                if (file != null)
+                    yml.save(file);
+            } catch (IOException e) {
+                throw new InvalidProtectionException(e);
+            }
+        }
     }
 
     /**
@@ -239,6 +294,7 @@ public class Protection {
      */
     public void setDefaultPermissionLevel(Perm perm, PermLevel minLevel) {
         defaultPermissions.put(perm, minLevel);
+        update();
     }
 
     /**
@@ -290,12 +346,71 @@ public class Protection {
     }
 
     /**
+     * Set the directory of the protection so it can save
+     *
+     * @param dir dir
+     */
+    public void setDir(File dir) {
+        this.dir = dir;
+        updateYmlFile();
+    }
+
+    /**
+     * Rename the protection. This updates the yml file
+     *
+     * @param newName
+     */
+    public void rename(String newName) {
+        File file = getFile();
+        if (file != null && file.exists())
+            file.delete();
+
+        this.name = newName;
+
+        updateYmlFile();
+    }
+
+    /**
+     * Update the yml file if the directory or name changes
+     */
+    private void updateYmlFile() {
+        File file = getFile();
+        if (file != null)
+            yml = YamlConfiguration.loadConfiguration(file);
+        else
+            yml = null;
+
+        update();
+    }
+
+    /**
+     * Get the file to write to
+     *
+     * @return a file
+     */
+    public File getFile() {
+        if (dir != null) {
+            return new File(dir, getIdSafeName() + ".yml");
+        }
+        return null;
+    }
+
+    /**
      * Get the name
      *
      * @return the name
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Get the name that can be used for filenames and protection hashmap
+     *
+     * @return
+     */
+    public String getIdSafeName() {
+        return ProtectionHandler.getIdSafeName(name);
     }
 
     /**
@@ -342,4 +457,5 @@ public class Protection {
     public int getSouth() {
         return south;
     }
+
 }

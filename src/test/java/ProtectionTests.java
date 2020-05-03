@@ -18,9 +18,11 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -74,7 +76,15 @@ public class ProtectionTests {
         when(Bukkit.getWorld("world_nether")).thenReturn(nether);
     }
 
-
+    /**
+     * Create a grid of protections
+     *
+     * @param west    west
+     * @param north   north
+     * @param size    size
+     * @param numRoot num root
+     * @return
+     */
     private static List<Protection> getProtectionGrid(int west, int north, int size, int numRoot) {
         List<Protection> prs = new ArrayList<>();
         for (int i = 0; i < numRoot; i++) {
@@ -108,13 +118,46 @@ public class ProtectionTests {
     }
 
     /**
+     * Clean temp/ directory and return it
+     */
+    private static File getTempDir() {
+        File temp = new File("temp");
+        if (!temp.exists()) {
+            temp.mkdir();
+        } else {
+            for (File f : temp.listFiles()) {
+                f.delete();
+            }
+        }
+
+        return temp;
+    }
+
+    /**
+     * Remove temp/ dir
+     */
+    private static void removeTempDir() {
+        File temp = new File("temp");
+        if (!temp.exists()) return;
+
+        for (File f : temp.listFiles()) {
+            f.delete();
+        }
+
+        temp.delete();
+
+    }
+
+    /**
      * Get a file from the test resources
      *
      * @param dir
      * @return
      */
-    private File getTestResource(String dir) {
+    private static File getTestResource(String dir) {
         URL url = ProtectionTests.class.getResource(dir);
+
+        System.out.println(url);
 
         return new File(url.getFile());
     }
@@ -436,7 +479,7 @@ public class ProtectionTests {
             handler.addNewProtection(new Protection("PR1", "world", -40, -21, 0, 100, "owner"));
             fail();
         } catch (InvalidProtectionException e) {
-            assertEquals("A protection already exists with the name: PR1", e.getMessage());
+            assertEquals("A protection already exists with the name: pr1", e.getMessage());
         }
         // overlap
         try {
@@ -447,6 +490,14 @@ public class ProtectionTests {
         }
         // valid
         handler.addNewProtection(new Protection("pr2", "world", -40, -21, 0, 100, "owner"));
+
+        // same name with extra characters
+        try {
+            handler.addNewProtection(new Protection("[pr1]", "world", -400, -200, 0, 100, "owner"));
+            fail();
+        } catch (InvalidProtectionException e) {
+            assertEquals("A protection already exists with the name: pr1", e.getMessage());
+        }
     }
 
     /**
@@ -489,11 +540,85 @@ public class ProtectionTests {
             YamlConfiguration config = YamlConfiguration.loadConfiguration(yml);
 
             try {
-                ProtectionBuilder.fromYaml(config);
+                ProtectionBuilder.fromYaml(config, dir);
                 fail();
             } catch (InvalidProtectionException e) {
             }
         }
+    }
+
+    /**
+     * Save a yml to a file, then load it.
+     * Also try renaming.
+     */
+    @Test
+    public void testYmlSave() {
+        File dir = getTempDir();
+
+        Protection protection = new Protection("protection-1", "world", -10, 10, -10, 10, ownerUUID.toString());
+        protection.setDir(dir);
+
+        // check file was created
+        assertTrue(new File(dir, "protection1.yml").exists());
+
+
+        // load the protection by loading the entire dir
+        ProtectionHandler handler = new ProtectionHandler(dir);
+
+        Protection loaded = handler.getProtection("protection-1");
+
+        assertEquals(protection.getName(), loaded.getName());
+        assertEquals(loaded.getPermissionLevel(ownerUUID.toString()), PermLevel.OWNER);
+
+        assertFalse(handler.hasPermission(noonePlayer, new Location(overworld, -5, 50, -5), Perm.BUILD));
+
+        removeTempDir();
+    }
+
+    /**
+     * Test creating a yml and editing it
+     */
+    @Test
+    public void testYmlEdit() {
+        File dir = getTempDir();
+
+        ProtectionHandler handler = new ProtectionHandler(dir);
+
+        // add some protections
+        handler.addNewProtection(new Protection("pr1", "world", -10, 10, -10, 10, ownerUUID.toString()));
+        handler.addNewProtection(new Protection("pr2", "world", -21, -11, -10, 10, ownerUUID.toString()));
+
+        assertTrue(new File(dir, "pr1.yml").exists());
+        assertTrue(new File(dir, "pr2.yml").exists());
+
+        // rename
+        handler.renameProtection("pr2", "p_r_3");
+
+        assertTrue(new File(dir, "pr1.yml").exists());
+        assertTrue(new File(dir, "pr3.yml").exists());
+        assertFalse(new File(dir, "pr2.yml").exists());
+
+
+        // remove
+        handler.removeProtection("pr3");
+
+        assertTrue(new File(dir, "pr1.yml").exists());
+        assertFalse(new File(dir, "pr3.yml").exists());
+        assertFalse(new File(dir, "pr2.yml").exists());
+
+        // change some perms in the protection
+        handler.getProtection("pr1").setDefaultPermissionLevel(Perm.SETHOME, PermLevel.NONE);
+        handler = new ProtectionHandler(dir);
+        assertTrue(handler.hasPermission(noonePlayer, new Location(overworld, 0, 10, 0), Perm.SETHOME));
+        assertFalse(handler.hasPermission(noonePlayer, new Location(overworld, 0, 10, 0), Perm.BUILD));
+
+        handler.getProtection("pr1").setSpecificPermission(nooneUUID.toString(), Perm.BUILD, true);
+        handler = new ProtectionHandler(dir);
+        assertTrue(handler.hasPermission(noonePlayer, new Location(overworld, 0, 10, 0), Perm.BUILD));
+
+
+        removeTempDir();
+
     }
 
 }

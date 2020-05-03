@@ -19,17 +19,15 @@ public class ProtectionHandler {
     private Map<String, Protection> protectionsByName = new HashMap<>();
 
     /**
-     * A map from a player's UUID to the protections they have permissions in
+     * Directory containing all protections
      */
-    // private Map<String, Set<Protection>> protectionsByPlayer = new HashMap<>();
-
-    // TODO a way to get protections by location
+    private File dir;
 
     /**
      * Empty protection Handler
      */
     public ProtectionHandler() {
-
+        dir = null;
     }
 
     /**
@@ -38,12 +36,13 @@ public class ProtectionHandler {
      * @param dir directory containing all protections
      */
     public ProtectionHandler(File dir) {
+        this.dir = dir;
         for (File f : dir.listFiles()) {
             if (!f.getName().endsWith(".yml")) continue;
 
             YamlConfiguration config = YamlConfiguration.loadConfiguration(f);
 
-            addNewProtection(ProtectionBuilder.fromYaml(config));
+            addNewProtection(ProtectionBuilder.fromYaml(config, dir));
         }
     }
 
@@ -51,6 +50,8 @@ public class ProtectionHandler {
      * Initialize the collection of protections by a collection of protections
      */
     public ProtectionHandler(Collection<Protection> protections) {
+        dir = null;
+
         for (Protection protection : protections) {
             addNewProtection(protection);
         }
@@ -64,17 +65,72 @@ public class ProtectionHandler {
      */
     public void addNewProtection(Protection protection) {
         // check that there isn't another protection with that name
-        if (getProtection(protection.getName()) != null)
-            throw new InvalidProtectionException("A protection already exists with the name: " + protection.getName());
+        Protection sameName = getProtection(protection.getName());
+        if (sameName != null)
+            throw new InvalidProtectionException("A protection already exists with the name: " + sameName.getName());
 
         // check that it does not overlap
         if (getOverlappingProtections(protection).size() > 0)
             throw new InvalidProtectionException("A protection cannot overlap another protection");
 
         // add to protection map
-        protectionsByName.put(protection.getName().toLowerCase(), protection);
+        protectionsByName.put(protection.getIdSafeName(), protection);
+
+        protection.setDir(dir);
     }
 
+    /**
+     * Rename a protection
+     *
+     * @param oldName old protection name
+     * @param newName new name
+     */
+    public void renameProtection(String oldName, String newName) {
+        Protection protection = getProtection(oldName);
+
+        // no protection with that name
+        if (protection == null)
+            throw new InvalidProtectionException("Unknown protection: " + oldName);
+
+        // check newName doesn't exist
+        Protection duplicate = getProtection(newName);
+        if (duplicate != null) {
+            throw new InvalidProtectionException("Cannot rename. Name already exists: " + duplicate.getName());
+        }
+
+        if (newName.contains(" "))
+            throw new InvalidProtectionException("Name cannot contain spaces.");
+
+        protectionsByName.remove(protection.getIdSafeName());
+
+        protection.rename(newName);
+
+        protectionsByName.put(getIdSafeName(newName), protection);
+
+    }
+
+
+    /**
+     * Remove a protections
+     *
+     * @param name name of the protection
+     */
+    public void removeProtection(String name) {
+        Protection protection = getProtection(name);
+
+        // no protection with that name
+        if (protection == null)
+            throw new InvalidProtectionException("Unknown protection: " + name);
+
+        // remove from map
+        protectionsByName.remove(protection.getIdSafeName());
+
+        // remove file
+        File f = protection.getFile();
+        if (f != null && f.exists()) {
+            f.delete();
+        }
+    }
 
     /**
      * Get a protection by name
@@ -83,7 +139,7 @@ public class ProtectionHandler {
      * @return
      */
     public Protection getProtection(String name) {
-        return protectionsByName.get(name.toLowerCase());
+        return protectionsByName.get(getIdSafeName(name));
     }
 
     /**
@@ -162,4 +218,14 @@ public class ProtectionHandler {
         return true;
     }
 
+
+    /**
+     * Get an ID safe name from an unchecked string
+     *
+     * @param name name, potentially unsafe
+     * @return safe name to be used for ids
+     */
+    public static String getIdSafeName(String name) {
+        return name.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+    }
 }

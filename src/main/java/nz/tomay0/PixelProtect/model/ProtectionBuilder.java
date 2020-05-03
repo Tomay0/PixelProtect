@@ -6,6 +6,7 @@ import nz.tomay0.PixelProtect.model.perms.PlayerPerms;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +20,7 @@ public class ProtectionBuilder {
      * @param yml
      * @return
      */
-    public static Protection fromYaml(YamlConfiguration yml) {
+    public static Protection fromYaml(YamlConfiguration yml, File dir) {
         if (!yml.contains("name") || !yml.contains("world") || !yml.contains("west") || !yml.contains("east") || !yml.contains("north") || !yml.contains("south")
                 || !yml.contains("player-perms"))
             throw new InvalidProtectionException("Invalid Protection yml. Missing values.");
@@ -102,6 +103,6 @@ public class ProtectionBuilder {
             }
         }
 
-        return new Protection(name, world, west, east, north, south, playerPermissions, defaultPermissions);
+        return new Protection(name, world, west, east, north, south, playerPermissions, defaultPermissions, yml, dir);
     }
 }
