@@ -1,5 +1,7 @@
 package nz.tomay0.PixelProtect.command;
 
+import nz.tomay0.PixelProtect.PixelProtectPlugin;
+import nz.tomay0.PixelProtect.confirm.ConfirmationHandler;
 import nz.tomay0.PixelProtect.model.ProtectionHandler;
 import org.bukkit.command.CommandSender;
 
@@ -7,14 +9,14 @@ import org.bukkit.command.CommandSender;
  * An abstract protection command
  */
 public abstract class AbstractCommand {
-    private ProtectionHandler protections;
+    private PixelProtectPlugin plugin;
 
     /**
      * Create new abstract command with a protection handler
-     * @param protections
+     * @param plugin plugin
      */
-    public AbstractCommand(ProtectionHandler protections) {
-        this.protections = protections;
+    public AbstractCommand(PixelProtectPlugin plugin) {
+        this.plugin = plugin;
     }
 
     /**
@@ -22,7 +24,15 @@ public abstract class AbstractCommand {
      * @return
      */
     protected ProtectionHandler getProtections() {
-        return protections;
+        return plugin.getProtections();
+    }
+
+    /**
+     * Get the confirmation handler
+     * @return
+     */
+    protected ConfirmationHandler getConfirmationHandler() {
+        return plugin.getConfirmationHandler();
     }
 
     /**

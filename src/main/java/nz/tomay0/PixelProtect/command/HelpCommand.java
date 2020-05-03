@@ -1,6 +1,6 @@
 package nz.tomay0.PixelProtect.command;
 
-import nz.tomay0.PixelProtect.model.ProtectionHandler;
+import nz.tomay0.PixelProtect.PixelProtectPlugin;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -17,10 +17,11 @@ public class HelpCommand extends AbstractCommand {
     /**
      * Help command
      *
+     * @param plugin plugin
      * @param commands list of commands to show in help
      */
-    public HelpCommand(ProtectionHandler protections, List<AbstractCommand> commands) {
-        super(protections);
+    public HelpCommand(PixelProtectPlugin plugin, List<AbstractCommand> commands) {
+        super(plugin);
         this.commands = commands;
     }
 

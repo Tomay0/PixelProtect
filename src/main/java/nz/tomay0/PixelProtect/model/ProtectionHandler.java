@@ -83,6 +83,25 @@ public class ProtectionHandler {
     }
 
     /**
+     * Update the bounds of an existing protection
+     *
+     * @param newBounds a temporary protection with the updated bounds.
+     */
+    public void updateBounds(Protection newBounds) {
+        Protection protection = getProtection(newBounds.getName());
+        if (protection == null)
+            throw new InvalidProtectionException("Protection does not exist.", PROTECTION_DOES_NOT_EXIST);
+
+        // check that it does not overlap
+        if (getOverlappingProtections(newBounds).size() > 0)
+            throw new InvalidProtectionException("A protection cannot overlap another protection.", PROTECTION_OVERLAPPING);
+
+
+        // update
+        protection.setBounds(newBounds.getWorld(), newBounds.getWest(), newBounds.getEast(), newBounds.getNorth(), newBounds.getSouth());
+    }
+
+    /**
      * Rename a protection
      *
      * @param oldName old protection name
@@ -151,7 +170,7 @@ public class ProtectionHandler {
      * @param protection protection to add
      * @return set of all overlapping protections
      */
-    private Set<Protection> getOverlappingProtections(Protection protection) {
+    public Set<Protection> getOverlappingProtections(Protection protection) {
         Set<Protection> prs = new HashSet<>();
 
         // TODO implement a quad tree or something to lower the complexity

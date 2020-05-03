@@ -1,6 +1,7 @@
 package nz.tomay0.PixelProtect;
 
 import nz.tomay0.PixelProtect.command.CommandHandler;
+import nz.tomay0.PixelProtect.confirm.ConfirmationHandler;
 import nz.tomay0.PixelProtect.model.ProtectionHandler;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -11,17 +12,21 @@ import java.util.logging.Level;
  * Main plugin entry point for pixel protect
  */
 public class PixelProtectPlugin extends JavaPlugin {
-    //
     private ProtectionHandler protectionHandler;
+    private ConfirmationHandler confirmationHandler;
 
     @Override
     public void onEnable() {
 
         // setup protection handler
         protectionHandler = new ProtectionHandler(getProtectionDirectory());
+        confirmationHandler = new ConfirmationHandler(protectionHandler);
+
+        getServer().getPluginManager().registerEvents(confirmationHandler, this);
+        getServer().getScheduler().scheduleSyncRepeatingTask(this, confirmationHandler, 20, 20);
 
         // setup command handler
-        getCommand("protect").setExecutor(new CommandHandler(protectionHandler));
+        getCommand("protect").setExecutor(new CommandHandler(this));
 
         // log that the plugin has loaded successfully
         getLogger().log(Level.INFO, "Initialized PixelProtect successfully");
@@ -44,5 +49,23 @@ public class PixelProtectPlugin extends JavaPlugin {
             prDir.mkdir();
 
         return prDir;
+    }
+
+    /**
+     * Get protections
+     *
+     * @return
+     */
+    public ProtectionHandler getProtections() {
+        return protectionHandler;
+    }
+
+    /**
+     * Get confirmation handler
+     *
+     * @return
+     */
+    public ConfirmationHandler getConfirmationHandler() {
+        return confirmationHandler;
     }
 }

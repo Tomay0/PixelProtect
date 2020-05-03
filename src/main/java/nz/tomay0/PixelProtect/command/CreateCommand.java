@@ -1,5 +1,6 @@
 package nz.tomay0.PixelProtect.command;
 
+import nz.tomay0.PixelProtect.PixelProtectPlugin;
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
 import nz.tomay0.PixelProtect.model.Protection;
 import nz.tomay0.PixelProtect.model.ProtectionBuilder;
@@ -17,10 +18,10 @@ public class CreateCommand extends AbstractCommand {
     /**
      * Create new abstract command with a protection handler
      *
-     * @param protections
+     * @param plugin plugin
      */
-    public CreateCommand(ProtectionHandler protections) {
-        super(protections);
+    public CreateCommand(PixelProtectPlugin plugin) {
+        super(plugin);
     }
 
     @Override
@@ -83,13 +84,12 @@ public class CreateCommand extends AbstractCommand {
 
         // create the protection IF POSSIBLE
         try {
-            // try create the protection
-            Protection protection = ProtectionBuilder.fromCommand(protectionName, player, size);
+            getConfirmationHandler().requestCreate(player, protectionName, size);
 
-            getProtections().addNewProtection(protection);
-
-            player.sendMessage(ChatColor.GREEN + "Protection created");
-            // TODO confirmation, show the borders, show additional features
+            player.sendMessage(ChatColor.YELLOW + "Creating a new protection named " + ChatColor.GREEN + protectionName);
+            player.sendMessage(ChatColor.YELLOW + "Confirm by typing " + ChatColor.AQUA + "/pr confirm");
+            player.sendMessage(ChatColor.LIGHT_PURPLE + "Retype " + ChatColor.RED + "/pr create <name> <size>" + ChatColor.LIGHT_PURPLE + " to change the name and/or size.");
+            player.sendMessage(ChatColor.LIGHT_PURPLE + "Type " + ChatColor.RED + "/pr cancel" + ChatColor.LIGHT_PURPLE + " to cancel your creation.");
         } catch (InvalidProtectionException e) {
             // invalid protection
             player.sendMessage(ChatColor.DARK_RED + e.getMessage());

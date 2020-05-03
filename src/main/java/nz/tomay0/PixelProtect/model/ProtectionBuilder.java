@@ -115,10 +115,14 @@ public class ProtectionBuilder {
      * @param protectionName name
      * @param player         player who is creating
      * @param size           size of the protection as blocks from the centre.
+     * @param protections    protection handler to test that it does not overlap
      * @return a protection
      */
-    public static Protection fromCommand(String protectionName, Player player, Integer[] size) {
+    public static Protection fromCommand(String protectionName, Player player, Integer[] size, ProtectionHandler protections) {
         if (size.length != 4) throw new InvalidProtectionException("Invalid size arguments.", COMMAND_FORMAT_EXCEPTION);
+
+        if (protections.getProtection(protectionName) != null)
+            throw new InvalidProtectionException("A protection with that name already exists.", PROTECTION_ALREADY_EXISTS);
 
         Location l = player.getLocation();
 
@@ -130,7 +134,12 @@ public class ProtectionBuilder {
 
         String uuid = player.getUniqueId().toString();
 
-        return new Protection(protectionName, world, west, east, north, south, uuid);
+        Protection protection = new Protection(protectionName, world, west, east, north, south, uuid);
 
+        if (protections.getOverlappingProtections(protection).size() > 0) {
+            throw new InvalidProtectionException("This protection will overlap other protections.", PROTECTION_OVERLAPPING);
+        }
+
+        return protection;
     }
 }

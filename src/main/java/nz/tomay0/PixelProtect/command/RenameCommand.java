@@ -1,6 +1,6 @@
 package nz.tomay0.PixelProtect.command;
 
-import nz.tomay0.PixelProtect.model.ProtectionHandler;
+import nz.tomay0.PixelProtect.PixelProtectPlugin;
 import org.bukkit.command.CommandSender;
 
 /**
@@ -10,10 +10,10 @@ public class RenameCommand extends AbstractCommand {
     /**
      * Create new abstract command with a protection handler
      *
-     * @param protections
+     * @param plugin plugin
      */
-    public RenameCommand(ProtectionHandler protections) {
-        super(protections);
+    public RenameCommand(PixelProtectPlugin plugin) {
+        super(plugin);
     }
 
     @Override

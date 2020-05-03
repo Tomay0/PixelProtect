@@ -62,7 +62,26 @@ public class Protection {
     private File dir = null;
 
     /**
-     * Create a protection from minimal data
+     * Temporary protection with only bounds and no permissions
+     *
+     * @param name      Name of the protection
+     * @param world     World the protection is contained within
+     * @param west      Western boundary coordinate
+     * @param east      Eastern boundary coordinate
+     * @param north     Northern boundary coordinate
+     * @param south     Southern boundary coordinate
+     */
+    public Protection(String name, String world, int west, int east, int north, int south) {
+        this.name = name;
+        this.world = world;
+        this.west = west;
+        this.north = north;
+        this.east = east;
+        this.south = south;
+    }
+
+    /**
+     * Create a protection without permission data
      *
      * @param name      Name of the protection
      * @param world     World the protection is contained within
@@ -298,6 +317,40 @@ public class Protection {
     public void setDefaultPermissionLevel(Perm perm, PermLevel minLevel) {
         defaultPermissions.put(perm, minLevel);
         update();
+    }
+
+    /**
+     * Update the bounds of the protection
+     *
+     * @param world
+     * @param west
+     * @param east
+     * @param north
+     * @param south
+     */
+    public void setBounds(String world, int west, int east, int north, int south) {
+        String oldWorld = this.world;
+        int oldWest = this.west;
+        int oldEast = this.east;
+        int oldNorth = this.north;
+        int oldSouth = this.south;
+
+        this.world = world;
+        this.west = west;
+        this.east = east;
+        this.north = north;
+        this.south = south;
+
+        try {
+            update();
+        } catch (InvalidProtectionException e) {
+            // go back to old bounds
+            this.world = oldWorld;
+            this.west = oldWest;
+            this.east = oldEast;
+            this.north = oldNorth;
+            this.south = oldSouth;
+        }
     }
 
     /**

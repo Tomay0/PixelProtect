@@ -1,6 +1,6 @@
 package nz.tomay0.PixelProtect.command;
 
-import nz.tomay0.PixelProtect.model.ProtectionHandler;
+import nz.tomay0.PixelProtect.PixelProtectPlugin;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -14,25 +14,27 @@ import java.util.*;
 public class CommandHandler implements CommandExecutor {
     private List<AbstractCommand> commandsList;
     private Map<String, AbstractCommand> commandMap;
-    private ProtectionHandler protections;
+    private PixelProtectPlugin plugin;
 
     /**
      * Initialize the command list
      */
-    public CommandHandler(ProtectionHandler protections) {
-        this.protections = protections;
+    public CommandHandler(PixelProtectPlugin plugin) {
+        this.plugin = plugin;
 
         // create list - for help menu
         commandsList = new ArrayList<>();
-        commandsList.add(new CreateCommand(protections));
-        commandsList.add(new ExpandCommand(protections));
-        commandsList.add(new ShiftCommand(protections));
-        commandsList.add(new MoveCommand(protections));
+        commandsList.add(new CreateCommand(plugin));
+        commandsList.add(new ExpandCommand(plugin));
+        commandsList.add(new ShiftCommand(plugin));
+        commandsList.add(new MoveCommand(plugin));
+        commandsList.add(new RemoveCommand(plugin));
+        commandsList.add(new RenameCommand(plugin));
+        commandsList.add(new ListCommand(plugin));
 
-        commandsList.add(new RemoveCommand(protections));
-        commandsList.add(new RenameCommand(protections));
-        commandsList.add(new ListCommand(protections));
-        commandsList.add(new HelpCommand(protections, commandsList));
+        commandsList.add(new HelpCommand(plugin, new ArrayList<>(commandsList))); // all commands after here are not contained in /pr help
+        commandsList.add(new ConfirmCommand(plugin));
+        commandsList.add(new CancelCommand(plugin));
 
         // create map - for usage
         commandMap = new HashMap<>();
