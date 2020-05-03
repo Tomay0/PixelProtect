@@ -3,8 +3,10 @@ package nz.tomay0.PixelProtect.model;
 import nz.tomay0.PixelProtect.model.perms.Perm;
 import nz.tomay0.PixelProtect.model.perms.PermLevel;
 import nz.tomay0.PixelProtect.model.perms.PlayerPerms;
+import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.util.HashMap;
@@ -43,8 +45,6 @@ public class ProtectionBuilder {
         ConfigurationSection playerPerms = yml.getConfigurationSection("player-perms");
 
         for (String uuid : playerPerms.getKeys(false)) {
-            // TODO check valid uuid?
-
             ConfigurationSection section = playerPerms.getConfigurationSection(uuid);
 
             if (section == null)
@@ -104,5 +104,30 @@ public class ProtectionBuilder {
         }
 
         return new Protection(name, world, west, east, north, south, playerPermissions, defaultPermissions, yml, dir);
+    }
+
+    /**
+     * Protection creation from a command. The size is specified as blocks from the player's location.
+     *
+     * @param protectionName name
+     * @param player         player who is creating
+     * @param size           size of the protection as blocks from the centre.
+     * @return a protection
+     */
+    public static Protection fromCommand(String protectionName, Player player, Integer[] size) {
+        if (size.length != 4) throw new InvalidProtectionException("Invalid size arguments.");
+
+        Location l = player.getLocation();
+
+        String world = l.getWorld().getName();
+        int west = l.getBlockX() - size[0];
+        int east = l.getBlockX() + size[1];
+        int north = l.getBlockZ() - size[2];
+        int south = l.getBlockZ() + size[3];
+
+        String uuid = player.getUniqueId().toString();
+
+        return new Protection(protectionName, world, west, east, north, south, uuid);
+
     }
 }
