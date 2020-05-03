@@ -5,6 +5,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import nz.tomay0.PixelProtect.model.ProtectionBuilder;
 import nz.tomay0.PixelProtect.model.ProtectionHandler;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -12,6 +13,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Handles protection creating/updating confirmations.
@@ -102,6 +104,8 @@ public class ConfirmationHandler implements Listener, Runnable {
     public void run() {
         for (Player player : confirmations.keySet()) {
             player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.YELLOW + "Type " + ChatColor.AQUA + "/pr confirm" + ChatColor.YELLOW + " to confirm."));
+
+            confirmations.get(player).displayParticles();
         }
 
     }
