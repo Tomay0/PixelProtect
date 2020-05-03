@@ -1,5 +1,6 @@
 package nz.tomay0.PixelProtect.model;
 
+import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
 import nz.tomay0.PixelProtect.model.perms.Perm;
 import nz.tomay0.PixelProtect.model.perms.PermLevel;
 import nz.tomay0.PixelProtect.model.perms.PlayerPerms;
@@ -11,6 +12,8 @@ import org.bukkit.entity.Player;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+
+import static nz.tomay0.PixelProtect.exception.ProtectionExceptionReason.*;
 
 /**
  * Class with some methods of generating protections in different ways.
@@ -25,7 +28,7 @@ public class ProtectionBuilder {
     public static Protection fromYaml(YamlConfiguration yml, File dir) {
         if (!yml.contains("name") || !yml.contains("world") || !yml.contains("west") || !yml.contains("east") || !yml.contains("north") || !yml.contains("south")
                 || !yml.contains("player-perms"))
-            throw new InvalidProtectionException("Invalid Protection yml. Missing values.");
+            throw new InvalidProtectionException("Invalid Protection yml. Missing values.", YML_EXCEPTION);
 
         // name
         String name = yml.getString("name");
@@ -48,15 +51,15 @@ public class ProtectionBuilder {
             ConfigurationSection section = playerPerms.getConfigurationSection(uuid);
 
             if (section == null)
-                throw new InvalidProtectionException("Invalid Protection yml. Player perms not formatted correctly.");
+                throw new InvalidProtectionException("Invalid Protection yml. Player perms not formatted correctly.", YML_EXCEPTION);
 
             if (!section.contains("level"))
-                throw new InvalidProtectionException("Invalid Protection yml. Player perms must contain the level");
+                throw new InvalidProtectionException("Invalid Protection yml. Player perms must contain the level", YML_EXCEPTION);
 
             PermLevel level = PermLevel.fromString(section.getString("level"));
 
             if (level == null)
-                throw new InvalidProtectionException("Invalid Protection yml. Unknown perm level.");
+                throw new InvalidProtectionException("Invalid Protection yml. Unknown perm level.", YML_EXCEPTION);
 
             PlayerPerms perms = new PlayerPerms(uuid, level);
 
@@ -64,13 +67,13 @@ public class ProtectionBuilder {
                 ConfigurationSection permSection = section.getConfigurationSection("perms");
 
                 if (permSection == null)
-                    throw new InvalidProtectionException("Invalid Protection yml. Player perms not formatted correctly.");
+                    throw new InvalidProtectionException("Invalid Protection yml. Player perms not formatted correctly.", YML_EXCEPTION);
 
                 for (String permName : permSection.getKeys(false)) {
                     Perm perm = Perm.fromString(permName);
 
                     if (perm == null)
-                        throw new InvalidProtectionException("Invalid Protection yml. Unknown perm " + permName + ".");
+                        throw new InvalidProtectionException("Invalid Protection yml. Unknown perm " + permName + ".", YML_EXCEPTION);
 
                     boolean value = permSection.getBoolean(permName);
 
@@ -96,7 +99,7 @@ public class ProtectionBuilder {
                 PermLevel permLevel = PermLevel.fromString(permLevelName);
 
                 if (perm == null || permLevel == null)
-                    throw new InvalidProtectionException("Invalid Protection yml. Unknown perm/perm level.");
+                    throw new InvalidProtectionException("Invalid Protection yml. Unknown perm/perm level.", YML_EXCEPTION);
 
                 defaultPermissions.put(perm, permLevel);
 
@@ -115,7 +118,7 @@ public class ProtectionBuilder {
      * @return a protection
      */
     public static Protection fromCommand(String protectionName, Player player, Integer[] size) {
-        if (size.length != 4) throw new InvalidProtectionException("Invalid size arguments.");
+        if (size.length != 4) throw new InvalidProtectionException("Invalid size arguments.", COMMAND_FORMAT_EXCEPTION);
 
         Location l = player.getLocation();
 

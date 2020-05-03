@@ -1,5 +1,6 @@
 package nz.tomay0.PixelProtect.model;
 
+import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
 import nz.tomay0.PixelProtect.model.perms.Perm;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -7,6 +8,8 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.util.*;
+
+import static nz.tomay0.PixelProtect.exception.ProtectionExceptionReason.*;
 
 /**
  * The protection handler has a collection of all protections on the server and maintains it.
@@ -67,11 +70,11 @@ public class ProtectionHandler {
         // check that there isn't another protection with that name
         Protection sameName = getProtection(protection.getName());
         if (sameName != null)
-            throw new InvalidProtectionException("A protection already exists with the name: " + sameName.getName());
+            throw new InvalidProtectionException("A protection already exists with the name: " + sameName.getName(), PROTECTION_ALREADY_EXISTS);
 
         // check that it does not overlap
         if (getOverlappingProtections(protection).size() > 0)
-            throw new InvalidProtectionException("A protection cannot overlap another protection");
+            throw new InvalidProtectionException("A protection cannot overlap another protection", PROTECTION_OVERLAPPING);
 
         // add to protection map
         protectionsByName.put(protection.getIdSafeName(), protection);
@@ -90,16 +93,16 @@ public class ProtectionHandler {
 
         // no protection with that name
         if (protection == null)
-            throw new InvalidProtectionException("Unknown protection: " + oldName);
+            throw new InvalidProtectionException("Unknown protection: " + oldName, PROTECTION_DOES_NOT_EXIST);
 
         // check newName doesn't exist
         Protection duplicate = getProtection(newName);
         if (duplicate != null) {
-            throw new InvalidProtectionException("Cannot rename. Name already exists: " + duplicate.getName());
+            throw new InvalidProtectionException("Cannot rename. Name already exists: " + duplicate.getName(), PROTECTION_ALREADY_EXISTS);
         }
 
         if (newName.contains(" "))
-            throw new InvalidProtectionException("Name cannot contain spaces.");
+            throw new InvalidProtectionException("Name cannot contain spaces.", INVALID_NAME);
 
         protectionsByName.remove(protection.getIdSafeName());
 
@@ -120,7 +123,7 @@ public class ProtectionHandler {
 
         // no protection with that name
         if (protection == null)
-            throw new InvalidProtectionException("Unknown protection: " + name);
+            throw new InvalidProtectionException("Unknown protection: " + name, PROTECTION_DOES_NOT_EXIST);
 
         // remove from map
         protectionsByName.remove(protection.getIdSafeName());

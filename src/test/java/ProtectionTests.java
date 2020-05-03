@@ -1,5 +1,5 @@
 import nz.tomay0.PixelProtect.command.CreateCommand;
-import nz.tomay0.PixelProtect.model.InvalidProtectionException;
+import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
 import nz.tomay0.PixelProtect.model.Protection;
 import nz.tomay0.PixelProtect.model.ProtectionBuilder;
 import nz.tomay0.PixelProtect.model.ProtectionHandler;
@@ -19,11 +19,9 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 import java.util.UUID;
 
 import static org.junit.Assert.*;

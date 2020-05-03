@@ -1,5 +1,6 @@
 package nz.tomay0.PixelProtect.model;
 
+import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
 import nz.tomay0.PixelProtect.model.perms.Perm;
 import nz.tomay0.PixelProtect.model.perms.PermLevel;
 import nz.tomay0.PixelProtect.model.perms.PlayerPerms;
@@ -12,11 +13,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static nz.tomay0.PixelProtect.exception.ProtectionExceptionReason.*;
+
 /**
  * Class representing a protection
  */
 public class Protection {
-    private static final int MIN_SIZE = 5;
+    public static final int MIN_SIZE = 5;
 
     /**
      * Name of the protection
@@ -166,7 +169,7 @@ public class Protection {
                 if (file != null)
                     yml.save(file);
             } catch (IOException e) {
-                throw new InvalidProtectionException(e);
+                throw new InvalidProtectionException(e, UNEXPECTED_EXCEPTION);
             }
         }
     }
@@ -177,32 +180,32 @@ public class Protection {
     private void validate() {
         // check name has no spaces
         if (name.contains(" ")) {
-            throw new InvalidProtectionException("Protection name can't have spaces");
+            throw new InvalidProtectionException("Protection name can't have spaces", INVALID_NAME);
         }
 
         // check world
         if (Bukkit.getWorld(world) == null) {
-            throw new InvalidProtectionException("The world name is invalid");
+            throw new InvalidProtectionException("The world name is invalid", YML_EXCEPTION);
         }
 
         // check coordinates are valid. south > north, east > west
 
         if (east - west <= MIN_SIZE) {
-            throw new InvalidProtectionException("Eastern boundary must be at least " + MIN_SIZE + " of the western boundary.");
+            throw new InvalidProtectionException("Eastern boundary must be at least " + MIN_SIZE + " of the western boundary.", INVALID_BORDERS);
         }
 
         if (south - north <= MIN_SIZE) {
-            throw new InvalidProtectionException("Southern boundary must be at least " + MIN_SIZE + " of the northern boundary.");
+            throw new InvalidProtectionException("Southern boundary must be at least " + MIN_SIZE + " of the northern boundary.", INVALID_BORDERS);
         }
 
         // check perm levels aren't null
         if (playerPermissions == null) {
-            throw new InvalidProtectionException("Null player permissions");
+            throw new InvalidProtectionException(new NullPointerException(), UNEXPECTED_EXCEPTION);
         }
 
         // check perm levels aren't null
         if (defaultPermissions == null) {
-            throw new InvalidProtectionException("Null default permissions");
+            throw new InvalidProtectionException(new NullPointerException(), UNEXPECTED_EXCEPTION);
         }
 
         // check there is only 1 owner
@@ -210,13 +213,13 @@ public class Protection {
         for (PlayerPerms perms : playerPermissions.values()) {
             if (perms.getPermissionLevel() == PermLevel.OWNER) {
                 if (!ownerUuid.equals(perms.getPlayerUUID())) {
-                    throw new InvalidProtectionException("Only the owner of the protection must have owner permission level");
+                    throw new InvalidProtectionException("Only the owner of the protection must have owner permission level", INVALID_OWNER);
                 }
                 numOwners++;
             }
         }
         if (numOwners != 1) {
-            throw new InvalidProtectionException("There must only be one owner");
+            throw new InvalidProtectionException("There must only be one owner", INVALID_OWNER);
         }
     }
 
@@ -275,7 +278,7 @@ public class Protection {
     public void setSpecificPermission(String uuid, Perm perm, boolean value) {
         // can't set owner permission
         if (getPermissionLevel(uuid) == PermLevel.OWNER)
-            throw new InvalidProtectionException("Cannot set the permission levels of the owner");
+            throw new InvalidProtectionException("Cannot set the permission levels of the owner", INSUFFICIENT_PERMISSIONS);
 
         if (!playerPermissions.containsKey(uuid)) {
             setPermissionLevel(uuid, PermLevel.NONE);

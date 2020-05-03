@@ -1,6 +1,6 @@
 package nz.tomay0.PixelProtect.command;
 
-import nz.tomay0.PixelProtect.model.InvalidProtectionException;
+import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
 import nz.tomay0.PixelProtect.model.Protection;
 import nz.tomay0.PixelProtect.model.ProtectionBuilder;
 import nz.tomay0.PixelProtect.model.ProtectionHandler;
@@ -93,6 +93,20 @@ public class CreateCommand extends AbstractCommand {
         } catch (InvalidProtectionException e) {
             // invalid protection
             player.sendMessage(ChatColor.DARK_RED + e.getMessage());
+            switch(e.getReason()){
+                case PROTECTION_OVERLAPPING:
+                    player.sendMessage(ChatColor.YELLOW + "Try move somewhere else and type the command again.");
+                    break;
+                case PROTECTION_ALREADY_EXISTS:
+                    player.sendMessage(ChatColor.RED + "/pr create <name> <size> " + ChatColor.LIGHT_PURPLE + " is the command to create a protection. Replace <name> with a different name that doesn't exist already.");
+                    break;
+                case INVALID_BORDERS:
+                    int minRadius = (Protection.MIN_SIZE - 1) / 2;
+                    player.sendMessage(ChatColor.YELLOW + "The minimum diameter of a protection for either direction is " + ChatColor.RED + Protection.MIN_SIZE +
+                            ChatColor.YELLOW + " blocks. (radius of " + ChatColor.RED + minRadius + ChatColor.YELLOW + ")");
+                    player.sendMessage(ChatColor.LIGHT_PURPLE + "For the smallest radius protection, type: " + ChatColor.RED + "/pr create <name>");
+                    break;
+            }
         }
 
     }
@@ -101,7 +115,9 @@ public class CreateCommand extends AbstractCommand {
      * Show help when the formatting is incorrect
      */
     private void incorrectFormatting(Player player) {
-        // TODO explain formatting
-        player.sendMessage(ChatColor.DARK_RED + "Invalid formatting.");
+        player.sendMessage(ChatColor.DARK_RED + "Invalid formatting. Consider these example commands as a guide:");
+        player.sendMessage(ChatColor.RED + "/pr create ExampleProtection1 20" + ChatColor.WHITE + " - " + ChatColor.LIGHT_PURPLE + "Create a protection called 'ExampleProtection1' with a radius of 20 from where you are standing.");
+        player.sendMessage(ChatColor.RED + "/pr create ExampleProtection1 n5 s10 ew4" + ChatColor.WHITE + " - " + ChatColor.LIGHT_PURPLE + "Create a protection called 'ExampleProtection1' that expands 5 blocks north, 10 blocks south and 4 blocks east/west.");
+        player.sendMessage(ChatColor.YELLOW + "Note that the name must not have spaces.");
     }
 }
