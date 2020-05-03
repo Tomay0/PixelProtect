@@ -8,7 +8,7 @@ import static nz.tomay0.PixelProtect.model.perms.PermLevel.*;
  * TODO make this configurable and add more permissions where necessary
  */
 public enum Perm {
-    HOME(MEMBER), BUILD(MEMBER), INTERACT(MEMBER), CHEST(MEMBER), UPDATE(ADMIN), REMOVE(OWNER), SETHOME(ADMIN), SETPERMS(ADMIN), CONFIG(ADMIN);
+    HOME(MEMBER), BUILD(MEMBER), INTERACT(MEMBER), CHEST(MEMBER), KILL_FRIENDLY(MEMBER), KILL_HOSTILE(MEMBER), UPDATE(ADMIN), REMOVE(OWNER), SETHOME(ADMIN), SETPERMS(ADMIN), CONFIG(ADMIN);
 
     private PermLevel defaultLevelRequired;
 

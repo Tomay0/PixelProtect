@@ -25,6 +25,8 @@ public class PixelProtectPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(confirmationHandler, this);
         getServer().getScheduler().scheduleSyncRepeatingTask(this, confirmationHandler, 20, 20);
 
+        getServer().getPluginManager().registerEvents(new GriefListener(protectionHandler), this);
+
         // setup command handler
         getCommand("protect").setExecutor(new CommandHandler(this));
 
