@@ -94,26 +94,26 @@ public class CommandUtil {
      * @return the protection. Null if invalid or unspecified.
      */
     public static Protection getExistingProtection(ProtectionHandler protections, CommandSender sender, String[] args) {
-        if (args.length < 2) {
+        if (args.length >= 2) {
+            // test first arg
+            Protection protection = protections.getProtection(args[1]);
+
+            if (protection != null) return protection;
+        }
+
+        if (!(sender instanceof Player)) {
             return null;
         }
 
-        // test first arg
-        Protection protection = protections.getProtection(args[1]);
+        Player player = (Player) sender;
+
+        Protection protection = protections.getProtection(player.getName());
 
         if (protection == null) {
-            if (!(sender instanceof Player)) {
-                return null;
-            }
-
-            Player player = (Player) sender;
-
-            protection = protections.getProtection(player.getName());
-
-            if (protection == null) {
+            if (args.length >= 2) {
                 player.sendMessage(ChatColor.DARK_RED + "Unknown protection: " + args[1]);
-                return null;
             }
+            return null;
         }
 
         return protection;

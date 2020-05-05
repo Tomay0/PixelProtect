@@ -1,8 +1,5 @@
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
-import nz.tomay0.PixelProtect.command.ConfirmCommand;
-import nz.tomay0.PixelProtect.command.CreateCommand;
-import nz.tomay0.PixelProtect.command.ExpandCommand;
-import nz.tomay0.PixelProtect.command.ShiftCommand;
+import nz.tomay0.PixelProtect.command.*;
 import nz.tomay0.PixelProtect.confirm.ConfirmationHandler;
 import nz.tomay0.PixelProtect.protection.Protection;
 import nz.tomay0.PixelProtect.protection.ProtectionHandler;
@@ -415,5 +412,35 @@ public class CommandTests {
         // overlap
         shiftCommand.onCommand(ownerPlayer, "shift Owner1 w180".split(" "));
         assertFalse(confirmationHandler.confirm(ownerPlayer));
+    }
+
+    /**
+     * Test the remove command
+     */
+    @Test
+    public void testRemoveCommand() {
+        PixelProtectPlugin plugin = createNewMockPlugin(null);
+        ProtectionHandler handler = plugin.getProtections();
+        ConfirmationHandler confirmationHandler = plugin.getConfirmationHandler();
+        CreateCommand createCommand = new CreateCommand(plugin);
+        RemoveCommand removeCommand = new RemoveCommand(plugin);
+        ConfirmCommand confirmCommand = new ConfirmCommand(plugin);
+
+        createCommand.onCommand(ownerPlayer, "create 20".split(" "));
+        confirmCommand.onCommand(ownerPlayer, "confirm".split(" "));
+
+        assertNotNull(handler.getProtection("Owner1"));
+
+        removeCommand.onCommand(adminPlayer, "remove".split(" "));
+        assertFalse(confirmationHandler.confirm(adminPlayer));
+        removeCommand.onCommand(adminPlayer, "remove Owner1".split(" "));
+        assertFalse(confirmationHandler.confirm(adminPlayer));
+        assertNotNull(handler.getProtection("Owner1"));
+
+        removeCommand.onCommand(ownerPlayer, "remove".split(" "));
+        assertTrue(confirmationHandler.confirm(ownerPlayer));
+        assertNull(handler.getProtection("Owner1"));
+
+
     }
 }

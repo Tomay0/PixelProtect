@@ -14,6 +14,8 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import java.util.HashMap;
 import java.util.Map;
 
+import static nz.tomay0.PixelProtect.confirm.Confirmation.ConfirmationType.*;
+
 /**
  * Handles protection creating/updating confirmations.
  * <p>
@@ -88,7 +90,7 @@ public class ConfirmationHandler implements Listener, Runnable {
      * @param size   size of the protection
      */
     public void requestCreate(Player player, String name, Integer[] size) {
-        Confirmation confirmation = new Confirmation(player, ProtectionBuilder.fromCommand(name, player, size, protections), false);
+        Confirmation confirmation = new Confirmation(player, ProtectionBuilder.fromCommand(name, player, size, protections), CREATE);
 
         putConfirmation(player, confirmation);
     }
@@ -100,7 +102,19 @@ public class ConfirmationHandler implements Listener, Runnable {
      * @param newBounds new bounds of the protection
      */
     public void requestUpdate(Player player, Protection newBounds) {
-        Confirmation confirmation = new Confirmation(player, newBounds, true);
+        Confirmation confirmation = new Confirmation(player, newBounds, UPDATE);
+
+        putConfirmation(player, confirmation);
+    }
+
+    /**
+     * Request the removal of a protection
+     *
+     * @param player player making the request (null for console)
+     * @param protection protection
+     */
+    public void requestRemove(Player player, Protection protection) {
+        Confirmation confirmation = new Confirmation(player, protection, REMOVE);
 
         putConfirmation(player, confirmation);
     }

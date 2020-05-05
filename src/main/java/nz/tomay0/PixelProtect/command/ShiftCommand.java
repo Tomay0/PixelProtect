@@ -48,7 +48,7 @@ public class ShiftCommand extends AbstractCommand {
             return;
         }
 
-        boolean isFirstArg = getProtections().isProtection(args[1], protection);
+        boolean isFirstArg = args.length >= 2 && getProtections().isProtection(args[1], protection);
 
         // get the expansion parameters
         Integer[] shift = CommandUtil.getSize(args, isFirstArg ? 2 : 1, true);
