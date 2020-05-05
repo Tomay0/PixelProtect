@@ -1,8 +1,9 @@
 package nz.tomay0.PixelProtect.confirm;
 
-import nz.tomay0.PixelProtect.model.Protection;
-import nz.tomay0.PixelProtect.model.ProtectionHandler;
+import nz.tomay0.PixelProtect.protection.Protection;
+import nz.tomay0.PixelProtect.protection.ProtectionHandler;
 import org.bukkit.*;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.HashSet;
@@ -49,16 +50,19 @@ public class Confirmation {
      * Confirm this confirmation
      */
     public void confirm(ProtectionHandler protections) {
+        CommandSender sender = player == null ? Bukkit.getConsoleSender() : player;
+
         if (!existing) {
             // create new protection
             protections.addNewProtection(tempProtection);
 
-            player.sendMessage(ChatColor.YELLOW + "Created " + ChatColor.GREEN + tempProtection.getName() + ChatColor.YELLOW + " successfully!");
-            player.sendMessage(ChatColor.LIGHT_PURPLE + "Type " + ChatColor.RED + "/pr setperm " + tempProtection.getIdSafeName() + " <name> member" + ChatColor.LIGHT_PURPLE + " to add new members to your protection.");
-            player.sendMessage(ChatColor.LIGHT_PURPLE + "You can see more commands you can use to manage your protection by typing " + ChatColor.RED + "/pr help");
+            sender.sendMessage(ChatColor.YELLOW + "Created " + ChatColor.GREEN + tempProtection.getName() + ChatColor.YELLOW + " successfully!");
+            sender.sendMessage(ChatColor.LIGHT_PURPLE + "Type " + ChatColor.RED + "/pr setperm " + tempProtection.getIdSafeName() + " <name> member" + ChatColor.LIGHT_PURPLE + " to add new members to your protection.");
+            sender.sendMessage(ChatColor.LIGHT_PURPLE + "You can see more commands you can use to manage your protection by typing " + ChatColor.RED + "/pr help");
         } else {
             // update bounds
             protections.updateBounds(tempProtection);
+            sender.sendMessage(ChatColor.YELLOW + "Updated " + ChatColor.GREEN + tempProtection.getName() + ChatColor.YELLOW + " successfully!");
         }
     }
 

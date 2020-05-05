@@ -2,9 +2,7 @@ package nz.tomay0.PixelProtect.command;
 
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
-import nz.tomay0.PixelProtect.model.Protection;
-import nz.tomay0.PixelProtect.model.ProtectionBuilder;
-import nz.tomay0.PixelProtect.model.ProtectionHandler;
+import nz.tomay0.PixelProtect.protection.Protection;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -54,7 +52,7 @@ public class CreateCommand extends AbstractCommand {
             };
         } else {
             // first assume the name is not specified
-            size = CommandUtil.getSize(args, 1, false, false);
+            size = CommandUtil.getSize(args, 1, false);
 
             if (size == null) {
                 // the first argument is not a size, therefore it shall be considered the size
@@ -62,7 +60,7 @@ public class CreateCommand extends AbstractCommand {
                 protectionName = args[1];
                 if(args.length > 2) {
                     // get the size from a larger offset
-                    size = CommandUtil.getSize(args, 2, false, false);
+                    size = CommandUtil.getSize(args, 2, false);
 
                     if(size == null) {
                         incorrectFormatting(player);

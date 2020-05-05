@@ -1,9 +1,9 @@
-package nz.tomay0.PixelProtect.model;
+package nz.tomay0.PixelProtect.protection;
 
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
-import nz.tomay0.PixelProtect.model.perms.Perm;
-import nz.tomay0.PixelProtect.model.perms.PermLevel;
-import nz.tomay0.PixelProtect.model.perms.PlayerPerms;
+import nz.tomay0.PixelProtect.perms.Perm;
+import nz.tomay0.PixelProtect.perms.PermLevel;
+import nz.tomay0.PixelProtect.perms.PlayerPerms;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -141,5 +141,35 @@ public class ProtectionBuilder {
         }
 
         return protection;
+    }
+
+    /**
+     * Create a new temporary protection with updated bounds that are an expanded version of
+     *
+     * @param protection
+     * @param size
+     * @param protections
+     * @return new bounds
+     */
+    public static Protection expand(Protection protection, Integer[] size, ProtectionHandler protections) {
+        if (size.length != 4) throw new InvalidProtectionException("Invalid size arguments.", COMMAND_FORMAT_EXCEPTION);
+
+        if (protection == null)
+            throw new InvalidProtectionException("Protection to expand not specified.", PROTECTION_DOES_NOT_EXIST);
+
+
+        String world = protection.getWorld();
+        int west = protection.getWest() - size[0];
+        int east = protection.getEast() + size[1];
+        int north = protection.getNorth() - size[2];
+        int south = protection.getSouth() + size[3];
+
+        Protection newBounds = new Protection(protection.getName(), world, west, east, north, south, protection.getOwnerID());
+
+        if (protections.getOverlappingProtections(newBounds).size() > 0) {
+            throw new InvalidProtectionException("This protection will overlap other protections.", PROTECTION_OVERLAPPING);
+        }
+
+        return newBounds;
     }
 }

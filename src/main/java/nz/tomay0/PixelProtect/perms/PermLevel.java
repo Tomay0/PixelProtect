@@ -1,4 +1,4 @@
-package nz.tomay0.PixelProtect.model.perms;
+package nz.tomay0.PixelProtect.perms;
 
 /**
  * Permission level enum

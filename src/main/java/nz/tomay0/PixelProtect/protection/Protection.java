@@ -1,9 +1,9 @@
-package nz.tomay0.PixelProtect.model;
+package nz.tomay0.PixelProtect.protection;
 
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
-import nz.tomay0.PixelProtect.model.perms.Perm;
-import nz.tomay0.PixelProtect.model.perms.PermLevel;
-import nz.tomay0.PixelProtect.model.perms.PlayerPerms;
+import nz.tomay0.PixelProtect.perms.Perm;
+import nz.tomay0.PixelProtect.perms.PermLevel;
+import nz.tomay0.PixelProtect.perms.PlayerPerms;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -64,12 +64,12 @@ public class Protection {
     /**
      * Temporary protection with only bounds and no permissions
      *
-     * @param name      Name of the protection
-     * @param world     World the protection is contained within
-     * @param west      Western boundary coordinate
-     * @param east      Eastern boundary coordinate
-     * @param north     Northern boundary coordinate
-     * @param south     Southern boundary coordinate
+     * @param name  Name of the protection
+     * @param world World the protection is contained within
+     * @param west  Western boundary coordinate
+     * @param east  Eastern boundary coordinate
+     * @param north Northern boundary coordinate
+     * @param south Southern boundary coordinate
      */
     public Protection(String name, String world, int west, int east, int north, int south) {
         this.name = name;
@@ -514,4 +514,12 @@ public class Protection {
         return south;
     }
 
+    /**
+     * Get the ID of the owner
+     *
+     * @return owner id
+     */
+    public String getOwnerID() {
+        return ownerUuid;
+    }
 }

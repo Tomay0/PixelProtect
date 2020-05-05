@@ -1,7 +1,6 @@
-package nz.tomay0.PixelProtect.model.perms;
+package nz.tomay0.PixelProtect.perms;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**

@@ -2,7 +2,7 @@ package nz.tomay0.PixelProtect;
 
 import nz.tomay0.PixelProtect.command.CommandHandler;
 import nz.tomay0.PixelProtect.confirm.ConfirmationHandler;
-import nz.tomay0.PixelProtect.model.ProtectionHandler;
+import nz.tomay0.PixelProtect.protection.ProtectionHandler;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;

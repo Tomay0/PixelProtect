@@ -1,8 +1,10 @@
-package nz.tomay0.PixelProtect.model;
+package nz.tomay0.PixelProtect.protection;
 
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
-import nz.tomay0.PixelProtect.model.perms.Perm;
+import nz.tomay0.PixelProtect.perms.Perm;
 import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
@@ -176,6 +178,8 @@ public class ProtectionHandler {
         // TODO implement a quad tree or something to lower the complexity
 
         for (Protection otherPr : protectionsByName.values()) {
+            if (otherPr.getIdSafeName().equals(protection.getIdSafeName())) continue; // ignore self
+
             if (isOverlapping(protection, otherPr)) prs.add(otherPr);
         }
 
@@ -213,6 +217,24 @@ public class ProtectionHandler {
         return protection.hasPermission(player.getUniqueId().toString(), perm);
     }
 
+    /**
+     * Test if a command sender has the permission do an action for a protection
+     *
+     * @param sender     command sender to test
+     * @param protection protection to test
+     * @param perm       permission to test
+     * @return boolean if allowed
+     */
+    public boolean hasPermission(CommandSender sender, Protection protection, Perm perm) {
+        if ((sender instanceof ConsoleCommandSender)) return true;
+
+        if (!(sender instanceof Player)) return false;
+
+        Player player = (Player) sender;
+
+        return protection.hasPermission(player.getUniqueId().toString(), perm);
+    }
+
 
     /**
      * Test if 2 protections are overlapping
@@ -238,6 +260,20 @@ public class ProtectionHandler {
         if (protection1.getNorth() > protection2.getSouth()) return false;
 
         return true;
+    }
+
+    /**
+     * Test if a name corresponds to a protection
+     *
+     * @param name       name
+     * @param protection protection
+     * @return boolean
+     */
+    public boolean isProtection(String name, Protection protection) {
+        if (protection == null) return false;
+
+        String idName = getIdSafeName(name);
+        return idName.equals(protection.getIdSafeName());
     }
 
 

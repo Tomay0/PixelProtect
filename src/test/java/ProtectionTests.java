@@ -1,13 +1,9 @@
-import nz.tomay0.PixelProtect.PixelProtectPlugin;
-import nz.tomay0.PixelProtect.command.ConfirmCommand;
-import nz.tomay0.PixelProtect.command.CreateCommand;
-import nz.tomay0.PixelProtect.confirm.ConfirmationHandler;
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
-import nz.tomay0.PixelProtect.model.Protection;
-import nz.tomay0.PixelProtect.model.ProtectionBuilder;
-import nz.tomay0.PixelProtect.model.ProtectionHandler;
-import nz.tomay0.PixelProtect.model.perms.Perm;
-import nz.tomay0.PixelProtect.model.perms.PermLevel;
+import nz.tomay0.PixelProtect.protection.Protection;
+import nz.tomay0.PixelProtect.protection.ProtectionBuilder;
+import nz.tomay0.PixelProtect.protection.ProtectionHandler;
+import nz.tomay0.PixelProtect.perms.Perm;
+import nz.tomay0.PixelProtect.perms.PermLevel;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -34,7 +30,6 @@ import static org.mockito.Mockito.when;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Bukkit.class)
 public class ProtectionTests {
-
     /**
      * Mock World objects, since they can't be determined without a server
      */
@@ -79,22 +74,6 @@ public class ProtectionTests {
         PowerMockito.mockStatic(Bukkit.class);
         when(Bukkit.getWorld("world")).thenReturn(overworld);
         when(Bukkit.getWorld("world_nether")).thenReturn(nether);
-    }
-
-    /**
-     * Create new mock plugin with an empty ProtectionHandler and ConfirmationHandler
-     *
-     * @return plugin
-     */
-    private PixelProtectPlugin createNewMockPlugin(File dir) {
-        PixelProtectPlugin plugin = mock(PixelProtectPlugin.class);
-        ProtectionHandler protections = dir == null ? new ProtectionHandler() : new ProtectionHandler(dir);
-        ConfirmationHandler confirmations = new ConfirmationHandler(protections);
-
-        when(plugin.getProtections()).thenReturn(protections);
-        when(plugin.getConfirmationHandler()).thenReturn(confirmations);
-
-        return plugin;
     }
 
     /**
@@ -177,8 +156,6 @@ public class ProtectionTests {
      */
     private static File getTestResource(String dir) {
         URL url = ProtectionTests.class.getResource(dir);
-
-        System.out.println(url);
 
         return new File(url.getFile());
     }
@@ -639,179 +616,6 @@ public class ProtectionTests {
 
 
         removeTempDir();
-
-    }
-
-    /**
-     * Test creating a protection from a command
-     */
-    @Test
-    public void createFromCommand() {
-        PixelProtectPlugin plugin = createNewMockPlugin(null);
-        ProtectionHandler handler = plugin.getProtections();
-
-        // create a protection using /pr create <name> <size>
-        CreateCommand createCommand = new CreateCommand(plugin);
-        ConfirmCommand confirmCommand = new ConfirmCommand(plugin);
-
-        createCommand.onCommand(ownerPlayer, "create bigprotection 50".split(" "));
-        confirmCommand.onCommand(ownerPlayer, "confirm".split(" "));
-
-        assertNotNull(handler.getProtection("bigprotection"));
-
-        createCommand.onCommand(adminPlayer, "create smallprotection 5".split(" ")); // -200, 50
-        confirmCommand.onCommand(adminPlayer, "confirm".split(" "));
-        assertNotNull(handler.getProtection("smallprotection"));
-
-
-        // check the bounds of the big protection
-        assertTrue(handler.hasPermission(adminPlayer, new Location(overworld, -51, 100, 0), Perm.BUILD));
-        assertFalse(handler.hasPermission(adminPlayer, new Location(overworld, -50, 100, -50), Perm.BUILD));
-        assertFalse(handler.hasPermission(adminPlayer, new Location(overworld, -50, 100, 50), Perm.BUILD));
-        assertFalse(handler.hasPermission(adminPlayer, new Location(overworld, 50, 100, -50), Perm.BUILD));
-        assertFalse(handler.hasPermission(adminPlayer, new Location(overworld, 50, 100, 50), Perm.BUILD));
-        assertTrue(handler.hasPermission(adminPlayer, new Location(overworld, 50, 100, 51), Perm.BUILD));
-
-        // check the bounds of the small protection
-        assertTrue(handler.hasPermission(ownerPlayer, new Location(overworld, -206, 100, 50), Perm.BUILD));
-        assertFalse(handler.hasPermission(ownerPlayer, new Location(overworld, -205, 100, 50), Perm.BUILD));
-        assertTrue(handler.hasPermission(ownerPlayer, new Location(overworld, -194, 100, 50), Perm.BUILD));
-        assertFalse(handler.hasPermission(ownerPlayer, new Location(overworld, -195, 100, 50), Perm.BUILD));
-        assertTrue(handler.hasPermission(ownerPlayer, new Location(overworld, -200, 100, 56), Perm.BUILD));
-        assertFalse(handler.hasPermission(ownerPlayer, new Location(overworld, -200, 100, 55), Perm.BUILD));
-        assertFalse(handler.hasPermission(ownerPlayer, new Location(overworld, -200, 100, 45), Perm.BUILD));
-        assertTrue(handler.hasPermission(ownerPlayer, new Location(overworld, -200, 100, 44), Perm.BUILD));
-
-    }
-
-    /**
-     * Test creating a protection from a command with different formatting
-     */
-    @Test
-    public void createValidFormatting() {
-        PixelProtectPlugin plugin = createNewMockPlugin(null);
-        ProtectionHandler handler = plugin.getProtections();
-
-        CreateCommand createCommand = new CreateCommand(plugin);
-        ConfirmCommand confirmCommand = new ConfirmCommand(plugin);
-
-        // creation with no parameters.
-        createCommand.onCommand(ownerPlayer, "create".split(" "));
-        confirmCommand.onCommand(ownerPlayer, "confirm".split(" "));
-        assertNotNull(handler.getProtection("Owner1"));
-        handler.removeProtection("Owner1");
-        assertNull(handler.getProtection("Owner1"));
-
-        // creation with only a size
-        createCommand.onCommand(ownerPlayer, "create 40".split(" "));
-        confirmCommand.onCommand(ownerPlayer, "confirm".split(" "));
-        assertNotNull(handler.getProtection("Owner1"));
-        assertEquals(40, handler.getProtection("Owner1").getEast());
-        handler.removeProtection("Owner1");
-        assertNull(handler.getProtection("Owner1"));
-
-        // creation with multiple size parameters
-        createCommand.onCommand(ownerPlayer, "create w5 e3 n2 s10".split(" "));
-        confirmCommand.onCommand(ownerPlayer, "confirm".split(" "));
-        assertNotNull(handler.getProtection("Owner1"));
-        assertEquals(-5, handler.getProtection("Owner1").getWest());
-        assertEquals(3, handler.getProtection("Owner1").getEast());
-        assertEquals(-2, handler.getProtection("Owner1").getNorth());
-        assertEquals(10, handler.getProtection("Owner1").getSouth());
-        handler.removeProtection("Owner1");
-        assertNull(handler.getProtection("Owner1"));
-
-        // creation with size parameters, but some are the same
-        createCommand.onCommand(ownerPlayer, "create we10 ns20".split(" "));
-        confirmCommand.onCommand(ownerPlayer, "confirm".split(" "));
-        assertNotNull(handler.getProtection("Owner1"));
-        assertEquals(-10, handler.getProtection("Owner1").getWest());
-        assertEquals(10, handler.getProtection("Owner1").getEast());
-        assertEquals(-20, handler.getProtection("Owner1").getNorth());
-        assertEquals(20, handler.getProtection("Owner1").getSouth());
-        handler.removeProtection("Owner1");
-        assertNull(handler.getProtection("Owner1"));
-
-        // creation with a name AND size parameters
-        createCommand.onCommand(ownerPlayer, "create west200 ns20 10".split(" "));
-        confirmCommand.onCommand(ownerPlayer, "confirm".split(" "));
-        assertNotNull(handler.getProtection("west200"));
-        assertEquals(-10, handler.getProtection("west200").getWest());
-        assertEquals(10, handler.getProtection("west200").getEast());
-        assertEquals(-20, handler.getProtection("west200").getNorth());
-        assertEquals(20, handler.getProtection("west200").getSouth());
-        handler.removeProtection("west200");
-        assertNull(handler.getProtection("west200"));
-
-        // creation with only the name (default size)
-        createCommand.onCommand(ownerPlayer, "create west200".split(" "));
-        confirmCommand.onCommand(ownerPlayer, "confirm".split(" "));
-        assertNotNull(handler.getProtection("west200"));
-    }
-
-    /**
-     * Test creating a protection from a command.
-     * Includes invalid formatting and
-     */
-    @Test
-    public void createInvalidCommand() {
-        PixelProtectPlugin plugin = createNewMockPlugin(null);
-        ProtectionHandler handler = plugin.getProtections();
-        CreateCommand createCommand = new CreateCommand(plugin);
-
-        // create some test protections
-        handler.addNewProtection(new Protection("Owner1", "world", -100, -50, -100, 100, ownerUUID.toString()));
-        handler.addNewProtection(new Protection("Owner2", "world", -10, 10, -50, -20, ownerUUID.toString()));
-
-        // no size
-        createCommand.onCommand(ownerPlayer, "create Owner3 yes".split(" "));
-        assertFalse(plugin.getConfirmationHandler().confirm(ownerPlayer));
-        assertNull(handler.getProtection("Owner3"));
-
-        // space between direction
-        createCommand.onCommand(ownerPlayer, "create Owner3 s 20 30".split(" "));
-        assertFalse(plugin.getConfirmationHandler().confirm(ownerPlayer));
-        assertNull(handler.getProtection("Owner3"));
-
-        // negative size
-        createCommand.onCommand(ownerPlayer, "create Owner3 -20".split(" "));
-        assertFalse(plugin.getConfirmationHandler().confirm(ownerPlayer));
-        assertNull(handler.getProtection("Owner3"));
-
-        // negative size for one parameter
-        createCommand.onCommand(ownerPlayer, "create Owner3 w-20 20".split(" "));
-        assertFalse(plugin.getConfirmationHandler().confirm(ownerPlayer));
-        assertNull(handler.getProtection("Owner3"));
-
-        // negative size for one parameter 2
-        createCommand.onCommand(ownerPlayer, "create Owner3 w20 -20".split(" "));
-        assertFalse(plugin.getConfirmationHandler().confirm(ownerPlayer));
-        assertNull(handler.getProtection("Owner3"));
-
-        // name with spaces
-        createCommand.onCommand(ownerPlayer, "create Owner3 ok 20".split(" "));
-        assertFalse(plugin.getConfirmationHandler().confirm(ownerPlayer));
-        assertNull(handler.getProtection("Owner3"));
-
-        // ending with the direction
-        createCommand.onCommand(ownerPlayer, "create Owner3 20s".split(" "));
-        assertFalse(plugin.getConfirmationHandler().confirm(ownerPlayer));
-        assertNull(handler.getProtection("Owner3"));
-
-        // create with same name
-        createCommand.onCommand(ownerPlayer, "create 10".split(" "));
-        assertFalse(plugin.getConfirmationHandler().confirm(ownerPlayer));
-        assertNull(handler.getProtectionAt(new Location(overworld, 0, 100, 0)));
-
-        // create but overlapping
-        createCommand.onCommand(ownerPlayer, "create Owner3 20".split(" "));
-        assertFalse(plugin.getConfirmationHandler().confirm(ownerPlayer));
-        assertNull(handler.getProtectionAt(new Location(overworld, 0, 100, 0)));
-
-        // create valid
-        createCommand.onCommand(ownerPlayer, "create Owner3 19".split(" "));
-        plugin.getConfirmationHandler().confirm(ownerPlayer);
-        assertNotNull(handler.getProtectionAt(new Location(overworld, 0, 100, 0)));
 
     }
 }

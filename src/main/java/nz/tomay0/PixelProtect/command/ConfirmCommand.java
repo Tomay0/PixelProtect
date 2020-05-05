@@ -31,21 +31,19 @@ public class ConfirmCommand extends AbstractCommand {
 
     @Override
     public void onCommand(CommandSender sender, String[] args) {
+        Player player = null;
 
-        if (!(sender instanceof Player)) {
-            sender.sendMessage("Cannot update /pr confirm from the console.");
-            return;
-        }
+        if (sender instanceof Player)
+            player = (Player) sender;
 
-        Player player = (Player) sender;
         try {
             if (!getConfirmationHandler().confirm(player)) {
-                player.sendMessage(ChatColor.DARK_RED + "Nothing to confirm.");
+                sender.sendMessage(ChatColor.DARK_RED + "Nothing to confirm.");
             }
 
         } catch (InvalidProtectionException e) {
-            player.sendMessage(ChatColor.DARK_RED + "This protection can no longer be created...");
-            player.sendMessage(ChatColor.DARK_RED + e.getMessage());
+            sender.sendMessage(ChatColor.DARK_RED + "This protection can no longer be created...");
+            sender.sendMessage(ChatColor.DARK_RED + e.getMessage());
         }
     }
 }

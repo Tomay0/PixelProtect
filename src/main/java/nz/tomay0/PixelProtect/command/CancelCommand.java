@@ -31,18 +31,15 @@ public class CancelCommand extends AbstractCommand {
 
     @Override
     public void onCommand(CommandSender sender, String[] args) {
+        Player player = null;
 
-        if (!(sender instanceof Player)) {
-            sender.sendMessage("Cannot update /pr cancel from the console.");
-            return;
-        }
-
-        Player player = (Player) sender;
+        if (sender instanceof Player)
+            player = (Player) sender;
 
         if (getConfirmationHandler().cancel(player)) {
-            player.sendMessage(ChatColor.GREEN + "The previous action has been cancelled successfully.");
+            sender.sendMessage(ChatColor.GREEN + "The previous action has been cancelled successfully.");
         } else {
-            player.sendMessage(ChatColor.DARK_RED + "Nothing to cancel.");
+            sender.sendMessage(ChatColor.DARK_RED + "Nothing to cancel.");
         }
     }
 }
