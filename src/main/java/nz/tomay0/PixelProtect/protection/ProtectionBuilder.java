@@ -144,7 +144,7 @@ public class ProtectionBuilder {
     }
 
     /**
-     * Create a new temporary protection with updated bounds that are an expanded version of
+     * Create a new temporary protection with updated bounds that are an expanded version of the original
      *
      * @param protection
      * @param size
@@ -163,6 +163,37 @@ public class ProtectionBuilder {
         int east = protection.getEast() + size[1];
         int north = protection.getNorth() - size[2];
         int south = protection.getSouth() + size[3];
+
+        Protection newBounds = new Protection(protection.getName(), world, west, east, north, south, protection.getOwnerID());
+
+        if (protections.getOverlappingProtections(newBounds).size() > 0) {
+            throw new InvalidProtectionException("This protection will overlap other protections.", PROTECTION_OVERLAPPING);
+        }
+
+        return newBounds;
+    }
+
+    /**
+     * Create a new temporary protection with updated bounds that are a shifted version of the original
+     *
+     * @param protection
+     * @param shift
+     * @param protections
+     * @return new bounds
+     */
+    public static Protection shift(Protection protection, Integer[] shift, ProtectionHandler protections) {
+        if (shift.length != 4)
+            throw new InvalidProtectionException("Invalid size arguments.", COMMAND_FORMAT_EXCEPTION);
+
+        if (protection == null)
+            throw new InvalidProtectionException("Protection to shift not specified.", PROTECTION_DOES_NOT_EXIST);
+
+
+        String world = protection.getWorld();
+        int west = protection.getWest() - shift[0] + shift[1];
+        int east = protection.getEast() - shift[0] + shift[1];
+        int north = protection.getNorth() - shift[2] + shift[3];
+        int south = protection.getSouth() - shift[2] + shift[3];
 
         Protection newBounds = new Protection(protection.getName(), world, west, east, north, south, protection.getOwnerID());
 

@@ -2,6 +2,7 @@ import nz.tomay0.PixelProtect.PixelProtectPlugin;
 import nz.tomay0.PixelProtect.command.ConfirmCommand;
 import nz.tomay0.PixelProtect.command.CreateCommand;
 import nz.tomay0.PixelProtect.command.ExpandCommand;
+import nz.tomay0.PixelProtect.command.ShiftCommand;
 import nz.tomay0.PixelProtect.confirm.ConfirmationHandler;
 import nz.tomay0.PixelProtect.protection.Protection;
 import nz.tomay0.PixelProtect.protection.ProtectionHandler;
@@ -350,6 +351,69 @@ public class CommandTests {
         assertFalse(confirmationHandler.confirm(ownerPlayer));
 
         expandCommand.onCommand(ownerPlayer, "expand".split(" "));
+        assertFalse(confirmationHandler.confirm(ownerPlayer));
+    }
+
+
+    /**
+     * Test the shift command
+     */
+    @Test
+    public void testShiftCommand() {
+        PixelProtectPlugin plugin = createNewMockPlugin(null);
+        ProtectionHandler handler = plugin.getProtections();
+        ConfirmationHandler confirmationHandler = plugin.getConfirmationHandler();
+        CreateCommand createCommand = new CreateCommand(plugin);
+        ShiftCommand shiftCommand = new ShiftCommand(plugin);
+        ConfirmCommand confirmCommand = new ConfirmCommand(plugin);
+
+        // create
+        createCommand.onCommand(ownerPlayer, "create 20".split(" "));
+        confirmCommand.onCommand(ownerPlayer, "confirm".split(" "));
+
+        assertEquals(-20, handler.getProtection("Owner1").getWest());
+        assertEquals(20, handler.getProtection("Owner1").getEast());
+        assertEquals(-20, handler.getProtection("Owner1").getNorth());
+        assertEquals(20, handler.getProtection("Owner1").getSouth());
+
+        createCommand.onCommand(adminPlayer, "create 20".split(" "));
+        confirmCommand.onCommand(adminPlayer, "confirm".split(" "));
+
+
+        // invalid
+        shiftCommand.onCommand(ownerPlayer, "shift 20".split(" "));
+        assertFalse(confirmationHandler.confirm(ownerPlayer));
+        shiftCommand.onCommand(ownerPlayer, "shift nsew20".split(" "));
+        assertFalse(confirmationHandler.confirm(ownerPlayer));
+        shiftCommand.onCommand(ownerPlayer, "shift ns20".split(" "));
+        assertFalse(confirmationHandler.confirm(ownerPlayer));
+        shiftCommand.onCommand(ownerPlayer, "shift ew20".split(" "));
+        assertFalse(confirmationHandler.confirm(ownerPlayer));
+        shiftCommand.onCommand(ownerPlayer, "shift".split(" "));
+        assertFalse(confirmationHandler.confirm(ownerPlayer));
+        shiftCommand.onCommand(ownerPlayer, "shift noone s30".split(" "));
+        assertFalse(confirmationHandler.confirm(ownerPlayer));
+        shiftCommand.onCommand(adminPlayer, "shift Owner1 s30".split(" "));
+        assertFalse(confirmationHandler.confirm(adminPlayer));
+
+        // valid
+        shiftCommand.onCommand(ownerPlayer, "shift Owner1 s30".split(" "));
+        confirmCommand.onCommand(ownerPlayer, "confirm".split(" "));
+        assertEquals(-20, handler.getProtection("Owner1").getWest());
+        assertEquals(20, handler.getProtection("Owner1").getEast());
+        assertEquals(10, handler.getProtection("Owner1").getNorth());
+        assertEquals(50, handler.getProtection("Owner1").getSouth());
+
+        // valid
+        shiftCommand.onCommand(ownerPlayer, "shift Owner1 e20".split(" "));
+        confirmCommand.onCommand(ownerPlayer, "confirm".split(" "));
+        assertEquals(0, handler.getProtection("Owner1").getWest());
+        assertEquals(40, handler.getProtection("Owner1").getEast());
+        assertEquals(10, handler.getProtection("Owner1").getNorth());
+        assertEquals(50, handler.getProtection("Owner1").getSouth());
+
+        // overlap
+        shiftCommand.onCommand(ownerPlayer, "shift Owner1 w180".split(" "));
         assertFalse(confirmationHandler.confirm(ownerPlayer));
     }
 }
