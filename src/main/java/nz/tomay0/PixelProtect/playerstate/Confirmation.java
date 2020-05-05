@@ -1,4 +1,4 @@
-package nz.tomay0.PixelProtect.confirm;
+package nz.tomay0.PixelProtect.playerstate;
 
 import nz.tomay0.PixelProtect.protection.Protection;
 import nz.tomay0.PixelProtect.protection.ProtectionHandler;
@@ -6,13 +6,11 @@ import org.bukkit.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * A confirmation to creating or updating the bounds of a protection
  */
 public class Confirmation {
+
     public enum ConfirmationType {
         CREATE, UPDATE, REMOVE
     }
@@ -31,11 +29,6 @@ public class Confirmation {
      * Type of action
      */
     private ConfirmationType type;
-
-    /**
-     * Locations to display particles
-     */
-    private Set<Location> particleLocations;
 
     /**
      * Confirmation for creating/updating/removing a protection
@@ -75,80 +68,11 @@ public class Confirmation {
         }
     }
 
-
     /**
-     * Display particles of the border to the player
+     * Get temp protection
+     * @return protection
      */
-    public void displayParticles() {
-        // create all locations (this is done in this function so it does not occur in test cases.
-        if (particleLocations == null) {
-            particleLocations = new HashSet<>();
-
-            World world = Bukkit.getWorld(tempProtection.getWorld());
-
-            // north side
-            int x = tempProtection.getWest();
-            int y = world.getMaxHeight();
-            int z = tempProtection.getNorth();
-
-            while (y > 0) {
-                while (x < tempProtection.getEast() + 1) {
-                    particleLocations.add(new Location(world, x, y, z));
-                    x += 2;
-                }
-
-                y -= 2;
-                x = tempProtection.getWest();
-            }
-
-            // east side
-            x = tempProtection.getEast() + 1;
-            y = world.getMaxHeight();
-            z = tempProtection.getNorth();
-
-            while (y > 0) {
-                while (z < tempProtection.getSouth() + 1) {
-                    particleLocations.add(new Location(world, x, y, z));
-                    z += 2;
-                }
-
-                y -= 2;
-                z = tempProtection.getNorth();
-            }
-
-            // south side
-            x = tempProtection.getEast() + 1;
-            y = world.getMaxHeight();
-            z = tempProtection.getSouth() + 1;
-
-            while (y > 0) {
-                while (x > tempProtection.getWest()) {
-                    particleLocations.add(new Location(world, x, y, z));
-                    x -= 2;
-                }
-
-                y -= 2;
-                x = tempProtection.getEast() + 1;
-            }
-
-            // west side
-            x = tempProtection.getWest();
-            y = world.getMaxHeight();
-            z = tempProtection.getSouth() + 1;
-
-            while (y > 0) {
-                while (z > tempProtection.getNorth()) {
-                    particleLocations.add(new Location(world, x, y, z));
-                    z -= 2;
-                }
-
-                y -= 2;
-                z = tempProtection.getSouth() + 1;
-            }
-        }
-
-        for (Location location : particleLocations) {
-            player.spawnParticle(Particle.CLOUD, location, 1, 0, 0, 0, 0);
-        }
+    public Protection getProtection() {
+        return tempProtection;
     }
 }

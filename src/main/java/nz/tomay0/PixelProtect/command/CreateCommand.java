@@ -82,7 +82,7 @@ public class CreateCommand extends AbstractCommand {
 
         // create the protection IF POSSIBLE
         try {
-            getConfirmationHandler().requestCreate(player, protectionName, size);
+            getPlayerStateHandler().requestCreate(player, protectionName, size);
 
             player.sendMessage(ChatColor.YELLOW + "Creating a new protection named " + ChatColor.GREEN + protectionName);
             player.sendMessage(ChatColor.YELLOW + "Confirm by typing " + ChatColor.AQUA + "/pr confirm");

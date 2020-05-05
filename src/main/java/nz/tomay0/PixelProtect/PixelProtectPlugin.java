@@ -1,9 +1,9 @@
 package nz.tomay0.PixelProtect;
 
 import nz.tomay0.PixelProtect.command.CommandHandler;
-import nz.tomay0.PixelProtect.confirm.ConfirmationHandler;
 import nz.tomay0.PixelProtect.protection.ProtectionHandler;
 import org.bukkit.plugin.java.JavaPlugin;
+import nz.tomay0.PixelProtect.playerstate.PlayerStateHandler;
 
 import java.io.File;
 import java.util.logging.Level;
@@ -13,19 +13,21 @@ import java.util.logging.Level;
  */
 public class PixelProtectPlugin extends JavaPlugin {
     private ProtectionHandler protectionHandler;
-    private ConfirmationHandler confirmationHandler;
+    private PlayerStateHandler playerStateHandler;
 
     @Override
     public void onEnable() {
 
         // setup protection handler
         protectionHandler = new ProtectionHandler(getProtectionDirectory());
-        confirmationHandler = new ConfirmationHandler(protectionHandler);
+        playerStateHandler = new PlayerStateHandler(protectionHandler);
 
-        getServer().getPluginManager().registerEvents(confirmationHandler, this);
-        getServer().getScheduler().scheduleSyncRepeatingTask(this, confirmationHandler, 20, 20);
+        GriefListener griefListener = new GriefListener(protectionHandler);
 
-        getServer().getPluginManager().registerEvents(new GriefListener(protectionHandler), this);
+        getServer().getPluginManager().registerEvents(playerStateHandler, this);
+        getServer().getPluginManager().registerEvents(griefListener, this);
+
+        getServer().getScheduler().scheduleSyncRepeatingTask(this, playerStateHandler, 20, 20);
 
         // setup command handler
         getCommand("protect").setExecutor(new CommandHandler(this));
@@ -61,13 +63,12 @@ public class PixelProtectPlugin extends JavaPlugin {
     public ProtectionHandler getProtections() {
         return protectionHandler;
     }
-
     /**
-     * Get confirmation handler
+     * Get player state handler
      *
      * @return
      */
-    public ConfirmationHandler getConfirmationHandler() {
-        return confirmationHandler;
+    public PlayerStateHandler getPlayerStateHandler() {
+        return playerStateHandler;
     }
 }

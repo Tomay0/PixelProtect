@@ -78,7 +78,7 @@ public class ShiftCommand extends AbstractCommand {
         try {
 
             Protection newBounds = ProtectionBuilder.shift(protection, shift, getProtections());
-            getConfirmationHandler().requestUpdate(sender instanceof Player ? (Player) sender : null, newBounds);
+            getPlayerStateHandler().requestUpdate(sender instanceof Player ? (Player) sender : null, newBounds);
 
             sender.sendMessage(ChatColor.YELLOW + "Updating the borders of " + ChatColor.GREEN + newBounds.getName());
             sender.sendMessage(ChatColor.YELLOW + "Confirm by typing " + ChatColor.AQUA + "/pr confirm");

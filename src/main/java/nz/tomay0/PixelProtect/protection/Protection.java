@@ -5,6 +5,7 @@ import nz.tomay0.PixelProtect.perms.Perm;
 import nz.tomay0.PixelProtect.perms.PermLevel;
 import nz.tomay0.PixelProtect.perms.PlayerPerms;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -526,5 +527,14 @@ public class Protection {
      */
     public String getOwnerID() {
         return ownerUuid;
+    }
+
+    /**
+     * Return a message for when you enter the borders of the protection
+     *
+     * @return string
+     */
+    public String getMotd() {
+        return ChatColor.YELLOW + "Entered " + ChatColor.GREEN + name;
     }
 }

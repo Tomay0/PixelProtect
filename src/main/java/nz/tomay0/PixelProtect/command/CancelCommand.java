@@ -36,7 +36,7 @@ public class CancelCommand extends AbstractCommand {
         if (sender instanceof Player)
             player = (Player) sender;
 
-        if (getConfirmationHandler().cancel(player)) {
+        if (getPlayerStateHandler().cancel(player)) {
             sender.sendMessage(ChatColor.GREEN + "The previous action has been cancelled successfully.");
         } else {
             sender.sendMessage(ChatColor.DARK_RED + "Nothing to cancel.");

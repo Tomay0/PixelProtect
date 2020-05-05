@@ -1,6 +1,6 @@
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
 import nz.tomay0.PixelProtect.command.*;
-import nz.tomay0.PixelProtect.confirm.ConfirmationHandler;
+import nz.tomay0.PixelProtect.playerstate.PlayerStateHandler;
 import nz.tomay0.PixelProtect.protection.Protection;
 import nz.tomay0.PixelProtect.protection.ProtectionHandler;
 import nz.tomay0.PixelProtect.perms.Perm;
@@ -9,6 +9,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,18 +63,10 @@ public class CommandTests {
         console = mock(ConsoleCommandSender.class);
 
         // mock players
-        ownerPlayer = mock(Player.class);
-        noonePlayer = mock(Player.class);
-        memberPlayer = mock(Player.class);
-        adminPlayer = mock(Player.class);
-        when(ownerPlayer.getUniqueId()).thenReturn(ownerUUID);
-        when(noonePlayer.getUniqueId()).thenReturn(nooneUUID);
-        when(memberPlayer.getUniqueId()).thenReturn(memberUUID);
-        when(adminPlayer.getUniqueId()).thenReturn(adminUUID);
-        when(ownerPlayer.getLocation()).thenReturn(new Location(overworld, 0, 100, 0));
-        when(ownerPlayer.getName()).thenReturn("Owner1");
-        when(adminPlayer.getLocation()).thenReturn(new Location(overworld, -200, 100, 50));
-        when(adminPlayer.getName()).thenReturn("Admin1");
+        ownerPlayer = mockPlayer(new Location(overworld, 0, 100, 0), ownerUUID, "Owner1");
+        adminPlayer = mockPlayer(new Location(overworld, -200, 100, 50), adminUUID, "Admin1");
+        memberPlayer = mockPlayer(new Location(nether, 0, 100, 0), memberUUID, "Member1");
+        noonePlayer = mockPlayer(new Location(overworld, 0, 100, 20), nooneUUID, "Noone1");
 
         // mock Bukkit.getWorld() call
         PowerMockito.mockStatic(Bukkit.class);
@@ -83,17 +76,42 @@ public class CommandTests {
     }
 
     /**
-     * Create new mock plugin with an empty ProtectionHandler and ConfirmationHandler
+     * Create a mock player
+     *
+     * @param location
+     * @param uuid
+     * @param name
+     * @return
+     */
+    private Player mockPlayer(Location location, UUID uuid, String name) {
+        Player player = mock(Player.class);
+        Player.Spigot spigot = mock(Player.Spigot.class);
+
+        when(player.getName()).thenReturn(name);
+        when(player.spigot()).thenReturn(spigot);
+        when(player.getLocation()).thenReturn(location);
+        when(player.getUniqueId()).thenReturn(uuid);
+
+        return player;
+    }
+
+    /**
+     * Create new mock plugin with an empty ProtectionHandler and playerState
      *
      * @return plugin
      */
     private PixelProtectPlugin createNewMockPlugin(File dir) {
         PixelProtectPlugin plugin = mock(PixelProtectPlugin.class);
         ProtectionHandler protections = dir == null ? new ProtectionHandler() : new ProtectionHandler(dir);
-        ConfirmationHandler confirmations = new ConfirmationHandler(protections);
+        PlayerStateHandler playerState = new PlayerStateHandler(protections);
+
+        playerState.onPlayerJoin(new PlayerJoinEvent(ownerPlayer, null));
+        playerState.onPlayerJoin(new PlayerJoinEvent(adminPlayer, null));
+        playerState.onPlayerJoin(new PlayerJoinEvent(memberPlayer, null));
+        playerState.onPlayerJoin(new PlayerJoinEvent(noonePlayer, null));
 
         when(plugin.getProtections()).thenReturn(protections);
-        when(plugin.getConfirmationHandler()).thenReturn(confirmations);
+        when(plugin.getPlayerStateHandler()).thenReturn(playerState);
 
         return plugin;
     }
@@ -221,52 +239,52 @@ public class CommandTests {
 
         // no size
         createCommand.onCommand(ownerPlayer, "create Owner3 yes".split(" "));
-        assertFalse(plugin.getConfirmationHandler().confirm(ownerPlayer));
+        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer));
         assertNull(handler.getProtection("Owner3"));
 
         // space between direction
         createCommand.onCommand(ownerPlayer, "create Owner3 s 20 30".split(" "));
-        assertFalse(plugin.getConfirmationHandler().confirm(ownerPlayer));
+        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer));
         assertNull(handler.getProtection("Owner3"));
 
         // negative size
         createCommand.onCommand(ownerPlayer, "create Owner3 -20".split(" "));
-        assertFalse(plugin.getConfirmationHandler().confirm(ownerPlayer));
+        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer));
         assertNull(handler.getProtection("Owner3"));
 
         // negative size for one parameter
         createCommand.onCommand(ownerPlayer, "create Owner3 w-20 20".split(" "));
-        assertFalse(plugin.getConfirmationHandler().confirm(ownerPlayer));
+        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer));
         assertNull(handler.getProtection("Owner3"));
 
         // negative size for one parameter 2
         createCommand.onCommand(ownerPlayer, "create Owner3 w20 -20".split(" "));
-        assertFalse(plugin.getConfirmationHandler().confirm(ownerPlayer));
+        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer));
         assertNull(handler.getProtection("Owner3"));
 
         // name with spaces
         createCommand.onCommand(ownerPlayer, "create Owner3 ok 20".split(" "));
-        assertFalse(plugin.getConfirmationHandler().confirm(ownerPlayer));
+        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer));
         assertNull(handler.getProtection("Owner3"));
 
         // ending with the direction
         createCommand.onCommand(ownerPlayer, "create Owner3 20s".split(" "));
-        assertFalse(plugin.getConfirmationHandler().confirm(ownerPlayer));
+        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer));
         assertNull(handler.getProtection("Owner3"));
 
         // create with same name
         createCommand.onCommand(ownerPlayer, "create 10".split(" "));
-        assertFalse(plugin.getConfirmationHandler().confirm(ownerPlayer));
+        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer));
         assertNull(handler.getProtectionAt(new Location(overworld, 0, 100, 0)));
 
         // create but overlapping
         createCommand.onCommand(ownerPlayer, "create Owner3 20".split(" "));
-        assertFalse(plugin.getConfirmationHandler().confirm(ownerPlayer));
+        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer));
         assertNull(handler.getProtectionAt(new Location(overworld, 0, 100, 0)));
 
         // create valid
         createCommand.onCommand(ownerPlayer, "create Owner3 19".split(" "));
-        plugin.getConfirmationHandler().confirm(ownerPlayer);
+        plugin.getPlayerStateHandler().confirm(ownerPlayer);
         assertNotNull(handler.getProtectionAt(new Location(overworld, 0, 100, 0)));
 
     }
@@ -278,7 +296,7 @@ public class CommandTests {
     public void testExpandCommand() {
         PixelProtectPlugin plugin = createNewMockPlugin(null);
         ProtectionHandler handler = plugin.getProtections();
-        ConfirmationHandler confirmationHandler = plugin.getConfirmationHandler();
+        PlayerStateHandler playerState = plugin.getPlayerStateHandler();
         CreateCommand createCommand = new CreateCommand(plugin);
         ExpandCommand expandCommand = new ExpandCommand(plugin);
         ConfirmCommand confirmCommand = new ConfirmCommand(plugin);
@@ -312,7 +330,7 @@ public class CommandTests {
 
         // expand east by -30, north by -10
         expandCommand.onCommand(ownerPlayer, "expand Owner1 n-10 e-30".split(" "));
-        assertTrue(confirmationHandler.confirm(ownerPlayer));
+        assertTrue(playerState.confirm(ownerPlayer));
 
         assertEquals(-21, handler.getProtection("Owner1").getWest());
         assertEquals(-9, handler.getProtection("Owner1").getEast());
@@ -321,11 +339,11 @@ public class CommandTests {
 
         // another player create a protection
         createCommand.onCommand(adminPlayer, "create Test 8".split(" "));
-        assertTrue(confirmationHandler.confirm(adminPlayer));
+        assertTrue(playerState.confirm(adminPlayer));
 
         // expand while another nearby, but still valid
         expandCommand.onCommand(ownerPlayer, "expand Owner1 w20".split(" "));
-        assertTrue(confirmationHandler.confirm(ownerPlayer));
+        assertTrue(playerState.confirm(ownerPlayer));
 
         assertEquals(-41, handler.getProtection("Owner1").getWest());
         assertEquals(-9, handler.getProtection("Owner1").getEast());
@@ -335,20 +353,20 @@ public class CommandTests {
 
         // some invalid
         expandCommand.onCommand(ownerPlayer, "expand Owner2 n1".split(" "));
-        assertFalse(confirmationHandler.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer));
 
         expandCommand.onCommand(ownerPlayer, "expand Owner1 n 1".split(" "));
-        assertFalse(confirmationHandler.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer));
 
         expandCommand.onCommand(adminPlayer, "expand Owner1 n1".split(" "));
-        assertFalse(confirmationHandler.confirm(adminPlayer));
-        assertFalse(confirmationHandler.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(adminPlayer));
+        assertFalse(playerState.confirm(ownerPlayer));
 
         expandCommand.onCommand(ownerPlayer, "expand Owner1 s1 w151".split(" "));
-        assertFalse(confirmationHandler.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer));
 
         expandCommand.onCommand(ownerPlayer, "expand".split(" "));
-        assertFalse(confirmationHandler.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer));
     }
 
 
@@ -359,7 +377,7 @@ public class CommandTests {
     public void testShiftCommand() {
         PixelProtectPlugin plugin = createNewMockPlugin(null);
         ProtectionHandler handler = plugin.getProtections();
-        ConfirmationHandler confirmationHandler = plugin.getConfirmationHandler();
+        PlayerStateHandler playerState = plugin.getPlayerStateHandler();
         CreateCommand createCommand = new CreateCommand(plugin);
         ShiftCommand shiftCommand = new ShiftCommand(plugin);
         ConfirmCommand confirmCommand = new ConfirmCommand(plugin);
@@ -379,19 +397,19 @@ public class CommandTests {
 
         // invalid
         shiftCommand.onCommand(ownerPlayer, "shift 20".split(" "));
-        assertFalse(confirmationHandler.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer));
         shiftCommand.onCommand(ownerPlayer, "shift nsew20".split(" "));
-        assertFalse(confirmationHandler.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer));
         shiftCommand.onCommand(ownerPlayer, "shift ns20".split(" "));
-        assertFalse(confirmationHandler.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer));
         shiftCommand.onCommand(ownerPlayer, "shift ew20".split(" "));
-        assertFalse(confirmationHandler.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer));
         shiftCommand.onCommand(ownerPlayer, "shift".split(" "));
-        assertFalse(confirmationHandler.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer));
         shiftCommand.onCommand(ownerPlayer, "shift noone s30".split(" "));
-        assertFalse(confirmationHandler.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer));
         shiftCommand.onCommand(adminPlayer, "shift Owner1 s30".split(" "));
-        assertFalse(confirmationHandler.confirm(adminPlayer));
+        assertFalse(playerState.confirm(adminPlayer));
 
         // valid
         shiftCommand.onCommand(ownerPlayer, "shift Owner1 s30".split(" "));
@@ -411,7 +429,7 @@ public class CommandTests {
 
         // overlap
         shiftCommand.onCommand(ownerPlayer, "shift Owner1 w180".split(" "));
-        assertFalse(confirmationHandler.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer));
     }
 
     /**
@@ -421,7 +439,7 @@ public class CommandTests {
     public void testRemoveCommand() {
         PixelProtectPlugin plugin = createNewMockPlugin(null);
         ProtectionHandler handler = plugin.getProtections();
-        ConfirmationHandler confirmationHandler = plugin.getConfirmationHandler();
+        PlayerStateHandler playerState = plugin.getPlayerStateHandler();
         CreateCommand createCommand = new CreateCommand(plugin);
         RemoveCommand removeCommand = new RemoveCommand(plugin);
         ConfirmCommand confirmCommand = new ConfirmCommand(plugin);
@@ -432,13 +450,13 @@ public class CommandTests {
         assertNotNull(handler.getProtection("Owner1"));
 
         removeCommand.onCommand(adminPlayer, "remove".split(" "));
-        assertFalse(confirmationHandler.confirm(adminPlayer));
+        assertFalse(playerState.confirm(adminPlayer));
         removeCommand.onCommand(adminPlayer, "remove Owner1".split(" "));
-        assertFalse(confirmationHandler.confirm(adminPlayer));
+        assertFalse(playerState.confirm(adminPlayer));
         assertNotNull(handler.getProtection("Owner1"));
 
         removeCommand.onCommand(ownerPlayer, "remove".split(" "));
-        assertTrue(confirmationHandler.confirm(ownerPlayer));
+        assertTrue(playerState.confirm(ownerPlayer));
         assertNull(handler.getProtection("Owner1"));
 
 
@@ -451,13 +469,13 @@ public class CommandTests {
     public void testRenameCommand() {
         PixelProtectPlugin plugin = createNewMockPlugin(null);
         ProtectionHandler handler = plugin.getProtections();
-        ConfirmationHandler confirmationHandler = plugin.getConfirmationHandler();
+        PlayerStateHandler playerState = plugin.getPlayerStateHandler();
         CreateCommand createCommand = new CreateCommand(plugin);
         RenameCommand renameCommand = new RenameCommand(plugin);
 
         // create
         createCommand.onCommand(ownerPlayer, "create 20".split(" "));
-        confirmationHandler.confirm(ownerPlayer);
+        playerState.confirm(ownerPlayer);
 
         assertNotNull(handler.getProtection("Owner1"));
 

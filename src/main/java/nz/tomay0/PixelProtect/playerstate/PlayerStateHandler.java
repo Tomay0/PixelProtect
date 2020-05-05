@@ -1,4 +1,4 @@
-package nz.tomay0.PixelProtect.confirm;
+package nz.tomay0.PixelProtect.playerstate;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -9,38 +9,34 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static nz.tomay0.PixelProtect.confirm.Confirmation.ConfirmationType.*;
+import static nz.tomay0.PixelProtect.playerstate.Confirmation.ConfirmationType.CREATE;
+import static nz.tomay0.PixelProtect.playerstate.Confirmation.ConfirmationType.REMOVE;
+import static nz.tomay0.PixelProtect.playerstate.Confirmation.ConfirmationType.UPDATE;
 
 /**
- * Handles protection creating/updating confirmations.
- * <p>
- * A confirmation will be deleted if a player types /pr reject or when they leave the server
- * <p>
- * Retyping a command will update the confirmation.
- * <p>
- * Typing /pr confirm will confirm the confirmation and update/create the protection
+ * Handle player state, confirmations and border displaying
  */
-public class ConfirmationHandler implements Listener, Runnable {
-
-    /**
-     * Player confirmations
-     */
-    private Map<Player, Confirmation> confirmations = new HashMap<>();
-    private Confirmation consoleConfirmation = null;
-
+public class PlayerStateHandler implements Listener, Runnable {
     private ProtectionHandler protections;
 
+    private Map<Player, PlayerState> playerStates = new HashMap<>();
+
+    // console doesn't have playerstate, instead it has its own confirmation
+    private Confirmation consoleConfirmation = null;
+
     /**
-     * Create new confirmation handler
+     * Handle player state
      *
-     * @param protections protections
+     * @param protections
      */
-    public ConfirmationHandler(ProtectionHandler protections) {
+    public PlayerStateHandler(ProtectionHandler protections) {
         this.protections = protections;
     }
 
@@ -51,7 +47,7 @@ public class ConfirmationHandler implements Listener, Runnable {
      * @param confirmation confirmation
      */
     private void putConfirmation(Player player, Confirmation confirmation) {
-        if (player != null) confirmations.put(player, confirmation);
+        if (player != null) playerStates.get(player).setConfirmation(confirmation);
         else consoleConfirmation = confirmation;
     }
 
@@ -62,7 +58,7 @@ public class ConfirmationHandler implements Listener, Runnable {
      */
     private void removeConfirmation(Player player) {
         if (player == null) consoleConfirmation = null;
-        else confirmations.remove(player);
+        else playerStates.get(player).setConfirmation(null);
     }
 
     /**
@@ -75,12 +71,8 @@ public class ConfirmationHandler implements Listener, Runnable {
         if (player == null)
             return consoleConfirmation;
 
-        if (confirmations.containsKey(player))
-            return confirmations.get(player);
-
-        return null;
+        return playerStates.get(player).getConfirmation();
     }
-
 
     /**
      * Request to create a protection
@@ -110,7 +102,7 @@ public class ConfirmationHandler implements Listener, Runnable {
     /**
      * Request the removal of a protection
      *
-     * @param player player making the request (null for console)
+     * @param player     player making the request (null for console)
      * @param protection protection
      */
     public void requestRemove(Player player, Protection protection) {
@@ -148,26 +140,44 @@ public class ConfirmationHandler implements Listener, Runnable {
     }
 
     /**
-     * Remove confirmations when players quit
+     * Add player
      *
-     * @param e event
+     * @param e
+     */
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent e) {
+        Player player = e.getPlayer();
+        playerStates.put(player, new PlayerState(protections, player));
+    }
+
+    /**
+     * Remove player
+     *
+     * @param e
      */
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent e) {
         Player player = e.getPlayer();
+        playerStates.remove(player);
+    }
 
-        removeConfirmation(player);
+    @EventHandler
+    public void onPlayerMove(PlayerMoveEvent e) {
+        Player player = e.getPlayer();
+        playerStates.get(player).move();
     }
 
     /**
      * Runs every second, reminds players to use /pr confirm and shows border particles
      */
     public void run() {
-        for (Player player : confirmations.keySet()) {
+        for (Player player : playerStates.keySet()) {
+            PlayerState state = playerStates.get(player);
 
-            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.YELLOW + "Type " + ChatColor.AQUA + "/pr confirm" + ChatColor.YELLOW + " to confirm."));
+            if (state.getConfirmation() != null)
+                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.YELLOW + "Type " + ChatColor.AQUA + "/pr confirm" + ChatColor.YELLOW + " to confirm."));
 
-            confirmations.get(player).displayParticles();
+            state.displayParticles();
         }
 
     }
