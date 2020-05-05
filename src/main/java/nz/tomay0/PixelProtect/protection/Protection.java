@@ -209,11 +209,11 @@ public class Protection {
 
         // check coordinates are valid. south > north, east > west
 
-        if (east - west <= MIN_SIZE) {
+        if (east - west < MIN_SIZE - 1) {
             throw new InvalidProtectionException("Eastern boundary must be at least " + MIN_SIZE + " of the western boundary.", INVALID_BORDERS);
         }
 
-        if (south - north <= MIN_SIZE) {
+        if (south - north < MIN_SIZE - 1) {
             throw new InvalidProtectionException("Southern boundary must be at least " + MIN_SIZE + " of the northern boundary.", INVALID_BORDERS);
         }
 
@@ -225,6 +225,11 @@ public class Protection {
         // check perm levels aren't null
         if (defaultPermissions == null) {
             throw new InvalidProtectionException(new NullPointerException(), UNEXPECTED_EXCEPTION);
+        }
+
+        // check owner isn't null
+        if (ownerUuid == null) {
+            throw new InvalidProtectionException("There must be an owner", INVALID_OWNER);
         }
 
         // check there is only 1 owner

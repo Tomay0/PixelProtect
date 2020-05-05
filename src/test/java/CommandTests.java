@@ -29,6 +29,7 @@ import static org.mockito.Mockito.when;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Bukkit.class)
 public class CommandTests {
+    // TODO /pr confirm tests
 
     /**
      * Mock World objects, since they can't be determined without a server

@@ -214,23 +214,16 @@ public class ProtectionTests {
         } catch (InvalidProtectionException e) {
         }
 
-        // boundary valid
-        try {
-            new Protection("Protection1", "world", -2, 2, -2, 2, "owner");
-            fail();
-        } catch (InvalidProtectionException e) {
-        }
-
         // boundary invalid
         try {
-            new Protection("Protection1", "world", -2, 3, -2, 3, "owner");
+            new Protection("Protection1", "world", -2, 1, -5, 5, "owner");
             fail();
         } catch (InvalidProtectionException e) {
         }
 
         // null owner
         try {
-            new Protection("Protection1", "world", -2, 3, -2, 2, null);
+            new Protection("Protection1", "world", -2, 2, -2, 2, null);
             fail();
         } catch (InvalidProtectionException e) {
         }
@@ -496,6 +489,8 @@ public class ProtectionTests {
         } catch (InvalidProtectionException e) {
             assertEquals("A protection already exists with the name: pr1", e.getMessage());
         }
+        // valid, smallest possible
+        handler.addNewProtection(new Protection("pr3", "world", -104, -100, -104, -100, "owner"));
     }
 
     /**
