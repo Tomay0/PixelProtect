@@ -181,4 +181,21 @@ public class PlayerStateHandler implements Listener, Runnable {
         }
 
     }
+
+    /**
+     * Show borders of a protection
+     *
+     * @param player     player
+     * @param protection protection
+     */
+    public void showBorders(Player player, Protection protection) {
+        playerStates.get(player).setShowingBorder(protection);
+
+        if (protection != null) {
+            player.sendMessage(ChatColor.GREEN + "Showing the borders of " + ChatColor.GREEN + protection.getName());
+            player.sendMessage(ChatColor.YELLOW + "Hide them by typing " + ChatColor.RED + "/pr hide");
+        } else {
+            player.sendMessage(ChatColor.YELLOW + "Protection borders are now hidden.");
+        }
+    }
 }

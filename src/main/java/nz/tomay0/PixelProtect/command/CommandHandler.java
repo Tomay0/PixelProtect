@@ -30,6 +30,8 @@ public class CommandHandler implements CommandExecutor {
         commandsList.add(new MoveCommand(plugin));
         commandsList.add(new RemoveCommand(plugin));
         commandsList.add(new RenameCommand(plugin));
+        commandsList.add(new ShowCommand(plugin));
+        commandsList.add(new HideCommand(plugin));
         commandsList.add(new ListCommand(plugin));
 
         commandsList.add(new HelpCommand(plugin, new ArrayList<>(commandsList))); // all commands after here are not contained in /pr help

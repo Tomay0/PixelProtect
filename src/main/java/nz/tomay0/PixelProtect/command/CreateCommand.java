@@ -35,7 +35,7 @@ public class CreateCommand extends AbstractCommand {
     @Override
     public void onCommand(CommandSender sender, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("Cannot create protections from the console.");
+            sender.sendMessage("This is a player only command.");
             return;
         }
 
