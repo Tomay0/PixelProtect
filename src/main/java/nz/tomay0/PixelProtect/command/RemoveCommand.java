@@ -36,7 +36,7 @@ public class RemoveCommand extends AbstractCommand {
         Protection protection = CommandUtil.getExistingProtection(getProtections(), sender, args);
 
         if (protection == null) {
-            commandHelp(sender);
+            sender.sendMessage(ChatColor.RED + "/pr remove <name>");
             return;
         }
 
@@ -49,9 +49,5 @@ public class RemoveCommand extends AbstractCommand {
 
         sender.sendMessage(ChatColor.YELLOW + "Removing " + ChatColor.GREEN + protection.getName());
         sender.sendMessage(ChatColor.YELLOW + "Confirm by typing " + ChatColor.AQUA + "/pr confirm");
-    }
-
-    private void commandHelp(CommandSender sender) {
-        sender.sendMessage(ChatColor.RED + "/pr remove <name>");
     }
 }

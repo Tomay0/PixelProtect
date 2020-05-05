@@ -443,4 +443,48 @@ public class CommandTests {
 
 
     }
+
+    /**
+     * Test the rename command
+     */
+    @Test
+    public void testRenameCommand() {
+        PixelProtectPlugin plugin = createNewMockPlugin(null);
+        ProtectionHandler handler = plugin.getProtections();
+        ConfirmationHandler confirmationHandler = plugin.getConfirmationHandler();
+        CreateCommand createCommand = new CreateCommand(plugin);
+        RenameCommand renameCommand = new RenameCommand(plugin);
+
+        // create
+        createCommand.onCommand(ownerPlayer, "create 20".split(" "));
+        confirmationHandler.confirm(ownerPlayer);
+
+        assertNotNull(handler.getProtection("Owner1"));
+
+        // rename invalid
+        renameCommand.onCommand(adminPlayer, "rename Owner1 test".split(" "));
+        assertNotNull(handler.getProtection("Owner1"));
+        assertNull(handler.getProtection("test"));
+
+        renameCommand.onCommand(ownerPlayer, "rename test".split(" "));
+        assertNotNull(handler.getProtection("Owner1"));
+        assertNull(handler.getProtection("test"));
+
+        renameCommand.onCommand(ownerPlayer, "rename Owner1".split(" "));
+        assertNotNull(handler.getProtection("Owner1"));
+        assertNull(handler.getProtection("test"));
+
+        renameCommand.onCommand(ownerPlayer, "rename something test".split(" "));
+        assertNotNull(handler.getProtection("Owner1"));
+        assertNull(handler.getProtection("test"));
+
+        // rename valid
+        renameCommand.onCommand(ownerPlayer, "rename Owner1 test".split(" "));
+        assertNull(handler.getProtection("Owner1"));
+        assertNotNull(handler.getProtection("test"));
+
+        renameCommand.onCommand(console, "rename test hello".split(" "));
+        assertNull(handler.getProtection("test"));
+        assertNotNull(handler.getProtection("hello"));
+    }
 }
