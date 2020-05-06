@@ -5,6 +5,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import nz.tomay0.PixelProtect.protection.Protection;
 import nz.tomay0.PixelProtect.protection.ProtectionBuilder;
 import nz.tomay0.PixelProtect.protection.ProtectionHandler;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -38,6 +39,11 @@ public class PlayerStateHandler implements Listener, Runnable {
      */
     public PlayerStateHandler(ProtectionHandler protections) {
         this.protections = protections;
+
+        // add all players currently on the server to the set (for reloading)
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            onPlayerJoin(new PlayerJoinEvent(player, null));
+        }
     }
 
     /**

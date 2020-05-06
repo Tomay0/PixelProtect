@@ -2,9 +2,12 @@ package nz.tomay0.PixelProtect.command;
 
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.*;
 
@@ -37,6 +40,48 @@ public class CommandHandler implements CommandExecutor {
         commandsList.add(new HelpCommand(plugin, new ArrayList<>(commandsList))); // all commands after here are not contained in /pr help
         commandsList.add(new ConfirmCommand(plugin));
         commandsList.add(new CancelCommand(plugin));
+        commandsList.add(new AbstractCommand(plugin) {
+            @Override
+            public String getCommand() {
+                return "test";
+            }
+
+            @Override
+            public String getDescription() {
+                return "test";
+            }
+
+            @Override
+            public void onCommand(CommandSender sender, String[] args) {
+                if (!(sender instanceof Player)) {
+                    return;
+                }
+
+                List<Material> blockTypes = new ArrayList<>();
+                for (Material m : Material.values()) {
+                    if (m.isBlock()) blockTypes.add(m);
+                }
+
+                int root = (int) Math.sqrt(blockTypes.size());
+
+
+                Player player = (Player) sender;
+                Location l = player.getLocation().add(0, -1, 0);
+
+                int i = 0;
+                while (i < blockTypes.size()) {
+                    for (int j = 0; j < root; j++) {
+                        l.add(1, 0, 0);
+                        l.getBlock().setType(blockTypes.get(i));
+
+                        i++;
+                        if (i == blockTypes.size()) break;
+                    }
+                    l.add(-root, 0, 1);
+                }
+
+            }
+        });
 
         // create map - for usage
         commandMap = new HashMap<>();
