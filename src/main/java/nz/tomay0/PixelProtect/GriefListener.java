@@ -10,14 +10,15 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.Dispenser;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.*;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
@@ -26,6 +27,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.projectiles.ProjectileSource;
 
 import java.util.*;
 
@@ -148,40 +150,24 @@ public class GriefListener implements Listener {
 
     /*
 
-    TODO
+    pickup blocks on the ground TODO this might be something to add as an option but keep it off for now
 
-    firespread
+
+    TODO
 
     pistons
 
     sand cannons?
 
-    enderman
-
-    silverfish
-
-    crops
-
     lightning strike trident
 
-    zombie break door
+    zombie break door?
 
-    block explode? Beds?
+    crop damage from other entities
 
-    pickup blocks on the ground
-
-    Entity minecarts can be destroyed? itemframes too
-
-    withers destroying blocks
-
+    fix firespread
 
      */
-
-    //TODO armor stand, item frame picture frame
-
-    // TODO wither block damage, enderman block damage
-
-    // TODO farmland
 
     /**
      * Send different messages depending on what the permission type is
@@ -388,12 +374,19 @@ public class GriefListener implements Listener {
 
     /**
      * Break hanging entities like paintings and itemframes
+     *
      * @param e
      */
     @EventHandler
     public void onHangingBreak(HangingBreakByEntityEvent e) {
         Entity remover = e.getRemover();
         Entity entity = e.getEntity();
+
+        if (remover instanceof Projectile) {
+            ProjectileSource source = ((Projectile) remover).getShooter();
+
+            if (source instanceof Entity) remover = (Entity) source;
+        }
 
         if (remover instanceof Player) {
             Player player = (Player) remover;
@@ -402,8 +395,7 @@ public class GriefListener implements Listener {
                 sendPlayerMessage(player, Perm.BUILD);
                 e.setCancelled(true);
             }
-        }
-        else{
+        } else {
             // TODO allow hanging items to get killed by other entities?
             if (protections.getProtectionAt(entity.getLocation()) != null) {
                 e.setCancelled(true);
@@ -413,12 +405,19 @@ public class GriefListener implements Listener {
 
     /**
      * Break minecarts/boats
+     *
      * @param e
      */
     @EventHandler
     public void onVehicleDamage(VehicleDamageEvent e) {
         Entity remover = e.getAttacker();
         Entity entity = e.getVehicle();
+
+        if (remover instanceof Projectile) {
+            ProjectileSource source = ((Projectile) remover).getShooter();
+
+            if (source instanceof Entity) remover = (Entity) source;
+        }
 
         if (remover instanceof Player) {
             Player player = (Player) remover;
@@ -427,31 +426,10 @@ public class GriefListener implements Listener {
                 sendPlayerMessage(player, Perm.BUILD);
                 e.setCancelled(true);
             }
-        }
-        else{
+        } else {
             // TODO allow vehicles items to get killed by other entities?
             if (protections.getProtectionAt(entity.getLocation()) != null) {
                 e.setCancelled(true);
-            }
-        }
-
-    }
-
-
-    @EventHandler
-    public void onEntityExplode(EntityExplodeEvent e) {
-        Protection protection = protections.getProtectionAt(e.getLocation());
-
-        for (Block block : new ArrayList<>(e.blockList())) {
-            Location location = block.getLocation();
-
-            if (protection != null && protection.withinBounds(location)) {
-                e.blockList().remove(block);
-            } else {
-                protection = protections.getProtectionAt(block.getLocation());
-                if (protection != null) {
-                    e.blockList().remove(block);
-                }
             }
         }
 
@@ -466,6 +444,12 @@ public class GriefListener implements Listener {
     public void onDamageEntity(EntityDamageByEntityEvent e) {
         Entity damager = e.getDamager();
         Entity entity = e.getEntity();
+
+        if (damager instanceof Projectile) {
+            ProjectileSource source = ((Projectile) damager).getShooter();
+
+            if (source instanceof Entity) damager = (Entity) source;
+        }
 
         if (damager instanceof Player) {
             Player player = (Player) damager;
@@ -497,4 +481,84 @@ public class GriefListener implements Listener {
 
         }
     }
+
+
+    /**
+     * Entity explosions
+     *
+     * @param e
+     */
+    @EventHandler
+    public void onEntityExplode(EntityExplodeEvent e) {
+        Protection protection = protections.getProtectionAt(e.getLocation());
+
+        for (Block block : new ArrayList<>(e.blockList())) {
+            Location location = block.getLocation();
+
+            if (protection != null && protection.withinBounds(location)) {
+                e.blockList().remove(block);
+            } else {
+                protection = protections.getProtectionAt(block.getLocation());
+                if (protection != null) {
+                    e.blockList().remove(block);
+                }
+            }
+        }
+
+    }
+
+
+    /**
+     * Block explosions
+     *
+     * @param e
+     */
+    @EventHandler
+    public void onBlockExplode(BlockExplodeEvent e) {
+        Protection protection = protections.getProtectionAt(e.getBlock().getLocation());
+
+        for (Block block : new ArrayList<>(e.blockList())) {
+            Location location = block.getLocation();
+
+            if (protection != null && protection.withinBounds(location)) {
+                e.blockList().remove(block);
+            } else {
+                protection = protections.getProtectionAt(block.getLocation());
+                if (protection != null) {
+                    e.blockList().remove(block);
+                }
+            }
+        }
+
+    }
+
+    /**
+     * Entity change block. Eg: enderman
+     *
+     * @param e
+     */
+    @EventHandler
+    public void onEntityChangeBlock(EntityChangeBlockEvent e) {
+        Protection protection = protections.getProtectionAt(e.getBlock().getLocation());
+        if (protection != null) {
+            e.setCancelled(true);
+        }
+    }
+
+    /**
+     * Disable fire spread
+     *
+     * @param e
+     */
+    @EventHandler
+    public void onBlockSpread(BlockSpreadEvent e) {
+        if (e.getNewState().getType() == Material.FIRE) {
+            Protection protection = protections.getProtectionAt(e.getBlock().getLocation());
+            if (protection != null) {
+                e.setCancelled(true);
+            }
+
+        }
+    }
+
 }

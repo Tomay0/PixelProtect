@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -66,18 +67,9 @@ public class CommandHandler implements CommandExecutor {
 
 
                 Player player = (Player) sender;
-                Location l = player.getLocation().add(0, -1, 0);
 
-                int i = 0;
-                while (i < blockTypes.size()) {
-                    for (int j = 0; j < root; j++) {
-                        l.add(1, 0, 0);
-                        l.getBlock().setType(blockTypes.get(i));
-
-                        i++;
-                        if (i == blockTypes.size()) break;
-                    }
-                    l.add(-root, 0, 1);
+                for(int i = 0; i < 100; i++) {
+                    player.getLocation().getWorld().spawnEntity(player.getLocation(), EntityType.ENDERMAN);
                 }
 
             }
