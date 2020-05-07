@@ -22,7 +22,7 @@ public class PixelProtectPlugin extends JavaPlugin {
         protectionHandler = new ProtectionHandler(getProtectionDirectory());
         playerStateHandler = new PlayerStateHandler(protectionHandler);
 
-        GriefListener griefListener = new GriefListener(protectionHandler);
+        GriefListener griefListener = new GriefListener(this);
 
         getServer().getPluginManager().registerEvents(playerStateHandler, this);
         getServer().getPluginManager().registerEvents(griefListener, this);

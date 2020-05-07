@@ -1,5 +1,7 @@
 package nz.tomay0.PixelProtect;
 
+import java.util.*;
+
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import nz.tomay0.PixelProtect.protection.Protection;
@@ -10,26 +12,20 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.Dispenser;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
-import org.bukkit.event.entity.EntityChangeBlockEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
-import org.bukkit.event.player.PlayerInteractAtEntityEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.hanging.HangingPlaceEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.projectiles.ProjectileSource;
+import org.bukkit.util.Vector;
 
-import java.util.*;
 
 /**
  * Listener that checks for all types of griefs within a protection
@@ -60,7 +56,7 @@ public class GriefListener implements Listener {
     // entities that are like blocks
     private static final Set<EntityType> buildEntities = new HashSet<>(Arrays.asList(EntityType.ARMOR_STAND, EntityType.BOAT, EntityType.ENDER_CRYSTAL, EntityType.MINECART,
             EntityType.MINECART_CHEST, EntityType.MINECART_COMMAND, EntityType.MINECART_FURNACE, EntityType.MINECART_HOPPER,
-            EntityType.MINECART_MOB_SPAWNER, EntityType.MINECART_TNT, EntityType.PAINTING, EntityType.LEASH_HITCH, EntityType.ITEM_FRAME));
+            EntityType.MINECART_MOB_SPAWNER, EntityType.MINECART_TNT, EntityType.LEASH_HITCH));
 
     // items you can't right click while holding
     private static final Set<Material> bannedHolding = getBannedHoldingRightClick();
@@ -136,38 +132,19 @@ public class GriefListener implements Listener {
      * All protections
      */
     private ProtectionHandler protections;
+    private PixelProtectPlugin plugin;
 
 
     /**
      * Init grief listener
      *
-     * @param protections
+     * @param plugin
      */
-    public GriefListener(ProtectionHandler protections) {
-        this.protections = protections;
+    public GriefListener(PixelProtectPlugin plugin) {
+        this.protections = plugin.getProtections();
+        this.plugin = plugin;
     }
 
-
-    /*
-
-    pickup blocks on the ground TODO this might be something to add as an option but keep it off for now
-
-
-    TODO
-
-    pistons
-
-    sand cannons?
-
-    lightning strike trident
-
-    zombie break door?
-
-    crop damage from other entities
-
-    fix firespread
-
-     */
 
     /**
      * Send different messages depending on what the permission type is
@@ -217,12 +194,76 @@ public class GriefListener implements Listener {
     }
 
     /**
+     * Multi place block (eg bed)
+     *
+     * @param e
+     */
+    @EventHandler
+    public void onMultiBlockPlace(BlockMultiPlaceEvent e) {
+        Player player = e.getPlayer();
+        Location location = e.getBlock().getLocation();
+
+        if (!protections.hasPermission(player, location, Perm.BUILD)) {
+            sendPlayerMessage(player, Perm.BUILD);
+            e.setCancelled(true);
+        }
+    }
+
+    /**
      * Break block
      *
      * @param e
      */
     @EventHandler
     public void onBlockBreak(BlockBreakEvent e) {
+        Player player = e.getPlayer();
+        Location location = e.getBlock().getLocation();
+
+        if (!protections.hasPermission(player, location, Perm.BUILD)) {
+            sendPlayerMessage(player, Perm.BUILD);
+            e.setCancelled(true);
+        }
+    }
+
+    /**
+     * Place hanging
+     *
+     * @param e
+     */
+    @EventHandler
+    public void onPlaceHanging(HangingPlaceEvent e) {
+        Player player = e.getPlayer();
+        Location location = e.getEntity().getLocation();
+
+        if (!protections.hasPermission(player, location, Perm.BUILD)) {
+            sendPlayerMessage(player, Perm.BUILD);
+            e.setCancelled(true);
+        }
+    }
+
+    /**
+     * Place water
+     *
+     * @param e
+     */
+    @EventHandler
+    public void onWaterPlace(PlayerBucketEmptyEvent e) {
+        Player player = e.getPlayer();
+        Location location = e.getBlock().getLocation();
+
+        if (!protections.hasPermission(player, location, Perm.BUILD)) {
+            sendPlayerMessage(player, Perm.BUILD);
+            e.setCancelled(true);
+        }
+    }
+
+    /**
+     * Pickup water
+     *
+     * @param e
+     */
+    @EventHandler
+    public void onWaterPickup(PlayerBucketFillEvent e) {
         Player player = e.getPlayer();
         Location location = e.getBlock().getLocation();
 
@@ -250,6 +291,7 @@ public class GriefListener implements Listener {
 
     /**
      * Right click an entity at a specific place (armour stands)
+     * is considered a chest
      *
      * @param e
      */
@@ -258,8 +300,8 @@ public class GriefListener implements Listener {
         Player player = e.getPlayer();
         Location location = e.getRightClicked().getLocation();
 
-        if (!protections.hasPermission(player, location, Perm.INTERACT)) {
-            sendPlayerMessage(player, Perm.INTERACT);
+        if (!protections.hasPermission(player, location, Perm.CHEST)) {
+            sendPlayerMessage(player, Perm.CHEST);
             e.setCancelled(true);
         }
     }
@@ -279,11 +321,10 @@ public class GriefListener implements Listener {
         Block block = e.getClickedBlock();
 
         if (e.getAction() == Action.PHYSICAL) {
-            // TODO allow for more strict access that doesn't allow pressure plates, redstone ore or tripwires.
 
             // when you "step on" blocks
-            if (block.getType().equals(Material.TURTLE_EGG) || block.getType().equals(Material.FARMLAND)
-                /* || block.getType().toString().endsWith("PRESSURE_PLATE") || block.getType().equals(Material.REDSTONE_ORE) || block.getType().equals(Material.TRIPWIRE)*/) {
+            if (block.getType().equals(Material.TURTLE_EGG)) {
+                /* || block.getType().toString().endsWith("PRESSURE_PLATE") || block.getType().equals(Material.REDSTONE_ORE) || block.getType().equals(Material.TRIPWIRE)*/
                 if (!protections.hasPermission(player, block.getLocation(), Perm.INTERACT)) {
                     sendPlayerMessage(player, Perm.INTERACT);
                     e.setCancelled(true);
@@ -373,6 +414,66 @@ public class GriefListener implements Listener {
     }
 
     /**
+     * Lightning strike, add some metadata so the cause cam be determined
+     *
+     * @param e
+     */
+    /*@EventHandler
+    public void onLightningStrike(LightningStrikeEvent e) {
+        e.getLightning().setMetadata("LIGHTNING_CAUSE", new FixedMetadataValue(plugin, e.getCause()));
+    }*/
+
+    /**
+     * When projectiles are launched from dispensers, notate the source in the metadata
+     *
+     * @param e
+     */
+    @EventHandler
+    public void onDispense(ProjectileLaunchEvent e) {
+        Projectile projectile = e.getEntity();
+
+        ProjectileSource source = projectile.getShooter();
+
+        if (!(source instanceof Entity)) {
+            Location location = projectile.getLocation();
+
+            Vector velocity = projectile.getVelocity();
+
+            location = location.subtract(velocity);
+
+
+            projectile.setMetadata("PROJECTILE_SOURCE", new FixedMetadataValue(plugin, location));
+        }
+    }
+
+    /**
+     * Check the location of a projectile source. (Eg: dispenser)
+     * <p>
+     * If hitLocation is inside, but the source is outside. return true to indicate that the source is outside
+     *
+     * @param projectile
+     * @return
+     */
+    private boolean checkProjectileOutsideProtection(Projectile projectile, Location hitLocation) {
+        if (!projectile.hasMetadata("PROJECTILE_SOURCE")) return false;
+
+        Object metadata = projectile.getMetadata("PROJECTILE_SOURCE").get(0).value();
+
+        if (!(metadata instanceof Location)) return false;
+
+        Location sourceLoc = (Location) metadata;
+
+        Protection p1 = protections.getProtectionAt(hitLocation);
+
+        if (p1 == null) return false; // ignore if hit an unprotected area
+
+        Protection p2 = protections.getProtectionAt(sourceLoc);
+
+        return p1 != p2;
+    }
+
+
+    /**
      * Break hanging entities like paintings and itemframes
      *
      * @param e
@@ -386,6 +487,10 @@ public class GriefListener implements Listener {
             ProjectileSource source = ((Projectile) remover).getShooter();
 
             if (source instanceof Entity) remover = (Entity) source;
+            else if (checkProjectileOutsideProtection(((Projectile) remover), entity.getLocation())) {
+                e.setCancelled(true);
+                return;
+            } else return;
         }
 
         if (remover instanceof Player) {
@@ -396,7 +501,6 @@ public class GriefListener implements Listener {
                 e.setCancelled(true);
             }
         } else {
-            // TODO allow hanging items to get killed by other entities?
             if (protections.getProtectionAt(entity.getLocation()) != null) {
                 e.setCancelled(true);
             }
@@ -417,6 +521,10 @@ public class GriefListener implements Listener {
             ProjectileSource source = ((Projectile) remover).getShooter();
 
             if (source instanceof Entity) remover = (Entity) source;
+            else if (checkProjectileOutsideProtection(((Projectile) remover), entity.getLocation())) {
+                e.setCancelled(true);
+                return;
+            } else return;
         }
 
         if (remover instanceof Player) {
@@ -427,7 +535,6 @@ public class GriefListener implements Listener {
                 e.setCancelled(true);
             }
         } else {
-            // TODO allow vehicles items to get killed by other entities?
             if (protections.getProtectionAt(entity.getLocation()) != null) {
                 e.setCancelled(true);
             }
@@ -449,6 +556,10 @@ public class GriefListener implements Listener {
             ProjectileSource source = ((Projectile) damager).getShooter();
 
             if (source instanceof Entity) damager = (Entity) source;
+            else if (checkProjectileOutsideProtection(((Projectile) damager), entity.getLocation())) {
+                e.setCancelled(true);
+                return;
+            } else return;
         }
 
         if (damager instanceof Player) {
@@ -471,8 +582,13 @@ public class GriefListener implements Listener {
                 sendPlayerMessage(player, perm);
                 e.setCancelled(true);
             }
+        }
+        // cancel damage from lightning
+        else if (damager instanceof LightningStrike) {
+            if (protections.getProtectionAt(entity.getLocation()) != null) {
+                e.setCancelled(true);
+            }
         } else {
-            // TODO make this configurable? hostile mobs can't damage friendly mobs
             if (friendlyMobs.contains(entity.getType()) && hostileMobs.contains(damager.getType())) {
                 if (protections.getProtectionAt(entity.getLocation()) != null) {
                     e.setCancelled(true);
@@ -546,18 +662,64 @@ public class GriefListener implements Listener {
     }
 
     /**
-     * Disable fire spread
+     * Fire spreading across entities
      *
      * @param e
      */
     @EventHandler
-    public void onBlockSpread(BlockSpreadEvent e) {
-        if (e.getNewState().getType() == Material.FIRE) {
+    public void onEntityIgnite(EntityCombustByEntityEvent e) {
+        Protection protection = protections.getProtectionAt(e.getEntity().getLocation());
+        if (protection != null) {
+            e.setCancelled(true);
+        }
+    }
+
+    /**
+     * Disable pigs from changing to pig zombies
+     */
+    @EventHandler
+    public void onPigZap(PigZapEvent e) {
+        Protection protection = protections.getProtectionAt(e.getEntity().getLocation());
+        if (protection != null) {
+            e.setCancelled(true);
+        }
+    }
+
+    /**
+     * Disable creepers from changing to charged creepers
+     */
+    @EventHandler
+    public void onCreeperZap(CreeperPowerEvent e) {
+        Protection protection = protections.getProtectionAt(e.getEntity().getLocation());
+        if (protection != null) {
+            e.setCancelled(true);
+        }
+    }
+
+    /**
+     * Disable fire spread. Fire should only come from flint and steel
+     *
+     * @param e
+     */
+    @EventHandler
+    public void onBlockIgnite(BlockIgniteEvent e) {
+        if (e.getCause() != BlockIgniteEvent.IgniteCause.FLINT_AND_STEEL) {
             Protection protection = protections.getProtectionAt(e.getBlock().getLocation());
             if (protection != null) {
                 e.setCancelled(true);
             }
 
+        }
+    }
+
+    /**
+     * Disable fire damage
+     */
+    @EventHandler
+    public void onBlockBurn(BlockBurnEvent e) {
+        Protection protection = protections.getProtectionAt(e.getBlock().getLocation());
+        if (protection != null) {
+            e.setCancelled(true);
         }
     }
 

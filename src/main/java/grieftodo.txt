@@ -1,0 +1,54 @@
+
+    /*
+
+    TODO add some options
+
+    PVP
+    Dispenser projectiles doing damage
+    Pickup blocks/items
+    Pistons
+    Sand cannons? Idk how this is prevented
+    Mob griefing in general
+    fire spread
+    Hostile mobs doing damage to other entities
+    Pressure plate = interaction sorta thing
+    pickup blocks on the ground
+
+    TODO test
+
+    lightning strike trident LightningStrikeEvent
+
+    add to this
+
+    TODO test not implemented
+
+
+
+    TODO
+
+    pistons - BlockPistonExtendEvent/Retract
+
+    BlockFromToEvent fluid spread?
+
+    bow chorus flower? yeah if you hit the top. ProjectileHitEvent test
+
+
+    TreeGrowEvent - stop trees going over borders
+
+    sand cannons?
+
+    LIGHTNING
+    pig->zombie pigmen
+    entities get set on fire but they dont take damage
+
+    EntityBlockFormEvent - frost walker
+
+    PotionSplashEvent
+
+    multiplaceevent - beds could overlap pr?
+
+
+    seperate out entity interact? could allow people to interact with their own pets/vehicles
+    storage minecarts can be considered chestse
+
+     */
