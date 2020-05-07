@@ -12,6 +12,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -201,11 +202,13 @@ public class GriefListener implements Listener {
     @EventHandler
     public void onMultiBlockPlace(BlockMultiPlaceEvent e) {
         Player player = e.getPlayer();
-        Location location = e.getBlock().getLocation();
 
-        if (!protections.hasPermission(player, location, Perm.BUILD)) {
-            sendPlayerMessage(player, Perm.BUILD);
-            e.setCancelled(true);
+        for (BlockState b : e.getReplacedBlockStates()) {
+            if (!protections.hasPermission(player, b.getLocation(), Perm.BUILD)) {
+                sendPlayerMessage(player, Perm.BUILD);
+                e.setCancelled(true);
+                return;
+            }
         }
     }
 
@@ -540,6 +543,82 @@ public class GriefListener implements Listener {
             }
         }
 
+    }
+
+    /**
+     * Potion splash
+     *
+     * @param e
+     */
+    @EventHandler
+    public void onPotionSplash(PotionSplashEvent e) {
+        if (e.getAffectedEntities().size() == 0) return; // ignore for 0 entities.
+        // potion splash: witch, player, dispenser.
+        // similar to checking entity damage
+
+        ThrownPotion potion = e.getPotion();
+
+        ProjectileSource source = potion.getShooter();
+
+        if (!(source instanceof Entity)) {
+            // dispenser or something
+            if (!potion.hasMetadata("PROJECTILE_SOURCE")) return;
+
+            Object metadata = potion.getMetadata("PROJECTILE_SOURCE").get(0).value();
+
+            if (!(metadata instanceof Location)) return;
+
+            Protection sourcePr = protections.getProtectionAt((Location) metadata);
+
+            for (LivingEntity entity : e.getAffectedEntities()) {
+                if (sourcePr != null && sourcePr.withinBounds(entity.getLocation())) continue; // same protection
+
+                // different protections
+                Protection destPr = protections.getProtectionAt(entity.getLocation());
+
+                if (destPr != null)
+                    e.setIntensity(entity, 0); // potion came from another protection or outside
+            }
+
+            return;
+        }
+
+        Entity shooter = (Entity) source;
+
+        // shooter is a player, consider if the player has perms
+        if (shooter instanceof Player) {
+            Player player = (Player) shooter;
+
+            for (LivingEntity entity : e.getAffectedEntities()) {
+                EntityType type = entity.getType();
+
+                Perm perm;
+                if (friendlyMobs.contains(type)) {
+                    perm = Perm.KILL_FRIENDLY;
+                } else if (hostileMobs.contains(type)) {
+                    perm = Perm.KILL_HOSTILE;
+                } else return;
+
+                if (!protections.hasPermission(player, entity.getLocation(), perm)) {
+                    e.setIntensity(entity, 0);
+                }
+            }
+
+
+            return;
+        }
+
+        // shooter is another entity - eg witch, cancel if the enemy is not a player
+
+        for (LivingEntity entity : e.getAffectedEntities()) {
+            if (entity instanceof Player) continue;
+
+            Protection protection = protections.getProtectionAt(entity.getLocation());
+
+            if (protection != null) {
+                e.setIntensity(entity, 0);
+            }
+        }
     }
 
     /**

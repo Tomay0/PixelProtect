@@ -16,14 +16,6 @@
 
     TODO test
 
-    lightning strike trident LightningStrikeEvent
-
-    add to this
-
-    TODO test not implemented
-
-
-
     TODO
 
     pistons - BlockPistonExtendEvent/Retract
@@ -37,16 +29,7 @@
 
     sand cannons?
 
-    LIGHTNING
-    pig->zombie pigmen
-    entities get set on fire but they dont take damage
-
     EntityBlockFormEvent - frost walker
-
-    PotionSplashEvent
-
-    multiplaceevent - beds could overlap pr?
-
 
     seperate out entity interact? could allow people to interact with their own pets/vehicles
     storage minecarts can be considered chestse
