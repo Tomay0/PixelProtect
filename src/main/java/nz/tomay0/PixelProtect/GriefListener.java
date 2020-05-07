@@ -7,6 +7,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import nz.tomay0.PixelProtect.protection.Protection;
 import nz.tomay0.PixelProtect.protection.ProtectionHandler;
 import nz.tomay0.PixelProtect.perms.Perm;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -22,6 +23,7 @@ import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
+import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.projectiles.ProjectileSource;
@@ -64,7 +66,7 @@ public class GriefListener implements Listener {
 
     private static Set<Material> getBannedHoldingRightClick() {
         Set<Material> materials = new HashSet<>(Arrays.asList(Material.FLINT_AND_STEEL, Material.END_CRYSTAL, Material.ITEM_FRAME,
-                Material.PAINTING, Material.BONE_MEAL, Material.LEAD, Material.SHEARS));
+                Material.PAINTING, Material.LEAD, Material.SHEARS));
 
         for (Material material : Material.values()) {
             if (material.toString().endsWith("BOAT") || material.toString().endsWith("MINECART") || material.toString().endsWith("SPAWN_EGG") ||
@@ -799,6 +801,67 @@ public class GriefListener implements Listener {
         Protection protection = protections.getProtectionAt(e.getBlock().getLocation());
         if (protection != null) {
             e.setCancelled(true);
+        }
+    }
+
+    /**
+     * Prevent bonemeal feritilization
+     *
+     * @param e
+     */
+    @EventHandler
+    public void onBlockFertilize(BlockFertilizeEvent e) {
+        if (e.getPlayer() == null) return;
+        Block b = e.getBlock();
+
+        Player player = e.getPlayer();
+
+        if (!protections.hasPermission(player, b.getLocation(), Perm.BUILD)) {
+            sendPlayerMessage(player, Perm.BUILD);
+            e.setCancelled(true);
+            return;
+        }
+
+        if (b.getType() == Material.OAK_SAPLING ||
+                b.getType() == Material.SPRUCE_SAPLING ||
+                b.getType() == Material.BIRCH_SAPLING ||
+                b.getType() == Material.JUNGLE_SAPLING ||
+                b.getType() == Material.ACACIA_SAPLING ||
+                b.getType() == Material.DARK_OAK_SAPLING) {
+            // tag saplings for if they grow
+            b.setMetadata("BONEMEAL_PLAYER", new FixedMetadataValue(plugin, player.getName()));
+        }
+    }
+
+    /**
+     * Disable trees growing from outside a pr into one
+     */
+    @EventHandler
+    public void onStructureGrow(StructureGrowEvent e) {
+        Location source = e.getLocation();
+        Player player = null;
+        if (e.isFromBonemeal()) {
+            Block b = e.getLocation().getBlock();
+
+            if (b.hasMetadata("BONEMEAL_PLAYER")) {
+                Object metadata = b.getMetadata("BONEMEAL_PLAYER").get(0).value();
+
+                player = Bukkit.getPlayer(metadata.toString());
+            }
+        }
+
+        Protection sourcePr = protections.getProtectionAt(source);
+
+        for (BlockState block : new ArrayList<>(e.getBlocks())) {
+            if (sourcePr != null && sourcePr.withinBounds(block.getLocation())) continue; // within the same pr
+
+            Protection pr = protections.getProtectionAt(block.getLocation());
+
+            if (pr != null && pr != sourcePr) {
+                if (player != null && pr.hasPermission(player.getUniqueId().toString(), Perm.BUILD)) continue;
+
+                e.getBlocks().remove(block);
+            }
         }
     }
 
