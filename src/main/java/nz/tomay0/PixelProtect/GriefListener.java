@@ -637,7 +637,6 @@ public class GriefListener implements Listener {
             Player player = (Player) entity;
 
             if (!protections.hasPermission(player, b.getLocation(), Perm.BUILD)) {
-                sendPlayerMessage(player, Perm.BUILD);
                 e.setCancelled(true);
             }
         } else {
@@ -937,7 +936,7 @@ public class GriefListener implements Listener {
 
         Set<Location> locations = new HashSet<>();
 
-        for(Block block : e.getBlocks()) {
+        for (Block block : e.getBlocks()) {
             locations.add(block.getLocation().add(0, 255 - block.getLocation().getY(), 0));
             locations.add(block.getLocation().add(e.getDirection().getDirection()).add(0, 255 - block.getLocation().getY(), 0));
         }
@@ -968,7 +967,7 @@ public class GriefListener implements Listener {
 
         Set<Location> locations = new HashSet<>();
 
-        for(Block block : e.getBlocks()) {
+        for (Block block : e.getBlocks()) {
             locations.add(block.getLocation().add(0, 255 - block.getLocation().getY(), 0));
             locations.add(block.getLocation().subtract(e.getDirection().getDirection()).add(0, 255 - block.getLocation().getY(), 0));
         }
@@ -984,6 +983,25 @@ public class GriefListener implements Listener {
             }
         }
 
+    }
+
+    /**
+     * Stop fluids going over borders
+     *
+     * @param e
+     */
+    @EventHandler
+    public void onFluidFlow(BlockFromToEvent e) {
+        Protection sourcePr = protections.getProtectionAt(e.getBlock().getLocation());
+
+        if (sourcePr != null && sourcePr.withinBounds(e.getToBlock().getLocation()))
+            return; // within the same protection
+
+        Protection pr = protections.getProtectionAt(e.getToBlock().getLocation());
+
+        if (pr != sourcePr && pr != null) {
+            e.setCancelled(true);
+        }
     }
 
 }

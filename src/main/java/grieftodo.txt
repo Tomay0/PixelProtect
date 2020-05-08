@@ -18,12 +18,6 @@
 
     TODO
 
-    pistons - BlockPistonExtendEvent/Retract
-
-    BlockFromToEvent fluid spread?
-
-    sand cannons?
-
     growing pumpkins and melons over a border
 
     bonemeal grass over border
