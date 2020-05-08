@@ -392,8 +392,8 @@ public class GriefListener implements Listener {
 
             // flower pots mostly
             if (bannedBuildInteract.contains(block.getType())) {
-                if (!protections.hasPermission(player, block.getLocation(), Perm.CHEST)) {
-                    sendPlayerMessage(player, Perm.CHEST);
+                if (!protections.hasPermission(player, block.getLocation(), Perm.BUILD)) {
+                    sendPlayerMessage(player, Perm.BUILD);
                     e.setCancelled(true);
                     return;
                 }
@@ -621,6 +621,65 @@ public class GriefListener implements Listener {
                 e.setIntensity(entity, 0);
             }
         }
+    }
+
+    /**
+     * Block form - eg: frost walker, snowman snow
+     *
+     * @param e
+     */
+    @EventHandler
+    public void onBlockForm(EntityBlockFormEvent e) {
+        Entity entity = e.getEntity();
+        Block b = e.getBlock();
+
+        if (entity instanceof Player) {
+            Player player = (Player) entity;
+
+            if (!protections.hasPermission(player, b.getLocation(), Perm.BUILD)) {
+                sendPlayerMessage(player, Perm.BUILD);
+                e.setCancelled(true);
+            }
+        } else {
+            Protection protection = protections.getProtectionAt(b.getLocation());
+
+            if (protection != null) {
+                e.setCancelled(true);
+            }
+        }
+    }
+
+    /**
+     * Blocks that break when you hit them with projectiles. (Chorus flower)
+     *
+     * @param e
+     */
+    @EventHandler
+    public void onProjectileHit(ProjectileHitEvent e) {
+        if (e.getHitBlock() == null || e.getHitBlock().getType() != Material.CHORUS_FLOWER) return;
+
+        Projectile projectile = e.getEntity();
+        ProjectileSource source = projectile.getShooter();
+        Location location = e.getHitBlock().getLocation();
+        if (source instanceof Player) {
+            Player player = (Player) source;
+            if (protections.hasPermission(player, location, Perm.BUILD)) return;
+
+            sendPlayerMessage(player, Perm.BUILD);
+        } else if (source instanceof Entity) {
+            Protection protection = protections.getProtectionAt(location);
+            if (protection == null) return;
+        } else if (!checkProjectileOutsideProtection(projectile, location)) return;
+
+        e.getHitBlock().setType(Material.AIR);
+
+        projectile.remove();
+
+        // cancel the event
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            e.getHitBlock().setType(Material.CHORUS_FLOWER);
+        });
+
     }
 
     /**
