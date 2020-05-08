@@ -992,15 +992,42 @@ public class GriefListener implements Listener {
      */
     @EventHandler
     public void onFluidFlow(BlockFromToEvent e) {
-        Protection sourcePr = protections.getProtectionAt(e.getBlock().getLocation());
-
-        if (sourcePr != null && sourcePr.withinBounds(e.getToBlock().getLocation()))
-            return; // within the same protection
-
         Protection pr = protections.getProtectionAt(e.getToBlock().getLocation());
+        if (pr == null) return;
 
-        if (pr != sourcePr && pr != null) {
+        if (!pr.withinBounds(e.getBlock().getLocation())) {
             e.setCancelled(true);
+        }
+    }
+
+    /**
+     * Stop pumpkins and melons from spawning over a border
+     */
+    @EventHandler
+    public void onBlockGrow(BlockGrowEvent e) {
+        if (e.getNewState().getType() != Material.PUMPKIN && e.getNewState().getType() != Material.MELON) return;
+
+
+        Location l = e.getBlock().getLocation();
+        Protection protection = protections.getProtectionAt(l);
+
+        if (protection == null) return;
+
+        // work out where growth was from
+        Set<Location> locations = new HashSet<>();
+
+        for (Location lRel : Arrays.asList(l.clone().add(1, 0, 0), l.clone().add(-1, 0, 0), l.clone().add(0, 0, 1), l.clone().add(0, 0, -1))) {
+            if (lRel.getBlock().getType() == Material.MELON_STEM && e.getNewState().getType() == Material.MELON)
+                locations.add(lRel);
+            else if (lRel.getBlock().getType() == Material.PUMPKIN_STEM && e.getNewState().getType() == Material.PUMPKIN)
+                locations.add(lRel);
+        }
+
+        for (Location location : locations) {
+            if (!protection.withinBounds(location)) {
+                e.setCancelled(true);
+                return;
+            }
         }
     }
 
