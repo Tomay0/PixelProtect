@@ -23,11 +23,37 @@ import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
+import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.util.Vector;
+
+
+
+    /*
+
+    TODO add some options
+
+    PVP
+    Dispenser projectiles doing damage
+    Pickup blocks/items
+    Pistons
+    Nether portal generation
+    Fluid flow
+    dispenser projectiles
+    block form
+    Mob griefing in general
+    fire spread
+    Hostile mobs doing damage to other entities
+    Pressure plate = interaction sorta thing
+    pickup blocks on the ground
+    bonemeal grass over border?
+    seperate out entity interact? could allow people to interact with their own pets/vehicles
+    storage minecarts can be considered chests
+
+     */
 
 
 /**
@@ -1031,4 +1057,38 @@ public class GriefListener implements Listener {
         }
     }
 
+    /**
+     * Stop portals from being created in protections a player does not have access to (generation when trying to change world)
+     *
+     * @param e
+     */
+    @EventHandler
+    public void onPortalCreate(PortalCreateEvent e) {
+        // get blocks created, see if theyre in the pr, cancel if player
+
+        Entity entity = e.getEntity();
+
+        if (entity instanceof Player) {
+            Player player = (Player) entity;
+
+            for (BlockState block : new ArrayList<>(e.getBlocks())) {
+                if (!protections.hasPermission(player, block.getLocation(), Perm.BUILD)) {
+                    e.setCancelled(true);
+                    return;
+                }
+            }
+
+        } else {
+            for (BlockState block : new ArrayList<>(e.getBlocks())) {
+                Protection protection = protections.getProtectionAt(block.getLocation());
+
+                if (protection != null) {
+                    e.setCancelled(true);
+                    return;
+                }
+            }
+        }
+
+
+    }
 }
