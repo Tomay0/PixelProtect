@@ -924,4 +924,66 @@ public class GriefListener implements Listener {
         }
     }
 
+    /**
+     * Piston extend. Can't extend from outside inside a protection
+     *
+     * @param e
+     */
+    @EventHandler
+    public void onPistonExtend(BlockPistonExtendEvent e) {
+        Block piston = e.getBlock();
+
+        Protection sourcePr = protections.getProtectionAt(piston.getLocation());
+
+        Set<Location> locations = new HashSet<>();
+
+        for(Block block : e.getBlocks()) {
+            locations.add(block.getLocation().add(0, 255 - block.getLocation().getY(), 0));
+            locations.add(block.getLocation().add(e.getDirection().getDirection()).add(0, 255 - block.getLocation().getY(), 0));
+        }
+
+        for (Location location : locations) {
+            if (sourcePr != null && sourcePr.withinBounds(location)) continue;
+
+            Protection pr = protections.getProtectionAt(location);
+
+            if (pr != sourcePr && pr != null) {
+                e.setCancelled(true);
+                return;
+            }
+        }
+
+    }
+
+    /**
+     * Piston retract. Can't retract from outside inside
+     *
+     * @param e
+     */
+    @EventHandler
+    public void onPistonRetract(BlockPistonRetractEvent e) {
+        Block piston = e.getBlock();
+
+        Protection sourcePr = protections.getProtectionAt(piston.getLocation());
+
+        Set<Location> locations = new HashSet<>();
+
+        for(Block block : e.getBlocks()) {
+            locations.add(block.getLocation().add(0, 255 - block.getLocation().getY(), 0));
+            locations.add(block.getLocation().subtract(e.getDirection().getDirection()).add(0, 255 - block.getLocation().getY(), 0));
+        }
+
+        for (Location location : locations) {
+            if (sourcePr != null && sourcePr.withinBounds(location)) continue;
+
+            Protection pr = protections.getProtectionAt(location);
+
+            if (pr != sourcePr && pr != null) {
+                e.setCancelled(true);
+                return;
+            }
+        }
+
+    }
+
 }
