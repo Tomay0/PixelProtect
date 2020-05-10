@@ -21,6 +21,7 @@ import static nz.tomay0.PixelProtect.exception.ProtectionExceptionReason.*;
  */
 public class Protection {
     public static final int MIN_SIZE = 5;
+    public static final String DEFAULT_HOME = "home";
 
     /**
      * Name of the protection
@@ -53,6 +54,11 @@ public class Protection {
     private Map<Perm, PermLevel> defaultPermissions;
 
     /**
+     * Homes
+     */
+    private Map<String, Location> homes;
+
+    /**
      * Yml configuration to save to
      */
     private YamlConfiguration yml = null;
@@ -82,7 +88,7 @@ public class Protection {
     }
 
     /**
-     * Create a protection without permission data
+     * The minimal requirements for a valid protection. All parameters set when using /pr create
      *
      * @param name      Name of the protection
      * @param world     World the protection is contained within
@@ -91,8 +97,9 @@ public class Protection {
      * @param north     Northern boundary coordinate
      * @param south     Southern boundary coordinate
      * @param ownerUuid owner id
+     * @param home      location of the home
      */
-    public Protection(String name, String world, int west, int east, int north, int south, String ownerUuid) {
+    public Protection(String name, String world, int west, int east, int north, int south, String ownerUuid, Location home) {
         this.name = name;
         this.world = world;
         this.west = west;
@@ -103,10 +110,10 @@ public class Protection {
 
         playerPermissions = new HashMap<>();
         defaultPermissions = new HashMap<>();
+        homes = new HashMap<>();
 
+        homes.put(Protection.DEFAULT_HOME, home);
         setPermissionLevel(ownerUuid, PermLevel.OWNER);
-
-        validate();
     }
 
     /**
@@ -118,12 +125,13 @@ public class Protection {
      * @param east               Eastern boundary coordinate
      * @param north              Northern boundary coordinate
      * @param south              Southern boundary coordinate
+     * @param homes              all homes
      * @param playerPermissions  playerPerms
      * @param defaultPermissions defaultPerms
      * @param yml                yml config file
      * @param dir                directory containing config files
      */
-    public Protection(String name, String world, int west, int east, int north, int south,
+    public Protection(String name, String world, int west, int east, int north, int south, Map<String, Location> homes,
                       Map<String, PlayerPerms> playerPermissions, Map<Perm, PermLevel> defaultPermissions, YamlConfiguration yml, File dir) {
         this.name = name;
         this.world = world;
@@ -134,6 +142,7 @@ public class Protection {
 
         this.playerPermissions = playerPermissions;
         this.defaultPermissions = defaultPermissions;
+        this.homes = homes;
 
         this.yml = yml;
         this.dir = dir;
@@ -164,6 +173,18 @@ public class Protection {
             yml.set("south", south);
             yml.set("player-perms", null);
             yml.set("default-perms", null);
+
+            // homes
+            for(String home : homes.keySet()) {
+                Location location = homes.get(home);
+
+                yml.set("homes." + home + ".world", location.getWorld().getName());
+                yml.set("homes." + home + ".x", location.getX());
+                yml.set("homes." + home + ".y", location.getY());
+                yml.set("homes." + home + ".z", location.getZ());
+                yml.set("homes." + home + ".yaw", location.getYaw());
+                yml.set("homes." + home + ".pitch", location.getPitch());
+            }
 
             // player perms
             for (String uuid : playerPermissions.keySet()) {
@@ -245,6 +266,14 @@ public class Protection {
         }
         if (numOwners != 1) {
             throw new InvalidProtectionException("There must only be one owner", INVALID_OWNER);
+        }
+
+        // check there is a home
+        if (homes == null) {
+            throw new InvalidProtectionException("There must be at least one home", NO_HOME);
+        }
+        if (!homes.containsKey("home") || homes.get("home") == null) {
+            throw new InvalidProtectionException("There must be at least one home", DEFAULT_HOME_REQUIRED);
         }
     }
 
@@ -357,6 +386,47 @@ public class Protection {
             this.north = oldNorth;
             this.south = oldSouth;
         }
+    }
+
+    /**
+     * Set the location of a home for the protection
+     *
+     * @param home     home name
+     * @param location location
+     */
+    public void setHome(String home, Location location) {
+        homes.put(ProtectionHandler.getIdSafeName(home), location);
+
+        update();
+    }
+
+    /**
+     * Get location of a home
+     *
+     * @param home home name
+     * @return location, null if not exist
+     */
+    public Location getHome(String home) {
+        String idSafeHome = ProtectionHandler.getIdSafeName(home);
+
+        if (homes.containsKey(idSafeHome)) return homes.get(idSafeHome);
+        return null;
+    }
+
+    /**
+     * Delete a home (cannot delete the default)
+     *
+     * @param home home
+     */
+    public void deleteHome(String home) {
+        String idSafeHome = ProtectionHandler.getIdSafeName(home);
+
+        if (idSafeHome.equals(DEFAULT_HOME))
+            throw new InvalidProtectionException("Cannot delete the default home.", DEFAULT_HOME_REQUIRED);
+
+        if (!homes.containsKey(idSafeHome)) return;
+
+        homes.remove(idSafeHome);
     }
 
     /**

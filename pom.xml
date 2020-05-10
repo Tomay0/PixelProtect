@@ -52,6 +52,14 @@
             <scope>test</scope>
 
         </dependency>
+        <!-- Vault -->
+        <!--<dependency>
+            <groupId>net.milkbowl.vault</groupId>
+            <artifactId>VaultAPI</artifactId>
+            <version>1.6</version>
+            <scope>provided</scope>
+        </dependency>-->
+
         <!-- Mockito 2 -->
         <dependency>
             <groupId>org.mockito</groupId>

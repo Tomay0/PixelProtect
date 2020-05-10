@@ -31,31 +31,6 @@ import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.util.Vector;
 
 
-
-    /*
-
-    TODO add some options
-
-    PVP
-    Dispenser projectiles doing damage
-    Pickup blocks/items
-    Pistons
-    Nether portal generation
-    Fluid flow
-    dispenser projectiles
-    block form
-    Mob griefing in general
-    fire spread
-    Hostile mobs doing damage to other entities
-    Pressure plate = interaction sorta thing
-    pickup blocks on the ground
-    bonemeal grass over border?
-    seperate out entity interact? could allow people to interact with their own pets/vehicles
-    storage minecarts can be considered chests
-
-     */
-
-
 /**
  * Listener that checks for all types of griefs within a protection
  */

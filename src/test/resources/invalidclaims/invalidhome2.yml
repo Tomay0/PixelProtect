@@ -7,11 +7,8 @@ south: 10
 homes:
   home:
     world: world
-    x: 0
-    y: 80
-    z: 1
+    x: 7
+    z: 12
 player-perms:
   00000000-0000-0064-0000-0000000000c8:
     level: OWNER
-    perms:
-      NO: true

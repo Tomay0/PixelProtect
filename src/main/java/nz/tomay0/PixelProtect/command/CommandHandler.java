@@ -34,6 +34,9 @@ public class CommandHandler implements CommandExecutor {
         commandsList.add(new MoveCommand(plugin));
         commandsList.add(new RemoveCommand(plugin));
         commandsList.add(new RenameCommand(plugin));
+        commandsList.add(new HomeCommand(plugin));
+        commandsList.add(new SetHomeCommand(plugin));
+        commandsList.add(new DelHomeCommand(plugin));
         commandsList.add(new ShowCommand(plugin));
         commandsList.add(new HideCommand(plugin));
         commandsList.add(new ListCommand(plugin));
@@ -41,7 +44,7 @@ public class CommandHandler implements CommandExecutor {
         commandsList.add(new HelpCommand(plugin, new ArrayList<>(commandsList))); // all commands after here are not contained in /pr help
         commandsList.add(new ConfirmCommand(plugin));
         commandsList.add(new CancelCommand(plugin));
-        commandsList.add(new AbstractCommand(plugin) {
+        /*commandsList.add(new AbstractCommand(plugin) {
             @Override
             public String getCommand() {
                 return "test";
@@ -73,7 +76,7 @@ public class CommandHandler implements CommandExecutor {
                 }
 
             }
-        });
+        });*/
 
         // create map - for usage
         commandMap = new HashMap<>();

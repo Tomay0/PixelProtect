@@ -12,6 +12,71 @@ import java.util.logging.Level;
  * Main plugin entry point for pixel protect
  */
 public class PixelProtectPlugin extends JavaPlugin {
+    /*
+
+    TODO overall:
+
+
+    commands
+    - /pr move
+    - homes
+    - configuration
+    - /pr setperm
+    - /pr list
+    - /pr permpreset ??
+    - consider making the command formatting more lenient
+    - command for admins to override permissions
+    - auto sizes??
+    - administrative protections (eg spawn)
+
+    optimization/performance
+    - try quad tree or similar to find protections faster (and unit performance test this)
+
+    integration
+    - grief prevention importer
+    - economy integration
+    - dynmap integration
+
+    config
+    - default perms - some perm presets maybe
+    - home limit
+    - protection cost
+    - max protection size
+    - dynmap colour?
+
+    misc
+    - help for players. eg: tell them "oh this is the wilderness you can't build here"
+
+    grief
+
+    -pickup blocks on the ground
+    - bonemeal grass over border?
+    - seperate out entity interact? could allow people to interact with their own pets/vehicles storage minecarts can be considered chests
+
+     */
+
+
+
+    /*
+
+    TODO config option ideas
+
+    PVP
+    Dispenser projectiles doing damage
+    Pickup blocks/items
+    Pistons
+    Nether portal generation
+    Fluid flow
+    dispenser projectiles
+    block form
+    Mob griefing in general
+    fire spread
+    Hostile mobs doing damage to other entities
+    Pressure plate = interaction sorta thing
+
+     */
+
+
     private ProtectionHandler protectionHandler;
     private PlayerStateHandler playerStateHandler;
 

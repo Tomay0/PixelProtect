@@ -4,7 +4,9 @@ import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
 import nz.tomay0.PixelProtect.perms.Perm;
 import nz.tomay0.PixelProtect.perms.PermLevel;
 import nz.tomay0.PixelProtect.perms.PlayerPerms;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -27,7 +29,7 @@ public class ProtectionBuilder {
      */
     public static Protection fromYaml(YamlConfiguration yml, File dir) {
         if (!yml.contains("name") || !yml.contains("world") || !yml.contains("west") || !yml.contains("east") || !yml.contains("north") || !yml.contains("south")
-                || !yml.contains("player-perms"))
+                || !yml.contains("player-perms") || !yml.contains("homes"))
             throw new InvalidProtectionException("Invalid Protection yml. Missing values.", YML_EXCEPTION);
 
         // name
@@ -39,6 +41,44 @@ public class ProtectionBuilder {
         int east = yml.getInt("east");
         int north = yml.getInt("north");
         int south = yml.getInt("south");
+
+        // homes
+        Map<String, Location> homes = new HashMap<>();
+
+        ConfigurationSection homeSection = yml.getConfigurationSection("homes");
+
+        if (homeSection == null) {
+            throw new InvalidProtectionException("Invalid Protection yml. Homes not formatted correctly.", YML_EXCEPTION);
+        }
+
+        for (String home : homeSection.getKeys(false)) {
+            ConfigurationSection section = homeSection.getConfigurationSection(home);
+
+            if (section == null)
+                throw new InvalidProtectionException("Invalid Protection yml. Homes not formatted correctly.", YML_EXCEPTION);
+
+            if (!section.contains("world") || !section.contains("x") || !section.contains("y") || !section.contains("z"))
+                throw new InvalidProtectionException("Invalid Protection yml. Home needs world, x, y and z.", INVALID_HOME);
+
+            World homeWorld = Bukkit.getWorld(section.getString("world"));
+            double x = section.getDouble("x");
+            double y = section.getDouble("y");
+            double z = section.getDouble("z");
+
+            if (homeWorld == null)
+                throw new InvalidProtectionException("Invalid Protection yml. Invalid world name.", INVALID_HOME);
+
+            if (section.contains("yaw") && section.contains("pitch")) {
+                float yaw = (float) section.getDouble("yaw");
+                float pitch = (float) section.getDouble("pitch");
+                Location location = new Location(homeWorld, x, y, z, yaw, pitch);
+                homes.put(home, location);
+
+            } else {
+                Location location = new Location(homeWorld, x, y, z);
+                homes.put(home, location);
+            }
+        }
 
 
         // player perms
@@ -106,7 +146,7 @@ public class ProtectionBuilder {
             }
         }
 
-        return new Protection(name, world, west, east, north, south, playerPermissions, defaultPermissions, yml, dir);
+        return new Protection(name, world, west, east, north, south, homes, playerPermissions, defaultPermissions, yml, dir);
     }
 
     /**
@@ -134,7 +174,7 @@ public class ProtectionBuilder {
 
         String uuid = player.getUniqueId().toString();
 
-        Protection protection = new Protection(protectionName, world, west, east, north, south, uuid);
+        Protection protection = new Protection(protectionName, world, west, east, north, south, uuid, player.getLocation());
 
         if (protections.getOverlappingProtections(protection).size() > 0) {
             throw new InvalidProtectionException("This protection will overlap other protections.", PROTECTION_OVERLAPPING);
@@ -164,7 +204,7 @@ public class ProtectionBuilder {
         int north = protection.getNorth() - size[2];
         int south = protection.getSouth() + size[3];
 
-        Protection newBounds = new Protection(protection.getName(), world, west, east, north, south, protection.getOwnerID());
+        Protection newBounds = new Protection(protection.getName(), world, west, east, north, south, protection.getOwnerID(), protection.getHome(Protection.DEFAULT_HOME));
 
         if (protections.getOverlappingProtections(newBounds).size() > 0) {
             throw new InvalidProtectionException("This protection will overlap other protections.", PROTECTION_OVERLAPPING);
@@ -195,7 +235,7 @@ public class ProtectionBuilder {
         int north = protection.getNorth() - shift[2] + shift[3];
         int south = protection.getSouth() - shift[2] + shift[3];
 
-        Protection newBounds = new Protection(protection.getName(), world, west, east, north, south, protection.getOwnerID());
+        Protection newBounds = new Protection(protection.getName(), world, west, east, north, south, protection.getOwnerID(), protection.getHome(Protection.DEFAULT_HOME));
 
         if (protections.getOverlappingProtections(newBounds).size() > 0) {
             throw new InvalidProtectionException("This protection will overlap other protections.", PROTECTION_OVERLAPPING);

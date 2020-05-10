@@ -226,8 +226,8 @@ public class CommandTests {
         CreateCommand createCommand = new CreateCommand(plugin);
 
         // create some test protections
-        protections.addNewProtection(new Protection("Owner1", "world", -100, -50, -100, 100, ownerUUID.toString()));
-        protections.addNewProtection(new Protection("Owner2", "world", -10, 10, -50, -20, ownerUUID.toString()));
+        protections.addNewProtection(new Protection("Owner1", "world", -100, -50, -100, 100, ownerUUID.toString(), new Location(overworld,0,80,0)));
+        protections.addNewProtection(new Protection("Owner2", "world", -10, 10, -50, -20, ownerUUID.toString(), new Location(overworld,0,80,0)));
 
         // no size
         createCommand.onCommand(ownerPlayer, "create Owner3 yes".split(" "));
