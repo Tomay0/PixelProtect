@@ -18,11 +18,10 @@ public class PixelProtectPlugin extends JavaPlugin {
 
 
     commands
-    - /pr move
-    - homes
     - configuration
     - /pr setperm
     - /pr list
+    - /pr homes??
     - /pr permpreset ??
     - consider making the command formatting more lenient
     - command for admins to override permissions

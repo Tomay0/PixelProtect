@@ -1,6 +1,7 @@
 import nz.tomay0.PixelProtect.GriefListener;
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
 import nz.tomay0.PixelProtect.command.*;
+import nz.tomay0.PixelProtect.perms.PermLevel;
 import nz.tomay0.PixelProtect.playerstate.PlayerStateHandler;
 import nz.tomay0.PixelProtect.protection.Protection;
 import nz.tomay0.PixelProtect.protection.ProtectionHandler;
@@ -484,5 +485,127 @@ public class CommandTests {
         renameCommand.onCommand(console, "rename test hello".split(" "));
         assertNull(protections.getProtection("test"));
         assertNotNull(protections.getProtection("hello"));
+    }
+
+    /**
+     * Test the move command
+     */
+    @Test
+    public void testMoveCommand() {
+        CreateCommand createCommand = new CreateCommand(plugin);
+        MoveCommand moveCommand = new MoveCommand(plugin);
+
+        // create
+        createCommand.onCommand(ownerPlayer, "create 3".split(" "));
+        playerState.confirm(ownerPlayer);
+
+        // get the protection
+        Protection protection = protections.getProtection("Owner1");
+        assertNotNull(protection);
+
+        protection.setPermissionLevel(adminUUID.toString(), PermLevel.ADMIN);
+
+        // valid update tests
+
+        // admin location -200, 50.
+        // protection size from -3 to 3 = 6 difference
+
+        // North West
+        moveCommand.onCommand(adminPlayer, "move Owner1 nw".split(" "));
+        assertTrue(playerState.confirm(adminPlayer));
+        assertEquals(-200, protection.getWest());
+        assertEquals(-194, protection.getEast());
+        assertEquals(50, protection.getNorth());
+        assertEquals(56, protection.getSouth());
+
+        // North East
+        moveCommand.onCommand(adminPlayer, "move Owner1 ne".split(" "));
+        assertTrue(playerState.confirm(adminPlayer));
+        assertEquals(-206, protection.getWest());
+        assertEquals(-200, protection.getEast());
+        assertEquals(50, protection.getNorth());
+        assertEquals(56, protection.getSouth());
+
+        // South East
+        moveCommand.onCommand(adminPlayer, "move Owner1 se".split(" "));
+        assertTrue(playerState.confirm(adminPlayer));
+        assertEquals(-206, protection.getWest());
+        assertEquals(-200, protection.getEast());
+        assertEquals(44, protection.getNorth());
+        assertEquals(50, protection.getSouth());
+
+        // South West
+        moveCommand.onCommand(adminPlayer, "move Owner1 sw".split(" "));
+        assertTrue(playerState.confirm(adminPlayer));
+        assertEquals(-200, protection.getWest());
+        assertEquals(-194, protection.getEast());
+        assertEquals(44, protection.getNorth());
+        assertEquals(50, protection.getSouth());
+
+        // Centre
+        moveCommand.onCommand(ownerPlayer, "move c".split(" "));
+        assertTrue(playerState.confirm(ownerPlayer));
+        assertEquals(-3, protection.getWest());
+        assertEquals(3, protection.getEast());
+        assertEquals(-3, protection.getNorth());
+        assertEquals(3, protection.getSouth());
+
+        // North
+        moveCommand.onCommand(ownerPlayer, "move north".split(" "));
+        assertTrue(playerState.confirm(ownerPlayer));
+        assertEquals(-3, protection.getWest());
+        assertEquals(3, protection.getEast());
+        assertEquals(0, protection.getNorth());
+        assertEquals(6, protection.getSouth());
+
+        // South
+        moveCommand.onCommand(ownerPlayer, "move south".split(" "));
+        assertTrue(playerState.confirm(ownerPlayer));
+        assertEquals(-3, protection.getWest());
+        assertEquals(3, protection.getEast());
+        assertEquals(-6, protection.getNorth());
+        assertEquals(0, protection.getSouth());
+
+        // West
+        moveCommand.onCommand(ownerPlayer, "move west".split(" "));
+        assertTrue(playerState.confirm(ownerPlayer));
+        assertEquals(0, protection.getWest());
+        assertEquals(6, protection.getEast());
+        assertEquals(-3, protection.getNorth());
+        assertEquals(3, protection.getSouth());
+
+        // East
+        moveCommand.onCommand(ownerPlayer, "move east".split(" "));
+        assertTrue(playerState.confirm(ownerPlayer));
+        assertEquals(-6, protection.getWest());
+        assertEquals(0, protection.getEast());
+        assertEquals(-3, protection.getNorth());
+        assertEquals(3, protection.getSouth());
+
+        // Test relhome
+        moveCommand.onCommand(ownerPlayer, "move c".split(" "));
+        assertTrue(playerState.confirm(ownerPlayer));
+        moveCommand.onCommand(ownerPlayer, "move relhome".split(" "));
+        assertTrue(playerState.confirm(ownerPlayer));
+        assertEquals(-3, protection.getWest());
+        assertEquals(3, protection.getEast());
+        assertEquals(-3, protection.getNorth());
+        assertEquals(3, protection.getSouth());
+
+        moveCommand.onCommand(adminPlayer, "move Owner1 c".split(" "));
+        assertTrue(playerState.confirm(adminPlayer));
+        assertEquals(-203, protection.getWest());
+        assertEquals(-197, protection.getEast());
+        assertEquals(47, protection.getNorth());
+        assertEquals(53, protection.getSouth());
+
+        protection.setHome("home", new Location(overworld, -1, 80, -2));
+
+        moveCommand.onCommand(ownerPlayer, "move relhome".split(" "));
+        assertTrue(playerState.confirm(ownerPlayer));
+        assertEquals(-202, protection.getWest());
+        assertEquals(-196, protection.getEast());
+        assertEquals(49, protection.getNorth());
+        assertEquals(55, protection.getSouth());
     }
 }
