@@ -21,6 +21,15 @@ public enum PermLevel {
         return level >= otherLevel.level;
     }
 
+    /**
+     * If this level is higher than the other level
+     *
+     * @return boolean
+     */
+    public boolean isAboveLevel(PermLevel otherLevel) {
+        return level > otherLevel.level;
+    }
+
 
     /**
      * Get a PermLevel from a string

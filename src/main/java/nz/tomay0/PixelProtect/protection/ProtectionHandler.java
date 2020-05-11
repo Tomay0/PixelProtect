@@ -2,6 +2,7 @@ package nz.tomay0.PixelProtect.protection;
 
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
 import nz.tomay0.PixelProtect.perms.Perm;
+import nz.tomay0.PixelProtect.perms.PermLevel;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -215,6 +216,67 @@ public class ProtectionHandler {
         if (protection == null) return true; // you have permission if there is no protection
 
         return protection.hasPermission(player.getUniqueId().toString(), perm);
+    }
+
+
+    /**
+     * Test if a command sender has permissions to set the permission of another player (assuming they already have the Perm.SETPERMS permission)
+     *
+     * @param sender     player to test
+     * @param protection protection to test
+     * @param uuid       uuid of the person to set the permissions of
+     * @param level      level to set the permission to
+     * @return
+     */
+    public boolean hasPermissionToSetPermissionLevel(CommandSender sender, Protection protection, String uuid, PermLevel level) {
+        if (sender == null) {
+            // console. Can't promote or demote owner.
+            if (level == PermLevel.OWNER) {
+                return false;
+            }
+            if (protection.getPermissionLevel(uuid) == PermLevel.OWNER) {
+                return false;
+            }
+
+            return true;
+        }
+
+        // player
+        String senderUuid = ((Player) sender).getUniqueId().toString();
+
+        // rules: perm level must be lower to the person that is being updated, to a level that is lower.
+        // this does not apply if the player is owner
+        // You cannot set the permissions of yourself either.
+        PermLevel senderLevel = protection.getPermissionLevel(senderUuid);
+        PermLevel setterLevel = protection.getPermissionLevel(uuid);
+
+        return ((senderLevel.isAboveLevel(setterLevel) && senderLevel.isAboveLevel(level)) || senderLevel == PermLevel.OWNER) && !uuid.equals(senderUuid);
+    }
+
+    /**
+     * Test if a command sender has permissions to set the specific permission of another player (assuming they already have the Perm.SETPERMS permission)
+     *
+     * @param sender     player to test
+     * @param protection protection to test
+     * @param uuid       uuid of the person to set the permissions of
+     * @param perm       perm to update
+     * @return
+     */
+    public boolean hasPermissionToSetSpecificPermission(CommandSender sender, Protection protection, String uuid, Perm perm) {
+        if (sender == null) {
+            // console. Can't update permissions of the owner
+            return protection.getPermissionLevel(uuid) != PermLevel.OWNER;
+        }
+
+        // player
+        String senderUuid = ((Player) sender).getUniqueId().toString();
+
+        // rules: you must already have this permission in order to update, and they must be at an equal or lower permission level.
+        // You cannot set the permissions of yourself either.
+        PermLevel senderLevel = protection.getPermissionLevel(senderUuid);
+        PermLevel setterLevel = protection.getPermissionLevel(uuid);
+
+        return senderLevel.isAboveLevel(setterLevel) && protection.hasPermission(senderUuid, perm) && !uuid.equals(senderUuid);
     }
 
     /**

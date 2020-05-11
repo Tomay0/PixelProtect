@@ -7,6 +7,7 @@ import nz.tomay0.PixelProtect.perms.PlayerPerms;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
@@ -175,7 +176,7 @@ public class Protection {
             yml.set("default-perms", null);
 
             // homes
-            for(String home : homes.keySet()) {
+            for (String home : homes.keySet()) {
                 Location location = homes.get(home);
 
                 yml.set("homes." + home + ".world", location.getWorld().getName());

@@ -81,6 +81,10 @@ public class CommandTests {
         when(Bukkit.getWorld("world")).thenReturn(overworld);
         when(Bukkit.getWorld("world_nether")).thenReturn(nether);
         when(Bukkit.getConsoleSender()).thenReturn(console);
+        when(Bukkit.getOfflinePlayer("Owner1")).thenReturn(ownerPlayer);
+        when(Bukkit.getOfflinePlayer("Admin1")).thenReturn(adminPlayer);
+        when(Bukkit.getOfflinePlayer("Member1")).thenReturn(memberPlayer);
+        when(Bukkit.getOfflinePlayer("Noone1")).thenReturn(noonePlayer);
 
         // mock plugin
         plugin = mock(PixelProtectPlugin.class);
@@ -113,6 +117,7 @@ public class CommandTests {
         when(player.spigot()).thenReturn(spigot);
         when(player.getLocation()).thenReturn(location);
         when(player.getUniqueId()).thenReturn(uuid);
+        when(player.hasPlayedBefore()).thenReturn(true);
 
         return player;
     }
@@ -227,8 +232,8 @@ public class CommandTests {
         CreateCommand createCommand = new CreateCommand(plugin);
 
         // create some test protections
-        protections.addNewProtection(new Protection("Owner1", "world", -100, -50, -100, 100, ownerUUID.toString(), new Location(overworld,0,80,0)));
-        protections.addNewProtection(new Protection("Owner2", "world", -10, 10, -50, -20, ownerUUID.toString(), new Location(overworld,0,80,0)));
+        protections.addNewProtection(new Protection("Owner1", "world", -100, -50, -100, 100, ownerUUID.toString(), new Location(overworld, 0, 80, 0)));
+        protections.addNewProtection(new Protection("Owner2", "world", -10, 10, -50, -20, ownerUUID.toString(), new Location(overworld, 0, 80, 0)));
 
         // no size
         createCommand.onCommand(ownerPlayer, "create Owner3 yes".split(" "));
@@ -607,5 +612,145 @@ public class CommandTests {
         assertEquals(-196, protection.getEast());
         assertEquals(49, protection.getNorth());
         assertEquals(55, protection.getSouth());
+    }
+
+
+    /**
+     * Test the /pr setperm command with levels
+     */
+    @Test
+    public void testSetPermLevel() {
+        SetPermCommand setPerm = new SetPermCommand(plugin);
+        CreateCommand create = new CreateCommand(plugin);
+
+        create.onCommand(ownerPlayer, "create 20".split(" "));
+        playerState.confirm(ownerPlayer);
+
+        Protection protection = protections.getProtection("Owner1");
+
+        // test owner setting all perm levels
+        setPerm.onCommand(ownerPlayer, "setperm Admin1 admin".split(" "));
+        assertEquals(PermLevel.ADMIN, protection.getPermissionLevel(adminUUID.toString()));
+
+        setPerm.onCommand(ownerPlayer, "setperm Member1 MeMbEr asdjioasodji".split(" "));
+        assertEquals(PermLevel.MEMBER, protection.getPermissionLevel(memberUUID.toString()));
+
+        setPerm.onCommand(ownerPlayer, "setperm Owner1 Member1 none".split(" "));
+        assertEquals(PermLevel.NONE, protection.getPermissionLevel(memberUUID.toString()));
+
+        setPerm.onCommand(ownerPlayer, "setperm Member1 owner".split(" "));
+        assertEquals(PermLevel.OWNER, protection.getPermissionLevel(memberUUID.toString()));
+        assertEquals(PermLevel.ADMIN, protection.getPermissionLevel(ownerUUID.toString()));
+
+        // test update perms as an admin
+        setPerm.onCommand(ownerPlayer, "setperm Member1 admin".split(" "));
+        assertEquals(PermLevel.OWNER, protection.getPermissionLevel(memberUUID.toString()));
+        assertEquals(PermLevel.ADMIN, protection.getPermissionLevel(ownerUUID.toString()));
+
+        setPerm.onCommand(ownerPlayer, "setperm Admin1 owner".split(" "));
+        assertEquals(PermLevel.ADMIN, protection.getPermissionLevel(adminUUID.toString()));
+
+        setPerm.onCommand(ownerPlayer, "setperm Admin1 member".split(" "));
+        assertEquals(PermLevel.ADMIN, protection.getPermissionLevel(adminUUID.toString()));
+
+        setPerm.onCommand(ownerPlayer, "setperm Noone1 member".split(" "));
+        assertEquals(PermLevel.MEMBER, protection.getPermissionLevel(nooneUUID.toString()));
+
+        setPerm.onCommand(ownerPlayer, "setperm Noone1 admin".split(" "));
+        assertEquals(PermLevel.MEMBER, protection.getPermissionLevel(nooneUUID.toString()));
+
+        setPerm.onCommand(ownerPlayer, "setperm Noone1 none".split(" "));
+        assertEquals(PermLevel.NONE, protection.getPermissionLevel(nooneUUID.toString()));
+
+        setPerm.onCommand(ownerPlayer, "setperm Owner1 member".split(" "));
+        assertEquals(PermLevel.ADMIN, protection.getPermissionLevel(ownerUUID.toString()));
+
+        setPerm.onCommand(ownerPlayer, "setperm Owner1 owner".split(" "));
+        assertEquals(PermLevel.ADMIN, protection.getPermissionLevel(ownerUUID.toString()));
+
+        setPerm.onCommand(memberPlayer, "setperm Owner1 Owner1 owner".split(" "));
+        assertEquals(PermLevel.OWNER, protection.getPermissionLevel(ownerUUID.toString()));
+        setPerm.onCommand(ownerPlayer, "setperm Owner1 Member1 member".split(" "));
+        assertEquals(PermLevel.MEMBER, protection.getPermissionLevel(memberUUID.toString()));
+
+        // test update permissions as member - should not be allowed
+        setPerm.onCommand(memberPlayer, "setperm Noone1 member".split(" "));
+        assertEquals(PermLevel.NONE, protection.getPermissionLevel(nooneUUID.toString()));
+
+        setPerm.onCommand(memberPlayer, "setperm Admin1 member".split(" "));
+        assertEquals(PermLevel.ADMIN, protection.getPermissionLevel(adminUUID.toString()));
+    }
+
+    /**
+     * Test the /pr setperm command with specific permissions
+     */
+    @Test
+    public void testSetPermSpecific() {
+        SetPermCommand setPerm = new SetPermCommand(plugin);
+        CreateCommand create = new CreateCommand(plugin);
+
+        create.onCommand(ownerPlayer, "create 20".split(" "));
+        playerState.confirm(ownerPlayer);
+
+        Protection protection = protections.getProtection("Owner1");
+
+        // test owner setting all perm levels
+        setPerm.onCommand(ownerPlayer, "setperm Admin1 admin".split(" "));
+        assertEquals(PermLevel.ADMIN, protection.getPermissionLevel(adminUUID.toString()));
+
+        setPerm.onCommand(ownerPlayer, "setperm Member1 member".split(" "));
+        assertEquals(PermLevel.MEMBER, protection.getPermissionLevel(memberUUID.toString()));
+
+        setPerm.onCommand(ownerPlayer, "setperm Member1 setperms true".split(" "));
+        assertTrue(protection.hasPermission(memberUUID.toString(), Perm.SETPERMS));
+
+        // owner set noone
+
+        setPerm.onCommand(ownerPlayer, "setperm Noone1 remove true".split(" "));
+        assertTrue(protection.hasPermission(nooneUUID.toString(), Perm.REMOVE));
+        setPerm.onCommand(ownerPlayer, "setperm Noone1 remove false".split(" "));
+        assertFalse(protection.hasPermission(nooneUUID.toString(), Perm.REMOVE));
+
+        // admin set noone
+
+        setPerm.onCommand(adminPlayer, "setperm Owner1 Noone1 remove true".split(" "));
+        assertFalse(protection.hasPermission(nooneUUID.toString(), Perm.REMOVE));
+        setPerm.onCommand(adminPlayer, "setperm Owner1 Noone1 update true".split(" "));
+        assertTrue(protection.hasPermission(nooneUUID.toString(), Perm.UPDATE));
+        setPerm.onCommand(adminPlayer, "setperm Owner1 Noone1 update false".split(" "));
+        assertFalse(protection.hasPermission(nooneUUID.toString(), Perm.UPDATE));
+
+        // member set noone
+
+        setPerm.onCommand(memberPlayer, "setperm Owner1 Noone1 update true".split(" "));
+        assertFalse(protection.hasPermission(nooneUUID.toString(), Perm.UPDATE));
+        setPerm.onCommand(memberPlayer, "setperm Owner1 Noone1 build true".split(" "));
+        assertTrue(protection.hasPermission(nooneUUID.toString(), Perm.BUILD));
+        setPerm.onCommand(memberPlayer, "setperm Owner1 Noone1 build false".split(" "));
+        assertFalse(protection.hasPermission(nooneUUID.toString(), Perm.BUILD));
+
+        // admin cannot set perms of other admin
+        setPerm.onCommand(ownerPlayer, "setperm Owner1 Member1 admin".split(" "));
+        assertEquals(PermLevel.ADMIN, protection.getPermissionLevel(memberUUID.toString()));
+
+        setPerm.onCommand(memberPlayer, "setperm Owner1 Admin1 update false".split(" "));
+        assertTrue(protection.hasPermission(adminUUID.toString(), Perm.UPDATE));
+
+        setPerm.onCommand(ownerPlayer, "setperm Owner1 Member1 member".split(" "));
+        assertEquals(PermLevel.MEMBER, protection.getPermissionLevel(memberUUID.toString()));
+
+        setPerm.onCommand(memberPlayer, "setperm Owner1 Admin1 update false".split(" "));
+        assertTrue(protection.hasPermission(adminUUID.toString(), Perm.UPDATE));
+
+        // test no setperms perm
+
+        setPerm.onCommand(memberPlayer, "setperm Owner1 Noone1 build true".split(" "));
+        assertTrue(protection.hasPermission(nooneUUID.toString(), Perm.BUILD));
+
+        setPerm.onCommand(ownerPlayer, "setperm Owner1 Member1 setperms false".split(" "));
+
+        setPerm.onCommand(memberPlayer, "setperm Owner1 Noone1 build false".split(" "));
+        assertTrue(protection.hasPermission(nooneUUID.toString(), Perm.BUILD));
+
     }
 }
