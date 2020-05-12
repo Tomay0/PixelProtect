@@ -1,13 +1,12 @@
 package nz.tomay0.PixelProtect.protection;
 
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
-import nz.tomay0.PixelProtect.perms.Perm;
-import nz.tomay0.PixelProtect.perms.PermLevel;
-import nz.tomay0.PixelProtect.perms.PlayerPerms;
+import nz.tomay0.PixelProtect.protection.perms.Perm;
+import nz.tomay0.PixelProtect.protection.perms.PermLevel;
+import nz.tomay0.PixelProtect.protection.perms.PlayerPerms;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
@@ -53,6 +52,11 @@ public class Protection {
      * Default minimum perm level permissions
      */
     private Map<Perm, PermLevel> defaultPermissions;
+
+    /**
+     * Configuration
+     */
+    private Map<Flag, Boolean> flags;
 
     /**
      * Homes
@@ -111,6 +115,7 @@ public class Protection {
 
         playerPermissions = new HashMap<>();
         defaultPermissions = new HashMap<>();
+        flags = new HashMap<>();
         homes = new HashMap<>();
 
         homes.put(Protection.DEFAULT_HOME, home);
@@ -129,11 +134,13 @@ public class Protection {
      * @param homes              all homes
      * @param playerPermissions  playerPerms
      * @param defaultPermissions defaultPerms
+     * @param flags              flags
      * @param yml                yml config file
      * @param dir                directory containing config files
      */
     public Protection(String name, String world, int west, int east, int north, int south, Map<String, Location> homes,
-                      Map<String, PlayerPerms> playerPermissions, Map<Perm, PermLevel> defaultPermissions, YamlConfiguration yml, File dir) {
+                      Map<String, PlayerPerms> playerPermissions, Map<Perm, PermLevel> defaultPermissions,
+                      Map<Flag, Boolean> flags, YamlConfiguration yml, File dir) {
         this.name = name;
         this.world = world;
         this.west = west;
@@ -143,6 +150,7 @@ public class Protection {
 
         this.playerPermissions = playerPermissions;
         this.defaultPermissions = defaultPermissions;
+        this.flags = flags;
         this.homes = homes;
 
         this.yml = yml;
@@ -353,6 +361,30 @@ public class Protection {
     public void setDefaultPermissionLevel(Perm perm, PermLevel minLevel) {
         defaultPermissions.put(perm, minLevel);
         update();
+    }
+
+
+    /**
+     * Set a value in the flags
+     *
+     * @param field flag
+     * @param value value
+     */
+    public void setFlag(Flag field, boolean value) {
+        flags.put(field, value);
+        update();
+    }
+
+    /**
+     * Get the value of a flag. Returns the default if not contained in the hashmap.
+     *
+     * @param field flag
+     */
+    public boolean getFlag(Flag field) {
+        if (flags.containsKey(field)) {
+            return flags.get(field);
+        }
+        return field.getDefaultValue();
     }
 
     /**

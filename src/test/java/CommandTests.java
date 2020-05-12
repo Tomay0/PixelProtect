@@ -1,11 +1,11 @@
-import nz.tomay0.PixelProtect.GriefListener;
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
 import nz.tomay0.PixelProtect.command.*;
-import nz.tomay0.PixelProtect.perms.PermLevel;
+import nz.tomay0.PixelProtect.protection.Flag;
+import nz.tomay0.PixelProtect.protection.perms.PermLevel;
 import nz.tomay0.PixelProtect.playerstate.PlayerStateHandler;
 import nz.tomay0.PixelProtect.protection.Protection;
 import nz.tomay0.PixelProtect.protection.ProtectionHandler;
-import nz.tomay0.PixelProtect.perms.Perm;
+import nz.tomay0.PixelProtect.protection.perms.Perm;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -20,7 +20,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.io.File;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -751,6 +750,34 @@ public class CommandTests {
 
         setPerm.onCommand(memberPlayer, "setperm Owner1 Noone1 build false".split(" "));
         assertTrue(protection.hasPermission(nooneUUID.toString(), Perm.BUILD));
+
+    }
+
+    /**
+     * Test the flag command
+     */
+    @Test
+    public void testFlagCommand() {
+        FlagCommand config = new FlagCommand(plugin);
+        CreateCommand create = new CreateCommand(plugin);
+
+        create.onCommand(ownerPlayer, "create 20".split(" "));
+        playerState.confirm(ownerPlayer);
+
+        Protection protection = protections.getProtection("Owner1");
+
+        // test invalid
+        config.onCommand(memberPlayer, "flag Owner1 pvp true".split(" "));
+        assertFalse(protection.getFlag(Flag.PVP));
+
+        config.onCommand(ownerPlayer, "flag pvp".split(" "));
+        assertFalse(protection.getFlag(Flag.PVP));
+        config.onCommand(ownerPlayer, "flag pvp whoop".split(" "));
+        assertFalse(protection.getFlag(Flag.PVP));
+
+        // valid
+        config.onCommand(ownerPlayer, "flag pvp true".split(" "));
+        assertTrue(protection.getFlag(Flag.PVP));
 
     }
 }

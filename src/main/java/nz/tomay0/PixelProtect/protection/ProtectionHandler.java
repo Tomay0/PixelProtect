@@ -1,8 +1,8 @@
 package nz.tomay0.PixelProtect.protection;
 
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
-import nz.tomay0.PixelProtect.perms.Perm;
-import nz.tomay0.PixelProtect.perms.PermLevel;
+import nz.tomay0.PixelProtect.protection.perms.Perm;
+import nz.tomay0.PixelProtect.protection.perms.PermLevel;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;

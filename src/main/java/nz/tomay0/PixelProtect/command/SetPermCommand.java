@@ -1,14 +1,13 @@
 package nz.tomay0.PixelProtect.command;
 
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
-import nz.tomay0.PixelProtect.perms.Perm;
-import nz.tomay0.PixelProtect.perms.PermLevel;
+import nz.tomay0.PixelProtect.protection.perms.Perm;
+import nz.tomay0.PixelProtect.protection.perms.PermLevel;
 import nz.tomay0.PixelProtect.protection.Protection;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 /**
  * Update player permissions

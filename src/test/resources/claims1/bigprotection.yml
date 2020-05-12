@@ -25,3 +25,5 @@ player-perms:
 default-perms:
   BUILD: ADMIN
   UPDATE: OWNER
+flags:
+  PVP: true

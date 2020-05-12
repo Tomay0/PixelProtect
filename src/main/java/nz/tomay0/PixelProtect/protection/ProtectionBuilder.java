@@ -1,9 +1,9 @@
 package nz.tomay0.PixelProtect.protection;
 
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
-import nz.tomay0.PixelProtect.perms.Perm;
-import nz.tomay0.PixelProtect.perms.PermLevel;
-import nz.tomay0.PixelProtect.perms.PlayerPerms;
+import nz.tomay0.PixelProtect.protection.perms.Perm;
+import nz.tomay0.PixelProtect.protection.perms.PermLevel;
+import nz.tomay0.PixelProtect.protection.perms.PlayerPerms;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -146,7 +146,25 @@ public class ProtectionBuilder {
             }
         }
 
-        return new Protection(name, world, west, east, north, south, homes, playerPermissions, defaultPermissions, yml, dir);
+        //config
+        Map<Flag, Boolean> configuration = new HashMap<>();
+
+        ConfigurationSection configSection = yml.getConfigurationSection("flags");
+
+        if (configSection != null) {
+            for (String configField : configSection.getKeys(false)) {
+                boolean value = configSection.getBoolean(configField);
+
+                Flag field = Flag.fromString(configField);
+
+                if (field == null)
+                    throw new InvalidProtectionException("Invalid Protection yml. Unknown flag.", YML_EXCEPTION);
+
+                configuration.put(field, value);
+            }
+        }
+
+        return new Protection(name, world, west, east, north, south, homes, playerPermissions, defaultPermissions, configuration, yml, dir);
     }
 
     /**

@@ -2,13 +2,9 @@ package nz.tomay0.PixelProtect.command;
 
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
 
 import java.util.*;
 
@@ -38,6 +34,7 @@ public class CommandHandler implements CommandExecutor {
         commandsList.add(new HomeCommand(plugin));
         commandsList.add(new SetHomeCommand(plugin));
         commandsList.add(new DelHomeCommand(plugin));
+        commandsList.add(new FlagCommand(plugin));
         commandsList.add(new ShowCommand(plugin));
         commandsList.add(new HideCommand(plugin));
         commandsList.add(new ListCommand(plugin));
@@ -72,6 +69,7 @@ public class CommandHandler implements CommandExecutor {
         } else {
             sender.sendMessage(ChatColor.LIGHT_PURPLE + "Unknown command. Use " + ChatColor.RED + "/pr help " + ChatColor.LIGHT_PURPLE + "for a list of commands.");
         }
+
         return true;
     }
 }

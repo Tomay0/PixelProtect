@@ -1,6 +1,6 @@
-package nz.tomay0.PixelProtect.perms;
+package nz.tomay0.PixelProtect.protection.perms;
 
-import static nz.tomay0.PixelProtect.perms.PermLevel.*;
+import static nz.tomay0.PixelProtect.protection.perms.PermLevel.*;
 
 /**
  * Specific permissions

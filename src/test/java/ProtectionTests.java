@@ -1,9 +1,10 @@
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
+import nz.tomay0.PixelProtect.protection.Flag;
 import nz.tomay0.PixelProtect.protection.Protection;
 import nz.tomay0.PixelProtect.protection.ProtectionBuilder;
 import nz.tomay0.PixelProtect.protection.ProtectionHandler;
-import nz.tomay0.PixelProtect.perms.Perm;
-import nz.tomay0.PixelProtect.perms.PermLevel;
+import nz.tomay0.PixelProtect.protection.perms.Perm;
+import nz.tomay0.PixelProtect.protection.perms.PermLevel;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -527,6 +528,8 @@ public class ProtectionTests {
         assertTrue(protection.hasPermission(adminUUID.toString(), Perm.BUILD));
         assertFalse(protection.hasPermission(adminUUID.toString(), Perm.UPDATE));
         assertTrue(protection.hasPermission(ownerUUID.toString(), Perm.UPDATE));
+        assertTrue(protection.getFlag(Flag.PVP));
+        assertTrue(protection.getFlag(Flag.PRESSURE_PLATE_PROTECTION));
 
         assertEquals(new Location(overworld, 0, 80, 1), protection.getHome(Protection.DEFAULT_HOME));
     }
