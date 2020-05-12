@@ -218,6 +218,21 @@ public class ProtectionHandler {
         return protection.hasPermission(player.getUniqueId().toString(), perm);
     }
 
+    /**
+     * Get the flags at a location
+     *
+     * @param location location to check
+     * @param flag     flag to lookup
+     * @return
+     */
+    public boolean getFlagAt(Location location, Flag flag) {
+        Protection protection = getProtectionAt(location);
+        // TODO admin protections mutliple protections
+        if (protection == null) return flag.getNoProtection();
+
+        return protection.getFlag(flag);
+    }
+
 
     /**
      * Test if a command sender has permissions to set the permission of another player (assuming they already have the Perm.SETPERMS permission)
@@ -229,7 +244,7 @@ public class ProtectionHandler {
      * @return
      */
     public boolean hasPermissionToSetPermissionLevel(CommandSender sender, Protection protection, String uuid, PermLevel level) {
-        if (sender == null) {
+        if (!(sender instanceof Player)) {
             // console. Can't promote or demote owner.
             if (level == PermLevel.OWNER) {
                 return false;
@@ -263,7 +278,7 @@ public class ProtectionHandler {
      * @return
      */
     public boolean hasPermissionToSetSpecificPermission(CommandSender sender, Protection protection, String uuid, Perm perm) {
-        if (sender == null) {
+        if (!(sender instanceof Player)) {
             // console. Can't update permissions of the owner
             return protection.getPermissionLevel(uuid) != PermLevel.OWNER;
         }

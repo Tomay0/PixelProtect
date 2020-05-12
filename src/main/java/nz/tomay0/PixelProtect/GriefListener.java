@@ -4,6 +4,7 @@ import java.util.*;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
+import nz.tomay0.PixelProtect.protection.Flag;
 import nz.tomay0.PixelProtect.protection.Protection;
 import nz.tomay0.PixelProtect.protection.ProtectionHandler;
 import nz.tomay0.PixelProtect.protection.perms.Perm;
@@ -329,10 +330,9 @@ public class GriefListener implements Listener {
         if (e.getAction() == Action.PHYSICAL) {
 
             // when you "step on" blocks
-            if (block.getType().equals(Material.TURTLE_EGG)) {
-                /* || block.getType().toString().endsWith("PRESSURE_PLATE") || block.getType().equals(Material.REDSTONE_ORE) || block.getType().equals(Material.TRIPWIRE)*/
+            if (block.getType().equals(Material.TURTLE_EGG) || (protections.getFlagAt(block.getLocation(), Flag.PRESSURE_PLATE_PROTECTION) &&
+                    (block.getType().toString().endsWith("PRESSURE_PLATE") || block.getType().equals(Material.REDSTONE_ORE) || block.getType().equals(Material.TRIPWIRE)))) {
                 if (!protections.hasPermission(player, block.getLocation(), Perm.INTERACT)) {
-                    sendPlayerMessage(player, Perm.INTERACT);
                     e.setCancelled(true);
                 }
             }
@@ -471,7 +471,7 @@ public class GriefListener implements Listener {
 
         Protection p1 = protections.getProtectionAt(hitLocation);
 
-        if (p1 == null) return false; // ignore if hit an unprotected area
+        if (p1 == null || !p1.getFlag(Flag.ENTITY_DAMAGE_ENTITY)) return false; // ignore if hit an unprotected area
 
         Protection p2 = protections.getProtectionAt(sourceLoc);
 
@@ -507,7 +507,7 @@ public class GriefListener implements Listener {
                 e.setCancelled(true);
             }
         } else {
-            if (protections.getProtectionAt(entity.getLocation()) != null) {
+            if (!protections.getFlagAt(entity.getLocation(), Flag.ENTITY_DAMAGE_ENTITY)) {
                 e.setCancelled(true);
             }
         }
@@ -541,7 +541,7 @@ public class GriefListener implements Listener {
                 e.setCancelled(true);
             }
         } else {
-            if (protections.getProtectionAt(entity.getLocation()) != null) {
+            if (!protections.getFlagAt(entity.getLocation(), Flag.ENTITY_DAMAGE_ENTITY)) {
                 e.setCancelled(true);
             }
         }
@@ -596,7 +596,12 @@ public class GriefListener implements Listener {
                 EntityType type = entity.getType();
 
                 Perm perm;
-                if (friendlyMobs.contains(type)) {
+                if (type == EntityType.PLAYER) {
+                    if (!protections.getFlagAt(entity.getLocation(), Flag.PVP)) {
+                        e.setIntensity(entity, 0);
+                    }
+                    return;
+                } else if (friendlyMobs.contains(type)) {
                     perm = Perm.KILL_FRIENDLY;
                 } else if (hostileMobs.contains(type)) {
                     perm = Perm.KILL_HOSTILE;
@@ -616,9 +621,7 @@ public class GriefListener implements Listener {
         for (LivingEntity entity : e.getAffectedEntities()) {
             if (entity instanceof Player) continue;
 
-            Protection protection = protections.getProtectionAt(entity.getLocation());
-
-            if (protection != null) {
+            if (!protections.getFlagAt(entity.getLocation(), Flag.ENTITY_DAMAGE_ENTITY)) {
                 e.setIntensity(entity, 0);
             }
         }
@@ -641,9 +644,8 @@ public class GriefListener implements Listener {
                 e.setCancelled(true);
             }
         } else {
-            Protection protection = protections.getProtectionAt(b.getLocation());
 
-            if (protection != null) {
+            if (!protections.getFlagAt(entity.getLocation(), Flag.MOB_GRIEFING)) {
                 e.setCancelled(true);
             }
         }
@@ -667,8 +669,7 @@ public class GriefListener implements Listener {
 
             sendPlayerMessage(player, Perm.BUILD);
         } else if (source instanceof Entity) {
-            Protection protection = protections.getProtectionAt(location);
-            if (protection == null) return;
+            if (!protections.getFlagAt(location, Flag.MOB_GRIEFING)) return;
         } else if (!checkProjectileOutsideProtection(projectile, location)) return;
 
         e.getHitBlock().setType(Material.AIR);
@@ -708,7 +709,14 @@ public class GriefListener implements Listener {
             EntityType type = entity.getType();
 
             Perm perm = null;
-            if (friendlyMobs.contains(type)) {
+            if (type == EntityType.PLAYER) {
+                // PVP, cancel if disabled in this protection
+                if (!protections.getFlagAt(entity.getLocation(), Flag.PVP)) {
+                    e.setCancelled(true);
+
+                }
+                return;
+            } else if (friendlyMobs.contains(type)) {
                 perm = Perm.KILL_FRIENDLY;
             } else if (hostileMobs.contains(type)) {
                 perm = Perm.KILL_HOSTILE;
@@ -725,12 +733,12 @@ public class GriefListener implements Listener {
         }
         // cancel damage from lightning
         else if (damager instanceof LightningStrike) {
-            if (protections.getProtectionAt(entity.getLocation()) != null) {
+            if (!protections.getFlagAt(entity.getLocation(), Flag.ENTITY_DAMAGE_ENTITY)) {
                 e.setCancelled(true);
             }
         } else {
             if (friendlyMobs.contains(entity.getType()) && hostileMobs.contains(damager.getType())) {
-                if (protections.getProtectionAt(entity.getLocation()) != null) {
+                if (!protections.getFlagAt(entity.getLocation(), Flag.ENTITY_DAMAGE_ENTITY)) {
                     e.setCancelled(true);
                 }
             }
@@ -746,18 +754,11 @@ public class GriefListener implements Listener {
      */
     @EventHandler
     public void onEntityExplode(EntityExplodeEvent e) {
-        Protection protection = protections.getProtectionAt(e.getLocation());
-
         for (Block block : new ArrayList<>(e.blockList())) {
             Location location = block.getLocation();
 
-            if (protection != null && protection.withinBounds(location)) {
+            if (!protections.getFlagAt(location, Flag.EXPLOSION_DAMAGE)) {
                 e.blockList().remove(block);
-            } else {
-                protection = protections.getProtectionAt(block.getLocation());
-                if (protection != null) {
-                    e.blockList().remove(block);
-                }
             }
         }
 
@@ -771,18 +772,11 @@ public class GriefListener implements Listener {
      */
     @EventHandler
     public void onBlockExplode(BlockExplodeEvent e) {
-        Protection protection = protections.getProtectionAt(e.getBlock().getLocation());
-
         for (Block block : new ArrayList<>(e.blockList())) {
             Location location = block.getLocation();
 
-            if (protection != null && protection.withinBounds(location)) {
+            if (!protections.getFlagAt(location, Flag.EXPLOSION_DAMAGE)) {
                 e.blockList().remove(block);
-            } else {
-                protection = protections.getProtectionAt(block.getLocation());
-                if (protection != null) {
-                    e.blockList().remove(block);
-                }
             }
         }
 
@@ -795,8 +789,7 @@ public class GriefListener implements Listener {
      */
     @EventHandler
     public void onEntityChangeBlock(EntityChangeBlockEvent e) {
-        Protection protection = protections.getProtectionAt(e.getBlock().getLocation());
-        if (protection != null) {
+        if (!protections.getFlagAt(e.getBlock().getLocation(), Flag.MOB_GRIEFING)) {
             e.setCancelled(true);
         }
     }
@@ -808,8 +801,7 @@ public class GriefListener implements Listener {
      */
     @EventHandler
     public void onEntityIgnite(EntityCombustByEntityEvent e) {
-        Protection protection = protections.getProtectionAt(e.getEntity().getLocation());
-        if (protection != null) {
+        if (!protections.getFlagAt(e.getEntity().getLocation(), Flag.FIRE_SPREAD)) {
             e.setCancelled(true);
         }
     }
@@ -819,8 +811,7 @@ public class GriefListener implements Listener {
      */
     @EventHandler
     public void onPigZap(PigZapEvent e) {
-        Protection protection = protections.getProtectionAt(e.getEntity().getLocation());
-        if (protection != null) {
+        if (!protections.getFlagAt(e.getEntity().getLocation(), Flag.ENTITY_DAMAGE_ENTITY)) {
             e.setCancelled(true);
         }
     }
@@ -830,8 +821,7 @@ public class GriefListener implements Listener {
      */
     @EventHandler
     public void onCreeperZap(CreeperPowerEvent e) {
-        Protection protection = protections.getProtectionAt(e.getEntity().getLocation());
-        if (protection != null) {
+        if (!protections.getFlagAt(e.getEntity().getLocation(), Flag.ENTITY_DAMAGE_ENTITY)) {
             e.setCancelled(true);
         }
     }
@@ -844,8 +834,7 @@ public class GriefListener implements Listener {
     @EventHandler
     public void onBlockIgnite(BlockIgniteEvent e) {
         if (e.getCause() != BlockIgniteEvent.IgniteCause.FLINT_AND_STEEL) {
-            Protection protection = protections.getProtectionAt(e.getBlock().getLocation());
-            if (protection != null) {
+            if (!protections.getFlagAt(e.getBlock().getLocation(), Flag.FIRE_SPREAD)) {
                 e.setCancelled(true);
             }
 
@@ -857,8 +846,7 @@ public class GriefListener implements Listener {
      */
     @EventHandler
     public void onBlockBurn(BlockBurnEvent e) {
-        Protection protection = protections.getProtectionAt(e.getBlock().getLocation());
-        if (protection != null) {
+        if (!protections.getFlagAt(e.getBlock().getLocation(), Flag.FIRE_SPREAD)) {
             e.setCancelled(true);
         }
     }
@@ -912,11 +900,8 @@ public class GriefListener implements Listener {
         Protection sourcePr = protections.getProtectionAt(source);
 
         for (BlockState block : new ArrayList<>(e.getBlocks())) {
-            if (sourcePr != null && sourcePr.withinBounds(block.getLocation())) continue; // within the same pr
-
             Protection pr = protections.getProtectionAt(block.getLocation());
-
-            if (pr != null && pr != sourcePr) {
+            if (pr != null && pr.getFlag(Flag.BORDER_TREE_PROTECTION) && pr != sourcePr) {
                 if (player != null && pr.hasPermission(player.getUniqueId().toString(), Perm.BUILD)) continue;
 
                 e.getBlocks().remove(block);
@@ -943,11 +928,8 @@ public class GriefListener implements Listener {
         }
 
         for (Location location : locations) {
-            if (sourcePr != null && sourcePr.withinBounds(location)) continue;
-
             Protection pr = protections.getProtectionAt(location);
-
-            if (pr != sourcePr && pr != null) {
+            if (pr != null && pr.getFlag(Flag.BORDER_PISTON_PROTECTION) && pr != sourcePr) {
                 e.setCancelled(true);
                 return;
             }
@@ -974,11 +956,8 @@ public class GriefListener implements Listener {
         }
 
         for (Location location : locations) {
-            if (sourcePr != null && sourcePr.withinBounds(location)) continue;
-
             Protection pr = protections.getProtectionAt(location);
-
-            if (pr != sourcePr && pr != null) {
+            if (pr != null && pr.getFlag(Flag.BORDER_PISTON_PROTECTION) && pr != sourcePr) {
                 e.setCancelled(true);
                 return;
             }
@@ -996,7 +975,7 @@ public class GriefListener implements Listener {
         Protection pr = protections.getProtectionAt(e.getToBlock().getLocation());
         if (pr == null) return;
 
-        if (!pr.withinBounds(e.getBlock().getLocation())) {
+        if (pr.getFlag(Flag.BORDER_FLUID_PROTECTION) && !pr.withinBounds(e.getBlock().getLocation())) {
             e.setCancelled(true);
         }
     }
@@ -1012,7 +991,7 @@ public class GriefListener implements Listener {
         Location l = e.getBlock().getLocation();
         Protection protection = protections.getProtectionAt(l);
 
-        if (protection == null) return;
+        if (protection == null || !protection.getFlag(Flag.BORDER_TREE_PROTECTION)) return;
 
         // work out where growth was from
         Set<Location> locations = new HashSet<>();
@@ -1040,6 +1019,7 @@ public class GriefListener implements Listener {
     @EventHandler
     public void onPortalCreate(PortalCreateEvent e) {
         // get blocks created, see if theyre in the pr, cancel if player
+        if (e.getReason() != PortalCreateEvent.CreateReason.NETHER_PAIR) return; // fire should not be cancelled
 
         Entity entity = e.getEntity();
 
@@ -1047,7 +1027,7 @@ public class GriefListener implements Listener {
             Player player = (Player) entity;
 
             for (BlockState block : new ArrayList<>(e.getBlocks())) {
-                if (!protections.hasPermission(player, block.getLocation(), Perm.BUILD)) {
+                if (protections.getFlagAt(block.getLocation(), Flag.NETHER_PORTAL_PROTECTION) && !protections.hasPermission(player, block.getLocation(), Perm.BUILD)) {
                     e.setCancelled(true);
                     return;
                 }
@@ -1055,9 +1035,7 @@ public class GriefListener implements Listener {
 
         } else {
             for (BlockState block : new ArrayList<>(e.getBlocks())) {
-                Protection protection = protections.getProtectionAt(block.getLocation());
-
-                if (protection != null) {
+                if (protections.getFlagAt(block.getLocation(), Flag.NETHER_PORTAL_PROTECTION)) {
                     e.setCancelled(true);
                     return;
                 }
