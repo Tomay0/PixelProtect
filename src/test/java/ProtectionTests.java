@@ -78,31 +78,6 @@ public class ProtectionTests {
     }
 
     /**
-     * Create a grid of protections
-     *
-     * @param west    west
-     * @param north   north
-     * @param size    size
-     * @param numRoot num root
-     * @return
-     */
-    private static List<Protection> getProtectionGrid(int west, int north, int size, int numRoot) {
-        List<Protection> prs = new ArrayList<>();
-        for (int i = 0; i < numRoot; i++) {
-            for (int j = 0; j < numRoot; j++) {
-                int w = west + i * size;
-                int e = w + size - 1;
-                int n = north + j * size;
-                int s = n + size - 1;
-
-                prs.add(new Protection("pr" + i + "," + j, "world", w, e, n, s, "owner", new Location(Bukkit.getWorld("world"), (w + e) / 2.0, 80, (n + s) / 2)));
-            }
-        }
-
-        return prs;
-    }
-
-    /**
      * Test overlap symmetrically
      *
      * @param pr1

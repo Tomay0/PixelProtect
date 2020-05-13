@@ -18,12 +18,10 @@ public class PixelProtectPlugin extends JavaPlugin {
 
 
     commands
-    - /pr list
-    - /pr homes
-    - /pr perms
-    - /pr setminlevel
-    - /pr permpreset
+    - /pr config
+    - /pr preset
     - consider making the command formatting more lenient
+    - consider making /pr perms have multiple pages.
     - command for admins to override permissions
     - administrative protections (eg spawn)
     - auto sizes??
@@ -127,6 +125,7 @@ public class PixelProtectPlugin extends JavaPlugin {
     public ProtectionHandler getProtections() {
         return protectionHandler;
     }
+
     /**
      * Get player state handler
      *
