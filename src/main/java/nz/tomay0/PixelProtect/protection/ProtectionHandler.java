@@ -3,6 +3,8 @@ package nz.tomay0.PixelProtect.protection;
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
 import nz.tomay0.PixelProtect.protection.perms.Perm;
 import nz.tomay0.PixelProtect.protection.perms.PermLevel;
+import nz.tomay0.PixelProtect.protection.perms.PlayerPerms;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -362,5 +364,45 @@ public class ProtectionHandler {
      */
     public static String getIdSafeName(String name) {
         return name.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+    }
+
+    /**
+     * Show all permissions of a player
+     *
+     * @param player
+     */
+    public void showPerms(Player player) {
+        int numProtections = 0;
+
+        for (Protection protection : protectionsByName.values()) {
+            PlayerPerms perms = protection.getPlayerPerms(player.getUniqueId().toString());
+            if (perms != null) {
+                player.sendMessage(ChatColor.AQUA + protection.getName() + ChatColor.YELLOW + ": " + ChatColor.GREEN + perms.getPermissionLevel().toString());
+                perms.sendAdditionalPermissions(player);
+                numProtections++;
+            }
+        }
+
+        if (numProtections == 0) {
+            player.sendMessage(ChatColor.RED + "You do not have permissions in any protections.");
+        }
+    }
+
+    /**
+     * Show all homes a player has access
+     *
+     * @param player
+     */
+    public void showHomes(Player player) {
+        player.sendMessage(ChatColor.YELLOW + "Type " + ChatColor.RED + "/pr homes <name>" + ChatColor.YELLOW + " to see a list of homes from that protection you can teleport to.");
+        StringBuilder sb = new StringBuilder();
+
+        for (Protection protection : protectionsByName.values()) {
+            if (protection.hasPermission(player.getUniqueId().toString(), Perm.HOME)) {
+                sb.append(protection.getName() + ", ");
+            }
+        }
+
+        player.sendMessage(sb.substring(0, sb.length() - 2));
     }
 }

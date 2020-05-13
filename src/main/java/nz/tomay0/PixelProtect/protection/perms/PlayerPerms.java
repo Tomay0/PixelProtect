@@ -1,7 +1,12 @@
 package nz.tomay0.PixelProtect.protection.perms;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+
+import java.util.*;
 
 /**
  * Decides the permissions for a specific player
@@ -109,9 +114,27 @@ public class PlayerPerms {
 
     /**
      * Iterable for specific permissions
+     *
      * @return an iterable for all specific permissions
      */
     public Iterable<Perm> getSpecificPermissions() {
         return specificPermissions.keySet();
+    }
+
+    /**
+     * Get the player perms as a list of strings that can be printed
+     *
+     * @return
+     */
+    public void sendAdditionalPermissions(CommandSender sender) {
+        if (specificPermissions.size() > 0) {
+            StringBuilder sb = new StringBuilder();
+
+            for (Perm perm : specificPermissions.keySet()) {
+                sb.append(perm.toString().toLowerCase() + ": " + specificPermissions.get(perm) + ", ");
+            }
+
+            sender.sendMessage(ChatColor.YELLOW + "Additional permissions: " + ChatColor.WHITE + sb.substring(0, sb.length() - 2));
+        }
     }
 }

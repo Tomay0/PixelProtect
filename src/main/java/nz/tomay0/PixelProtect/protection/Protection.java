@@ -7,12 +7,16 @@ import nz.tomay0.PixelProtect.protection.perms.PlayerPerms;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static nz.tomay0.PixelProtect.exception.ProtectionExceptionReason.*;
 
@@ -647,5 +651,46 @@ public class Protection {
      */
     public String getMotd() {
         return ChatColor.YELLOW + "Entered " + ChatColor.GREEN + name;
+    }
+
+    /**
+     * Get player permissions for this protection
+     *
+     * @param uuid uuid of the player
+     * @return
+     */
+    public PlayerPerms getPlayerPerms(String uuid) {
+        if (playerPermissions.containsKey(uuid)) {
+            return playerPermissions.get(uuid);
+        }
+        return null;
+    }
+
+
+    /**
+     * Show all permissions in this protection
+     *
+     * @param sender
+     */
+    public void showPerms(CommandSender sender) {
+        for (PlayerPerms perms : playerPermissions.values()) {
+            OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(perms.getPlayerUUID()));
+            sender.sendMessage(ChatColor.AQUA + player.getName() + ChatColor.YELLOW + ": " + ChatColor.GREEN + perms.getPermissionLevel());
+            perms.sendAdditionalPermissions(sender);
+        }
+    }
+
+    /**
+     * Show all homes in a protection
+     *
+     * @param sender
+     */
+    public void showHomes(CommandSender sender) {
+        sender.sendMessage(ChatColor.YELLOW + "All homes for " + ChatColor.GREEN + name + ChatColor.YELLOW + ":");
+        sender.sendMessage(ChatColor.RED + "/pr home " + name);
+        for (String home : homes.keySet()) {
+            if (home.equals(DEFAULT_HOME)) continue;
+            sender.sendMessage(ChatColor.RED + "/pr home " + name + " " + home);
+        }
     }
 }

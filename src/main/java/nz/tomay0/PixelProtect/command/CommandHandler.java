@@ -36,9 +36,11 @@ public class CommandHandler implements CommandExecutor {
         commandsList.add(new DelHomeCommand(plugin));
         commandsList.add(new SetMinLevelCommand(plugin));
         commandsList.add(new FlagCommand(plugin));
+        commandsList.add(new PermsCommand(plugin));
+        commandsList.add(new HomesCommand(plugin));
         commandsList.add(new ShowCommand(plugin));
         commandsList.add(new HideCommand(plugin));
-        commandsList.add(new ListCommand(plugin));
+        commandsList.add(new HereCommand(plugin));
 
         commandsList.add(new HelpCommand(plugin, new ArrayList<>(commandsList))); // all commands after here are not contained in /pr help
         commandsList.add(new ConfirmCommand(plugin));
