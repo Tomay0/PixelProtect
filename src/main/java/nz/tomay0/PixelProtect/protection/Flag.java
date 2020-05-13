@@ -4,16 +4,16 @@ package nz.tomay0.PixelProtect.protection;
  * Boolean config value
  */
 public enum Flag {
-    PVP(false, true), // done i think PVP could be disabled in the wilderness in the config though
-    ENTITY_DAMAGE_ENTITY(false, true), // working as expected
-    FIRE_SPREAD(false, true), // working
+    PVP(false, true),
+    ENTITY_DAMAGE_ENTITY(false, true),
+    FIRE_SPREAD(false, true),
     MOB_GRIEFING(false, true),
+    EXPLOSION_DAMAGE(true, true),
     BORDER_PISTON_PROTECTION(true, false),
     NETHER_PORTAL_PROTECTION(true, false),
-    PRESSURE_PLATE_PROTECTION(true, false), // need to implement
+    PRESSURE_PLATE_PROTECTION(true, false),
     BORDER_FLUID_PROTECTION(true, false),
-    BORDER_TREE_PROTECTION(true, false),
-    EXPLOSION_DAMAGE(true, true);
+    BORDER_TREE_PROTECTION(true, false);
 
 
     private boolean defaultValue, noProtections;

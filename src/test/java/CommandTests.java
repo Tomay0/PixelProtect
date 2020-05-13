@@ -780,4 +780,45 @@ public class CommandTests {
         assertTrue(protection.getFlag(Flag.PVP));
 
     }
+
+    /**
+     * Test the setminlevel command
+     */
+    @Test
+    public void testSetMinLevelCommand() {
+        SetMinLevelCommand setMinLevel = new SetMinLevelCommand(plugin);
+        CreateCommand create = new CreateCommand(plugin);
+
+        create.onCommand(ownerPlayer, "create 20".split(" "));
+        playerState.confirm(ownerPlayer);
+
+        Protection protection = protections.getProtection("Owner1");
+
+        // test invalid
+        setMinLevel.onCommand(ownerPlayer, "setminlevel Owner1 something something".split(" "));
+        setMinLevel.onCommand(ownerPlayer, "setminlevel Owner1 something owner".split(" "));
+        setMinLevel.onCommand(ownerPlayer, "setminlevel Owner1 home something".split(" "));
+
+        setMinLevel.onCommand(adminPlayer, "setminlevel Owner1 home none".split(" "));
+        assertFalse(protection.hasPermission(adminUUID.toString(), Perm.HOME));
+
+
+        setMinLevel.onCommand(ownerPlayer, "setminlevel Owner1 home none".split(" "));
+        assertTrue(protection.hasPermission(adminUUID.toString(), Perm.HOME));
+        setMinLevel.onCommand(ownerPlayer, "setminlevel Owner1 home member".split(" "));
+        assertFalse(protection.hasPermission(adminUUID.toString(), Perm.HOME));
+
+        protection.setPermissionLevel(adminUUID.toString(), PermLevel.ADMIN);
+
+        setMinLevel.onCommand(adminPlayer, "setminlevel Owner1 home none".split(" "));
+        assertTrue(protection.hasPermission(adminUUID.toString(), Perm.HOME));
+
+        setMinLevel.onCommand(adminPlayer, "setminlevel Owner1 home owner".split(" "));
+        assertTrue(protection.hasPermission(adminUUID.toString(), Perm.HOME));
+
+        setMinLevel.onCommand(ownerPlayer, "setminlevel Owner1 home owner".split(" "));
+        assertFalse(protection.hasPermission(adminUUID.toString(), Perm.HOME));
+
+
+    }
 }

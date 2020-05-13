@@ -18,15 +18,15 @@ public class PixelProtectPlugin extends JavaPlugin {
 
 
     commands
-    - configuration
-    - /pr setperm
     - /pr list
-    - /pr homes??
-    - /pr permpreset ??
+    - /pr homes
+    - /pr perms
+    - /pr setminlevel
+    - /pr permpreset
     - consider making the command formatting more lenient
     - command for admins to override permissions
-    - auto sizes??
     - administrative protections (eg spawn)
+    - auto sizes??
 
     optimization/performance
     - try quad tree or similar to find protections faster (and unit performance test this)

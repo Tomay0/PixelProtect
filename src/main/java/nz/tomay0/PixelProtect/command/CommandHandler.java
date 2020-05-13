@@ -34,6 +34,7 @@ public class CommandHandler implements CommandExecutor {
         commandsList.add(new HomeCommand(plugin));
         commandsList.add(new SetHomeCommand(plugin));
         commandsList.add(new DelHomeCommand(plugin));
+        commandsList.add(new SetMinLevelCommand(plugin));
         commandsList.add(new FlagCommand(plugin));
         commandsList.add(new ShowCommand(plugin));
         commandsList.add(new HideCommand(plugin));

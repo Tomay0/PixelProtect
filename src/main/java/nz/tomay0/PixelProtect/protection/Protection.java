@@ -213,6 +213,14 @@ public class Protection {
                 yml.set("default-perms." + perm.toString(), defaultLevel.toString());
             }
 
+            // flags
+            for (Flag flag : flags.keySet()) {
+                boolean value = flags.get(flag);
+
+                yml.set("flags." + flag.toString(), value);
+            }
+
+
             try {
                 File file = getFile();
 

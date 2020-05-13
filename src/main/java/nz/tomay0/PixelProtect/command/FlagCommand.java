@@ -8,7 +8,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 /**
- * Update the flags of the
+ * Update the flags of the protection
  */
 public class FlagCommand extends AbstractCommand {
     /**
