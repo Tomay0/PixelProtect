@@ -1,5 +1,6 @@
 import net.milkbowl.vault.economy.Economy;
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
+import nz.tomay0.PixelProtect.PluginConfig;
 import nz.tomay0.PixelProtect.command.*;
 import nz.tomay0.PixelProtect.protection.*;
 import nz.tomay0.PixelProtect.protection.perms.PermLevel;
@@ -19,6 +20,8 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -47,6 +50,7 @@ public class CommandTests {
 
     private ProtectionHandler protections;
     private PlayerStateHandler playerState;
+    private PluginConfig config;
 
     @Mock
     ConsoleCommandSender console;
@@ -98,6 +102,7 @@ public class CommandTests {
         plugin = mock(PixelProtectPlugin.class);
         protections = new HashedProtectionHandler();
         playerState = new PlayerStateHandler(protections);
+        config = new PluginConfig();
 
         playerState.onPlayerJoin(new PlayerJoinEvent(ownerPlayer, null));
         playerState.onPlayerJoin(new PlayerJoinEvent(adminPlayer, null));
@@ -107,7 +112,7 @@ public class CommandTests {
         when(plugin.getPlayerStateHandler()).thenReturn(playerState);
         when(plugin.getProtections()).thenReturn(protections);
         when(plugin.getEconomy()).thenReturn(economy);
-
+        when(plugin.getPluginConfig()).thenReturn(config);
 
 
     }
@@ -242,58 +247,63 @@ public class CommandTests {
     public void createInvalidCreateCommand() {
         CreateCommand createCommand = new CreateCommand(plugin);
 
+        // not enough funds
+        createCommand.onCommand(ownerPlayer, "create 1000".split(" "));
+        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer, economy));
+        assertNull(protections.getProtectionAt(new Location(overworld, 0, 100, 0)));
+
         // create some test protections
         protections.addNewProtection(new Protection("Owner1", "world", -100, -50, -100, 100, ownerUUID.toString(), new Location(overworld, 0, 80, 0)));
         protections.addNewProtection(new Protection("Owner2", "world", -10, 10, -50, -20, ownerUUID.toString(), new Location(overworld, 0, 80, 0)));
 
         // no size
         createCommand.onCommand(ownerPlayer, "create Owner3 yes".split(" "));
-        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer));
+        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer, economy));
         assertNull(protections.getProtection("Owner3"));
 
         // space between direction
         createCommand.onCommand(ownerPlayer, "create Owner3 s 20 30".split(" "));
-        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer));
+        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer, economy));
         assertNull(protections.getProtection("Owner3"));
 
         // negative size
         createCommand.onCommand(ownerPlayer, "create Owner3 -20".split(" "));
-        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer));
+        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer, economy));
         assertNull(protections.getProtection("Owner3"));
 
         // negative size for one parameter
         createCommand.onCommand(ownerPlayer, "create Owner3 w-20 20".split(" "));
-        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer));
+        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer, economy));
         assertNull(protections.getProtection("Owner3"));
 
         // negative size for one parameter 2
         createCommand.onCommand(ownerPlayer, "create Owner3 w20 -20".split(" "));
-        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer));
+        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer, economy));
         assertNull(protections.getProtection("Owner3"));
 
         // name with spaces
         createCommand.onCommand(ownerPlayer, "create Owner3 ok 20".split(" "));
-        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer));
+        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer, economy));
         assertNull(protections.getProtection("Owner3"));
 
         // ending with the direction
         createCommand.onCommand(ownerPlayer, "create Owner3 20s".split(" "));
-        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer));
+        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer, economy));
         assertNull(protections.getProtection("Owner3"));
 
         // create with same name
         createCommand.onCommand(ownerPlayer, "create 10".split(" "));
-        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer));
+        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer, economy));
         assertNull(protections.getProtectionAt(new Location(overworld, 0, 100, 0)));
 
         // create but overlapping
         createCommand.onCommand(ownerPlayer, "create Owner3 20".split(" "));
-        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer));
+        assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer, economy));
         assertNull(protections.getProtectionAt(new Location(overworld, 0, 100, 0)));
 
         // create valid
         createCommand.onCommand(ownerPlayer, "create Owner3 19".split(" "));
-        plugin.getPlayerStateHandler().confirm(ownerPlayer);
+        plugin.getPlayerStateHandler().confirm(ownerPlayer, economy);
         assertNotNull(protections.getProtectionAt(new Location(overworld, 0, 100, 0)));
 
     }
@@ -336,7 +346,7 @@ public class CommandTests {
 
         // expand east by -30, north by -10
         expandCommand.onCommand(ownerPlayer, "expand Owner1 n-10 e-30".split(" "));
-        assertTrue(playerState.confirm(ownerPlayer));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
 
         assertEquals(-21, protections.getProtection("Owner1").getWest());
         assertEquals(-9, protections.getProtection("Owner1").getEast());
@@ -345,11 +355,11 @@ public class CommandTests {
 
         // another player create a protection
         createCommand.onCommand(adminPlayer, "create Test 8".split(" "));
-        assertTrue(playerState.confirm(adminPlayer));
+        assertTrue(playerState.confirm(adminPlayer, economy));
 
         // expand while another nearby, but still valid
         expandCommand.onCommand(ownerPlayer, "expand Owner1 w20".split(" "));
-        assertTrue(playerState.confirm(ownerPlayer));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
 
         assertEquals(-41, protections.getProtection("Owner1").getWest());
         assertEquals(-9, protections.getProtection("Owner1").getEast());
@@ -359,20 +369,20 @@ public class CommandTests {
 
         // some invalid
         expandCommand.onCommand(ownerPlayer, "expand Owner2 n1".split(" "));
-        assertFalse(playerState.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer, economy));
 
         expandCommand.onCommand(ownerPlayer, "expand Owner1 n 1".split(" "));
-        assertFalse(playerState.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer, economy));
 
         expandCommand.onCommand(adminPlayer, "expand Owner1 n1".split(" "));
-        assertFalse(playerState.confirm(adminPlayer));
-        assertFalse(playerState.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(adminPlayer, economy));
+        assertFalse(playerState.confirm(ownerPlayer, economy));
 
         expandCommand.onCommand(ownerPlayer, "expand Owner1 s1 w151".split(" "));
-        assertFalse(playerState.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer, economy));
 
         expandCommand.onCommand(ownerPlayer, "expand".split(" "));
-        assertFalse(playerState.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer, economy));
     }
 
 
@@ -400,19 +410,19 @@ public class CommandTests {
 
         // invalid
         shiftCommand.onCommand(ownerPlayer, "shift 20".split(" "));
-        assertFalse(playerState.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer, economy));
         shiftCommand.onCommand(ownerPlayer, "shift nsew20".split(" "));
-        assertFalse(playerState.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer, economy));
         shiftCommand.onCommand(ownerPlayer, "shift ns20".split(" "));
-        assertFalse(playerState.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer, economy));
         shiftCommand.onCommand(ownerPlayer, "shift ew20".split(" "));
-        assertFalse(playerState.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer, economy));
         shiftCommand.onCommand(ownerPlayer, "shift".split(" "));
-        assertFalse(playerState.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer, economy));
         shiftCommand.onCommand(ownerPlayer, "shift noone s30".split(" "));
-        assertFalse(playerState.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer, economy));
         shiftCommand.onCommand(adminPlayer, "shift Owner1 s30".split(" "));
-        assertFalse(playerState.confirm(adminPlayer));
+        assertFalse(playerState.confirm(adminPlayer, economy));
 
         // valid
         shiftCommand.onCommand(ownerPlayer, "shift Owner1 s30".split(" "));
@@ -432,7 +442,7 @@ public class CommandTests {
 
         // overlap
         shiftCommand.onCommand(ownerPlayer, "shift Owner1 w180".split(" "));
-        assertFalse(playerState.confirm(ownerPlayer));
+        assertFalse(playerState.confirm(ownerPlayer, economy));
     }
 
     /**
@@ -450,13 +460,13 @@ public class CommandTests {
         assertNotNull(protections.getProtection("Owner1"));
 
         removeCommand.onCommand(adminPlayer, "remove".split(" "));
-        assertFalse(playerState.confirm(adminPlayer));
+        assertFalse(playerState.confirm(adminPlayer, economy));
         removeCommand.onCommand(adminPlayer, "remove Owner1".split(" "));
-        assertFalse(playerState.confirm(adminPlayer));
+        assertFalse(playerState.confirm(adminPlayer, economy));
         assertNotNull(protections.getProtection("Owner1"));
 
         removeCommand.onCommand(ownerPlayer, "remove".split(" "));
-        assertTrue(playerState.confirm(ownerPlayer));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
         assertNull(protections.getProtection("Owner1"));
 
 
@@ -472,7 +482,7 @@ public class CommandTests {
 
         // create
         createCommand.onCommand(ownerPlayer, "create 20".split(" "));
-        playerState.confirm(ownerPlayer);
+        playerState.confirm(ownerPlayer, economy);
 
         assertNotNull(protections.getProtection("Owner1"));
 
@@ -513,7 +523,7 @@ public class CommandTests {
 
         // create
         createCommand.onCommand(ownerPlayer, "create 3".split(" "));
-        playerState.confirm(ownerPlayer);
+        playerState.confirm(ownerPlayer, economy);
 
         // get the protection
         Protection protection = protections.getProtection("Owner1");
@@ -528,7 +538,7 @@ public class CommandTests {
 
         // North West
         moveCommand.onCommand(adminPlayer, "move Owner1 nw".split(" "));
-        assertTrue(playerState.confirm(adminPlayer));
+        assertTrue(playerState.confirm(adminPlayer, economy));
         assertEquals(-200, protection.getWest());
         assertEquals(-194, protection.getEast());
         assertEquals(50, protection.getNorth());
@@ -536,7 +546,7 @@ public class CommandTests {
 
         // North East
         moveCommand.onCommand(adminPlayer, "move Owner1 ne".split(" "));
-        assertTrue(playerState.confirm(adminPlayer));
+        assertTrue(playerState.confirm(adminPlayer, economy));
         assertEquals(-206, protection.getWest());
         assertEquals(-200, protection.getEast());
         assertEquals(50, protection.getNorth());
@@ -544,7 +554,7 @@ public class CommandTests {
 
         // South East
         moveCommand.onCommand(adminPlayer, "move Owner1 se".split(" "));
-        assertTrue(playerState.confirm(adminPlayer));
+        assertTrue(playerState.confirm(adminPlayer, economy));
         assertEquals(-206, protection.getWest());
         assertEquals(-200, protection.getEast());
         assertEquals(44, protection.getNorth());
@@ -552,7 +562,7 @@ public class CommandTests {
 
         // South West
         moveCommand.onCommand(adminPlayer, "move Owner1 sw".split(" "));
-        assertTrue(playerState.confirm(adminPlayer));
+        assertTrue(playerState.confirm(adminPlayer, economy));
         assertEquals(-200, protection.getWest());
         assertEquals(-194, protection.getEast());
         assertEquals(44, protection.getNorth());
@@ -560,7 +570,7 @@ public class CommandTests {
 
         // Centre
         moveCommand.onCommand(ownerPlayer, "move c".split(" "));
-        assertTrue(playerState.confirm(ownerPlayer));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
         assertEquals(-3, protection.getWest());
         assertEquals(3, protection.getEast());
         assertEquals(-3, protection.getNorth());
@@ -568,7 +578,7 @@ public class CommandTests {
 
         // North
         moveCommand.onCommand(ownerPlayer, "move north".split(" "));
-        assertTrue(playerState.confirm(ownerPlayer));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
         assertEquals(-3, protection.getWest());
         assertEquals(3, protection.getEast());
         assertEquals(0, protection.getNorth());
@@ -576,7 +586,7 @@ public class CommandTests {
 
         // South
         moveCommand.onCommand(ownerPlayer, "move south".split(" "));
-        assertTrue(playerState.confirm(ownerPlayer));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
         assertEquals(-3, protection.getWest());
         assertEquals(3, protection.getEast());
         assertEquals(-6, protection.getNorth());
@@ -584,7 +594,7 @@ public class CommandTests {
 
         // West
         moveCommand.onCommand(ownerPlayer, "move west".split(" "));
-        assertTrue(playerState.confirm(ownerPlayer));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
         assertEquals(0, protection.getWest());
         assertEquals(6, protection.getEast());
         assertEquals(-3, protection.getNorth());
@@ -592,7 +602,7 @@ public class CommandTests {
 
         // East
         moveCommand.onCommand(ownerPlayer, "move east".split(" "));
-        assertTrue(playerState.confirm(ownerPlayer));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
         assertEquals(-6, protection.getWest());
         assertEquals(0, protection.getEast());
         assertEquals(-3, protection.getNorth());
@@ -600,16 +610,16 @@ public class CommandTests {
 
         // Test relhome
         moveCommand.onCommand(ownerPlayer, "move c".split(" "));
-        assertTrue(playerState.confirm(ownerPlayer));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
         moveCommand.onCommand(ownerPlayer, "move relhome".split(" "));
-        assertTrue(playerState.confirm(ownerPlayer));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
         assertEquals(-3, protection.getWest());
         assertEquals(3, protection.getEast());
         assertEquals(-3, protection.getNorth());
         assertEquals(3, protection.getSouth());
 
         moveCommand.onCommand(adminPlayer, "move Owner1 c".split(" "));
-        assertTrue(playerState.confirm(adminPlayer));
+        assertTrue(playerState.confirm(adminPlayer, economy));
         assertEquals(-203, protection.getWest());
         assertEquals(-197, protection.getEast());
         assertEquals(47, protection.getNorth());
@@ -618,7 +628,7 @@ public class CommandTests {
         protection.setHome("home", new Location(overworld, -1, 80, -2));
 
         moveCommand.onCommand(ownerPlayer, "move relhome".split(" "));
-        assertTrue(playerState.confirm(ownerPlayer));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
         assertEquals(-202, protection.getWest());
         assertEquals(-196, protection.getEast());
         assertEquals(49, protection.getNorth());
@@ -635,7 +645,7 @@ public class CommandTests {
         CreateCommand create = new CreateCommand(plugin);
 
         create.onCommand(ownerPlayer, "create 20".split(" "));
-        playerState.confirm(ownerPlayer);
+        playerState.confirm(ownerPlayer, economy);
 
         Protection protection = protections.getProtection("Owner1");
 
@@ -701,7 +711,7 @@ public class CommandTests {
         CreateCommand create = new CreateCommand(plugin);
 
         create.onCommand(ownerPlayer, "create 20".split(" "));
-        playerState.confirm(ownerPlayer);
+        playerState.confirm(ownerPlayer, economy);
 
         Protection protection = protections.getProtection("Owner1");
 
@@ -774,7 +784,7 @@ public class CommandTests {
         CreateCommand create = new CreateCommand(plugin);
 
         create.onCommand(ownerPlayer, "create 20".split(" "));
-        playerState.confirm(ownerPlayer);
+        playerState.confirm(ownerPlayer, economy);
 
         Protection protection = protections.getProtection("Owner1");
 
@@ -802,7 +812,7 @@ public class CommandTests {
         CreateCommand create = new CreateCommand(plugin);
 
         create.onCommand(ownerPlayer, "create 20".split(" "));
-        playerState.confirm(ownerPlayer);
+        playerState.confirm(ownerPlayer, economy);
 
         Protection protection = protections.getProtection("Owner1");
 

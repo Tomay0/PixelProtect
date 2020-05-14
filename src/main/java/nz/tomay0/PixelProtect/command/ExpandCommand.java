@@ -59,15 +59,38 @@ public class ExpandCommand extends AbstractCommand {
             return;
         }
         try {
-
+            double cost = 0;
             Protection newBounds = ProtectionBuilder.expand(protection, size, getProtections());
-            getPlayerStateHandler().requestUpdate(sender instanceof Player ? (Player) sender : null, newBounds);
+
+            // calculate cost
+            if (sender instanceof Player) {
+                Player player = (Player) sender;
+
+
+                cost = getConfig().getProtectionBlockCost() * (newBounds.getArea() - protection.getArea());
+
+                double balance = getEconomy().getBalance(player);
+
+                if (cost > balance) {
+                    player.sendMessage(ChatColor.RED + "You cannot afford to expand this protection.");
+                    player.sendMessage(ChatColor.YELLOW + "Balance: " + ChatColor.AQUA + String.format("%.2f", balance) + ChatColor.YELLOW + " Cost: " + ChatColor.AQUA + String.format("%.2f", cost));
+                    return;
+                }
+            }
+
+
+            getPlayerStateHandler().requestUpdate(sender instanceof Player ? (Player) sender : null, newBounds, cost);
 
             sender.sendMessage(ChatColor.YELLOW + "Updating the borders of " + ChatColor.GREEN + newBounds.getName());
+            if (cost > 0) {
+                sender.sendMessage(ChatColor.YELLOW + "This will cost you " + ChatColor.AQUA + "$" + String.format("%.2f", cost));
+            } else if (cost < 0) {
+                sender.sendMessage(ChatColor.YELLOW + "You will receive " + ChatColor.AQUA + "$" + String.format("%.2f", -cost));
+            }
             sender.sendMessage(ChatColor.YELLOW + "Confirm by typing " + ChatColor.AQUA + "/pr confirm");
             sender.sendMessage(ChatColor.LIGHT_PURPLE + "Type " + ChatColor.RED + "/pr cancel" + ChatColor.LIGHT_PURPLE + " to cancel.");
 
-        }catch(InvalidProtectionException e) {
+        } catch (InvalidProtectionException e) {
             CommandUtil.handleUpdateException(sender, e);
         }
 

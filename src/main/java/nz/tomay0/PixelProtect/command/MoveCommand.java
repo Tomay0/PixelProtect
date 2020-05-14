@@ -124,7 +124,7 @@ public class MoveCommand extends AbstractCommand {
         try {
             Protection newBounds = new Protection(protection.getName(), world.getName(), west, east, north, south);
 
-            getPlayerStateHandler().requestUpdate(player, newBounds);
+            getPlayerStateHandler().requestUpdate(player, newBounds, 0);
 
             sender.sendMessage(ChatColor.YELLOW + "Updating the borders of " + ChatColor.GREEN + newBounds.getName());
             sender.sendMessage(ChatColor.YELLOW + "Confirm by typing " + ChatColor.AQUA + "/pr confirm");

@@ -37,7 +37,7 @@ public class ConfirmCommand extends AbstractCommand {
             player = (Player) sender;
 
         try {
-            if (!getPlayerStateHandler().confirm(player)) {
+            if (!getPlayerStateHandler().confirm(player, getEconomy())) {
                 sender.sendMessage(ChatColor.DARK_RED + "Nothing to confirm.");
             }
 

@@ -2,6 +2,7 @@ package nz.tomay0.PixelProtect.playerstate;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.milkbowl.vault.economy.Economy;
 import nz.tomay0.PixelProtect.protection.Protection;
 import nz.tomay0.PixelProtect.protection.ProtectionBuilder;
 import nz.tomay0.PixelProtect.protection.ProtectionHandler;
@@ -83,12 +84,12 @@ public class PlayerStateHandler implements Listener, Runnable {
     /**
      * Request to create a protection
      *
-     * @param player player requesting
-     * @param name   name of the protection
-     * @param size   size of the protection
+     * @param player     player requesting
+     * @param protection protection
+     * @param cost       cost
      */
-    public void requestCreate(Player player, String name, Integer[] size) {
-        Confirmation confirmation = new Confirmation(player, ProtectionBuilder.fromCommand(name, player, size, protections), CREATE);
+    public void requestCreate(Player player, Protection protection, double cost) {
+        Confirmation confirmation = new Confirmation(player, protection, CREATE, cost);
 
         putConfirmation(player, confirmation);
     }
@@ -98,9 +99,10 @@ public class PlayerStateHandler implements Listener, Runnable {
      *
      * @param player    player making the request (null for console)
      * @param newBounds new bounds of the protection
+     * @param cost      cost to update
      */
-    public void requestUpdate(Player player, Protection newBounds) {
-        Confirmation confirmation = new Confirmation(player, newBounds, UPDATE);
+    public void requestUpdate(Player player, Protection newBounds, double cost) {
+        Confirmation confirmation = new Confirmation(player, newBounds, UPDATE, cost);
 
         putConfirmation(player, confirmation);
     }
@@ -110,9 +112,10 @@ public class PlayerStateHandler implements Listener, Runnable {
      *
      * @param player     player making the request (null for console)
      * @param protection protection
+     * @param cost       cost to remove (should be negative)
      */
-    public void requestRemove(Player player, Protection protection) {
-        Confirmation confirmation = new Confirmation(player, protection, REMOVE);
+    public void requestRemove(Player player, Protection protection, double cost) {
+        Confirmation confirmation = new Confirmation(player, protection, REMOVE, cost);
 
         putConfirmation(player, confirmation);
     }
@@ -122,11 +125,11 @@ public class PlayerStateHandler implements Listener, Runnable {
      *
      * @param player
      */
-    public boolean confirm(Player player) {
+    public boolean confirm(Player player, Economy economy) {
         Confirmation confirmation = getConfirmation(player);
         if (confirmation == null) return false;
 
-        confirmation.confirm(protections);
+        confirmation.confirm(protections, economy);
         removeConfirmation(player);
 
         return true;

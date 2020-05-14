@@ -34,7 +34,7 @@ public class CommandUtil {
                 // valid, number specified
                 int sizeParam = Integer.parseInt(arg);
 
-                if (sizeParam < 0 && allowNegative) return null; // invalid size
+                if (sizeParam < 0 && !allowNegative) return null; // invalid size
 
                 for (int j = 0; j < 4; j++) {
                     if (size[j] == null) size[j] = sizeParam;

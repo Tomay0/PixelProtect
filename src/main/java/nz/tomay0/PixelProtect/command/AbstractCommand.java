@@ -2,6 +2,7 @@ package nz.tomay0.PixelProtect.command;
 
 import net.milkbowl.vault.economy.Economy;
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
+import nz.tomay0.PixelProtect.PluginConfig;
 import nz.tomay0.PixelProtect.playerstate.PlayerStateHandler;
 import nz.tomay0.PixelProtect.protection.ProtectionHandler;
 import org.bukkit.command.CommandSender;
@@ -45,6 +46,13 @@ public abstract class AbstractCommand {
      */
     protected Economy getEconomy() {
         return plugin.getEconomy();
+    }
+
+    /**
+     * Get the plugin config
+     */
+    protected PluginConfig getConfig() {
+        return plugin.getPluginConfig();
     }
 
     /**

@@ -4,6 +4,7 @@ import net.milkbowl.vault.economy.Economy;
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
 import nz.tomay0.PixelProtect.protection.Protection;
+import nz.tomay0.PixelProtect.protection.ProtectionBuilder;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -59,23 +60,21 @@ public class CreateCommand extends AbstractCommand {
                 // the first argument is not a size, therefore it shall be considered the size
                 nameSpecified = true;
                 protectionName = args[1];
-                if(args.length > 2) {
+                if (args.length > 2) {
                     // get the size from a larger offset
                     size = CommandUtil.getSize(args, 2, false);
 
-                    if(size == null) {
+                    if (size == null) {
                         incorrectFormatting(player);
                         return;
                     }
-                }
-                else {
+                } else {
                     // use default size
                     size = new Integer[]{
                             DEFAULT_SIZE, DEFAULT_SIZE, DEFAULT_SIZE, DEFAULT_SIZE
                     };
                 }
-            }
-            else {
+            } else {
                 // the name is not specified as the first argument, therefore use the player's name
                 protectionName = player.getName();
             }
@@ -83,22 +82,28 @@ public class CreateCommand extends AbstractCommand {
 
         // create the protection IF POSSIBLE
         try {
-            int cost = 100; // TODO work out cost
+            Protection protection = ProtectionBuilder.fromCommand(protectionName, player, size, getProtections());
 
+            double cost = getConfig().getProtectionSetupCost() + getConfig().getProtectionBlockCost() * protection.getArea();
             double balance = getEconomy().getBalance(player);
 
-            player.sendMessage("Your balance: " + balance);
+            if (cost > balance) {
+                player.sendMessage(ChatColor.RED + "You cannot afford to create this protection.");
+                player.sendMessage(ChatColor.YELLOW + "Balance: " + ChatColor.AQUA + String.format("%.2f", balance) + ChatColor.YELLOW + " Cost: " + ChatColor.AQUA + String.format("%.2f", cost));
+                return;
+            }
 
-            getPlayerStateHandler().requestCreate(player, protectionName, size);
+            getPlayerStateHandler().requestCreate(player, protection, cost);
 
             player.sendMessage(ChatColor.YELLOW + "Creating a new protection named " + ChatColor.GREEN + protectionName);
+            player.sendMessage(ChatColor.YELLOW + "This will cost you " + ChatColor.AQUA + "$" + String.format("%.2f",cost));
             player.sendMessage(ChatColor.YELLOW + "Confirm by typing " + ChatColor.AQUA + "/pr confirm");
             player.sendMessage(ChatColor.LIGHT_PURPLE + "Retype " + ChatColor.RED + "/pr create <name> <size>" + ChatColor.LIGHT_PURPLE + " to change the name and/or size.");
             player.sendMessage(ChatColor.LIGHT_PURPLE + "Type " + ChatColor.RED + "/pr cancel" + ChatColor.LIGHT_PURPLE + " to cancel your creation.");
         } catch (InvalidProtectionException e) {
             // invalid protection
             player.sendMessage(ChatColor.DARK_RED + e.getMessage());
-            switch(e.getReason()){
+            switch (e.getReason()) {
                 case PROTECTION_OVERLAPPING:
                     player.sendMessage(ChatColor.YELLOW + "Try move somewhere else and type the command again.");
                     break;

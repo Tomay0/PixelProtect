@@ -666,6 +666,15 @@ public class Protection {
         return null;
     }
 
+    /**
+     * Get the area of the protection in blocks
+     *
+     * @return number of blocks/area
+     */
+    public int getArea() {
+        return (east - west + 1) * (south - north + 1);
+    }
+
 
     /**
      * Show all permissions in this protection

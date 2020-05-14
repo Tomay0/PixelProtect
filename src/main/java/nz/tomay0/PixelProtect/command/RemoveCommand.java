@@ -45,9 +45,18 @@ public class RemoveCommand extends AbstractCommand {
             sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to remove this protection: " + protection.getName());
             return;
         }
-        getPlayerStateHandler().requestRemove(sender instanceof Player ? (Player) sender : null, protection);
+
+        // check amount of money you get back
+        double cost = 0;
+        if (sender instanceof Player) {
+            cost = -getConfig().getProtectionBlockCost() * protection.getArea();
+        }
+
+
+        getPlayerStateHandler().requestRemove(sender instanceof Player ? (Player) sender : null, protection, cost);
 
         sender.sendMessage(ChatColor.YELLOW + "Removing " + ChatColor.GREEN + protection.getName());
+        sender.sendMessage(ChatColor.YELLOW + "You will receive " + ChatColor.AQUA + "$" + String.format("%.2f", -cost));
         sender.sendMessage(ChatColor.YELLOW + "Confirm by typing " + ChatColor.AQUA + "/pr confirm");
     }
 }

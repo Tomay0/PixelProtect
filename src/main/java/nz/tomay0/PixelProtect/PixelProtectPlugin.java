@@ -81,6 +81,7 @@ public class PixelProtectPlugin extends JavaPlugin {
     private ProtectionHandler protectionHandler;
     private PlayerStateHandler playerStateHandler;
     private Economy vaultEconomy;
+    private PluginConfig config;
 
     @Override
     public void onEnable() {
@@ -94,6 +95,7 @@ public class PixelProtectPlugin extends JavaPlugin {
         // setup protection handler
         protectionHandler = new SequentialProtectionHandler(getProtectionDirectory());
         playerStateHandler = new PlayerStateHandler(protectionHandler);
+        config = new PluginConfig(this);
 
         GriefListener griefListener = new GriefListener(this);
 
@@ -167,5 +169,14 @@ public class PixelProtectPlugin extends JavaPlugin {
      */
     public Economy getEconomy() {
         return vaultEconomy;
+    }
+
+    /**
+     * Get the plugin configuration
+     *
+     * @return
+     */
+    public PluginConfig getPluginConfig() {
+        return config;
     }
 }
