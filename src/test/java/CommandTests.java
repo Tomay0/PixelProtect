@@ -1,10 +1,8 @@
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
 import nz.tomay0.PixelProtect.command.*;
-import nz.tomay0.PixelProtect.protection.Flag;
+import nz.tomay0.PixelProtect.protection.*;
 import nz.tomay0.PixelProtect.protection.perms.PermLevel;
 import nz.tomay0.PixelProtect.playerstate.PlayerStateHandler;
-import nz.tomay0.PixelProtect.protection.Protection;
-import nz.tomay0.PixelProtect.protection.ProtectionHandler;
 import nz.tomay0.PixelProtect.protection.perms.Perm;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -87,7 +85,7 @@ public class CommandTests {
 
         // mock plugin
         plugin = mock(PixelProtectPlugin.class);
-        protections = new ProtectionHandler();
+        protections = new HashedProtectionHandler();
         playerState = new PlayerStateHandler(protections);
 
         playerState.onPlayerJoin(new PlayerJoinEvent(ownerPlayer, null));

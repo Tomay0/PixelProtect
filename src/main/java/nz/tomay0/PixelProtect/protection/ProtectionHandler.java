@@ -19,24 +19,12 @@ import static nz.tomay0.PixelProtect.exception.ProtectionExceptionReason.*;
 /**
  * The protection handler has a collection of all protections on the server and maintains it.
  */
-public class ProtectionHandler {
-
-    /**
-     * A map from a protection's name to the protection object
-     */
-    private Map<String, Protection> protectionsByName = new HashMap<>();
+public abstract class ProtectionHandler implements Iterable<Protection> {
 
     /**
      * Directory containing all protections
      */
     private File dir;
-
-    /**
-     * Empty protection Handler
-     */
-    public ProtectionHandler() {
-        dir = null;
-    }
 
     /**
      * Initialise the collection of protections by the list of yml files in a directory.
@@ -45,24 +33,6 @@ public class ProtectionHandler {
      */
     public ProtectionHandler(File dir) {
         this.dir = dir;
-        for (File f : dir.listFiles()) {
-            if (!f.getName().endsWith(".yml")) continue;
-
-            YamlConfiguration config = YamlConfiguration.loadConfiguration(f);
-
-            addNewProtection(ProtectionBuilder.fromYaml(config, dir));
-        }
-    }
-
-    /**
-     * Initialize the collection of protections by a collection of protections
-     */
-    public ProtectionHandler(Collection<Protection> protections) {
-        dir = null;
-
-        for (Protection protection : protections) {
-            addNewProtection(protection);
-        }
     }
 
 
@@ -82,9 +52,9 @@ public class ProtectionHandler {
             throw new InvalidProtectionException("A protection cannot overlap another protection", PROTECTION_OVERLAPPING);
 
         // add to protection map
-        protectionsByName.put(protection.getIdSafeName(), protection);
+        add(protection);
 
-        protection.setDir(dir);
+        protection.setDir(getDir());
     }
 
     /**
@@ -101,9 +71,7 @@ public class ProtectionHandler {
         if (getOverlappingProtections(newBounds).size() > 0)
             throw new InvalidProtectionException("A protection cannot overlap another protection.", PROTECTION_OVERLAPPING);
 
-
-        // update
-        protection.setBounds(newBounds.getWorld(), newBounds.getWest(), newBounds.getEast(), newBounds.getNorth(), newBounds.getSouth());
+        setBounds(protection, newBounds);
     }
 
     /**
@@ -128,13 +96,40 @@ public class ProtectionHandler {
         if (newName.contains(" "))
             throw new InvalidProtectionException("Name cannot contain spaces.", INVALID_NAME);
 
-        protectionsByName.remove(protection.getIdSafeName());
+        rename(protection, newName);
 
         protection.rename(newName);
-
-        protectionsByName.put(getIdSafeName(newName), protection);
-
     }
+
+    /**
+     * Set new protection bounds
+     *
+     * @param protection protection
+     * @param newBounds  new bounds
+     */
+    protected abstract void setBounds(Protection protection, Protection newBounds);
+
+    /**
+     * Rename a protection
+     *
+     * @param protection
+     * @param newName
+     */
+    protected abstract void rename(Protection protection, String newName);
+
+    /**
+     * Remove a protection
+     *
+     * @param protection
+     */
+    protected abstract void remove(Protection protection);
+
+    /**
+     * Add a protection
+     *
+     * @param protection
+     */
+    protected abstract void add(Protection protection);
 
 
     /**
@@ -150,7 +145,7 @@ public class ProtectionHandler {
             throw new InvalidProtectionException("Unknown protection: " + name, PROTECTION_DOES_NOT_EXIST);
 
         // remove from map
-        protectionsByName.remove(protection.getIdSafeName());
+        remove(protection);
 
         // remove file
         File f = protection.getFile();
@@ -160,14 +155,21 @@ public class ProtectionHandler {
     }
 
     /**
+     * Get directory
+     *
+     * @return
+     */
+    public File getDir() {
+        return dir;
+    }
+
+    /**
      * Get a protection by name
      *
      * @param name name of the protection
      * @return
      */
-    public Protection getProtection(String name) {
-        return protectionsByName.get(getIdSafeName(name));
-    }
+    public abstract Protection getProtection(String name);
 
     /**
      * Test to see how many protections this new protection would overlap
@@ -175,19 +177,7 @@ public class ProtectionHandler {
      * @param protection protection to add
      * @return set of all overlapping protections
      */
-    public Set<Protection> getOverlappingProtections(Protection protection) {
-        Set<Protection> prs = new HashSet<>();
-
-        // TODO implement a quad tree or something to lower the complexity
-
-        for (Protection otherPr : protectionsByName.values()) {
-            if (otherPr.getIdSafeName().equals(protection.getIdSafeName())) continue; // ignore self
-
-            if (isOverlapping(protection, otherPr)) prs.add(otherPr);
-        }
-
-        return prs;
-    }
+    public abstract Set<Protection> getOverlappingProtections(Protection protection);
 
     /**
      * Get the protection at a given location. If unprotected, this will be null.
@@ -195,14 +185,7 @@ public class ProtectionHandler {
      * @param location location to check
      * @return The protection at that location
      */
-    public Protection getProtectionAt(Location location) {
-        for (Protection p : protectionsByName.values()) {
-            if (p.withinBounds(location)) {
-                return p;
-            }
-        }
-        return null;
-    }
+    public abstract Protection getProtectionAt(Location location);
 
     /**
      * Test if a player has permission to do an action at a location
@@ -374,7 +357,7 @@ public class ProtectionHandler {
     public void showPerms(Player player) {
         int numProtections = 0;
 
-        for (Protection protection : protectionsByName.values()) {
+        for (Protection protection : this) {
             PlayerPerms perms = protection.getPlayerPerms(player.getUniqueId().toString());
             if (perms != null) {
                 player.sendMessage(ChatColor.AQUA + protection.getName() + ChatColor.YELLOW + ": " + ChatColor.GREEN + perms.getPermissionLevel().toString());
@@ -397,7 +380,7 @@ public class ProtectionHandler {
         player.sendMessage(ChatColor.YELLOW + "Type " + ChatColor.RED + "/pr homes <name>" + ChatColor.YELLOW + " to see a list of homes from that protection you can teleport to.");
         StringBuilder sb = new StringBuilder();
 
-        for (Protection protection : protectionsByName.values()) {
+        for (Protection protection : this) {
             if (protection.hasPermission(player.getUniqueId().toString(), Perm.HOME)) {
                 sb.append(protection.getName() + ", ");
             }

@@ -2,6 +2,7 @@ package nz.tomay0.PixelProtect;
 
 import nz.tomay0.PixelProtect.command.CommandHandler;
 import nz.tomay0.PixelProtect.protection.ProtectionHandler;
+import nz.tomay0.PixelProtect.protection.SequentialProtectionHandler;
 import org.bukkit.plugin.java.JavaPlugin;
 import nz.tomay0.PixelProtect.playerstate.PlayerStateHandler;
 
@@ -25,9 +26,11 @@ public class PixelProtectPlugin extends JavaPlugin {
     - command for admins to override permissions
     - administrative protections (eg spawn)
     - auto sizes??
+    - motd
+    - colour
 
     optimization/performance
-    - try quad tree or similar to find protections faster (and unit performance test this)
+    - optimize offline player name recognition
 
     integration
     - grief prevention importer
@@ -81,7 +84,7 @@ public class PixelProtectPlugin extends JavaPlugin {
     public void onEnable() {
 
         // setup protection handler
-        protectionHandler = new ProtectionHandler(getProtectionDirectory());
+        protectionHandler = new SequentialProtectionHandler(getProtectionDirectory());
         playerStateHandler = new PlayerStateHandler(protectionHandler);
 
         GriefListener griefListener = new GriefListener(this);

@@ -1,8 +1,5 @@
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
-import nz.tomay0.PixelProtect.protection.Flag;
-import nz.tomay0.PixelProtect.protection.Protection;
-import nz.tomay0.PixelProtect.protection.ProtectionBuilder;
-import nz.tomay0.PixelProtect.protection.ProtectionHandler;
+import nz.tomay0.PixelProtect.protection.*;
 import nz.tomay0.PixelProtect.protection.perms.Perm;
 import nz.tomay0.PixelProtect.protection.perms.PermLevel;
 import org.bukkit.Bukkit;
@@ -20,9 +17,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
@@ -406,7 +401,7 @@ public class ProtectionTests {
      */
     @Test
     public void testOverlapping() {
-        ProtectionHandler handler = new ProtectionHandler();
+        ProtectionHandler handler = new SequentialProtectionHandler();
 
         Protection pr = new Protection("pr1", "world", -10, 10, -10, 10, "owner", new Location(overworld, 0, 80, 0));
 
@@ -442,7 +437,7 @@ public class ProtectionTests {
     @Test
     public void testCreation() {
         // 25 protections in a grid, no errors should occur
-        ProtectionHandler handler = new ProtectionHandler();
+        ProtectionHandler handler = new SequentialProtectionHandler();
 
         // check valid creation
 
@@ -481,7 +476,7 @@ public class ProtectionTests {
      */
     @Test
     public void testYaml() {
-        ProtectionHandler handler = new ProtectionHandler(getTestResource("claims1"));
+        ProtectionHandler handler = new SequentialProtectionHandler(getTestResource("claims1"));
 
         // check that the protection is added
 
@@ -545,7 +540,7 @@ public class ProtectionTests {
 
 
         // load the protection by loading the entire dir
-        ProtectionHandler handler = new ProtectionHandler(dir);
+        ProtectionHandler handler = new SequentialProtectionHandler(dir);
 
         Protection loaded = handler.getProtection("protection-1");
 
@@ -566,7 +561,7 @@ public class ProtectionTests {
     public void testYmlEdit() {
         File dir = getTempDir();
 
-        ProtectionHandler handler = new ProtectionHandler(dir);
+        ProtectionHandler handler = new SequentialProtectionHandler(dir);
 
         // add some protections
         handler.addNewProtection(new Protection("pr1", "world", -10, 10, -10, 10, ownerUUID.toString(), new Location(overworld, 0, 80, 0)));
@@ -592,16 +587,148 @@ public class ProtectionTests {
 
         // change some perms in the protection
         handler.getProtection("pr1").setDefaultPermissionLevel(Perm.SETHOME, PermLevel.NONE);
-        handler = new ProtectionHandler(dir);
+        handler = new SequentialProtectionHandler(dir);
         assertTrue(handler.hasPermission(noonePlayer, new Location(overworld, 0, 10, 0), Perm.SETHOME));
         assertFalse(handler.hasPermission(noonePlayer, new Location(overworld, 0, 10, 0), Perm.BUILD));
 
         handler.getProtection("pr1").setSpecificPermission(nooneUUID.toString(), Perm.BUILD, true);
-        handler = new ProtectionHandler(dir);
+        handler = new SequentialProtectionHandler(dir);
         assertTrue(handler.hasPermission(noonePlayer, new Location(overworld, 0, 10, 0), Perm.BUILD));
 
 
         removeTempDir();
 
+    }
+
+
+    /**
+     * Test implementation of the hashed protection handler basic
+     */
+    @Test
+    public void hashedProtectionHandler() {
+        ProtectionHandler protections = new HashedProtectionHandler();
+
+        protections.addNewProtection(new Protection("Pr1", "world", -1000, 422, -1000, 0,
+                "owner", new Location(overworld, 0, 80, 0)));
+        protections.addNewProtection(new Protection("Pr2", "world", 423, 962, -1000, 0,
+                "owner", new Location(overworld, 0, 80, 0)));
+
+        // test lots of locations within Pr1
+
+        for (int x = -1000; x <= 422; x += 18) {
+            for (int z = -1000; z <= 0; z += 11) {
+                assertEquals("Pr1", protections.getProtectionAt(new Location(overworld, x, 80, z)).getName());
+            }
+        }
+        for (int x = 423; x <= 962; x += 18) {
+            for (int z = -1000; z <= 0; z += 11) {
+                assertEquals("Pr2", protections.getProtectionAt(new Location(overworld, x, 80, z)).getName());
+            }
+        }
+
+    }
+
+    /**
+     * Test hashed protection handler move
+     */
+    @Test
+    public void hashedProtectionMove() {
+        HashedProtectionHandler protections = new HashedProtectionHandler();
+
+        Protection protection = new Protection("Pr1", "world", -1000, 422, -1000, 0,
+                "owner", new Location(overworld, 0, 80, 0));
+
+        protections.addNewProtection(protection);
+
+        Set<Integer> hashes = protections.getHashes(protection);
+
+        protections.updateBounds(new Protection("Pr1", "world", 1000, 1047, 0, 47));
+
+        // all old hashes should be cleared
+
+        Map<Integer, Set<Protection>> newHashes = protections.getProtectionsByLocationHash();
+
+        for (int hash : hashes) {
+            assertFalse(newHashes.containsKey(hash));
+        }
+        for (int hash : protections.getHashes(protection)) {
+            assertTrue(newHashes.containsKey(hash));
+        }
+
+
+    }
+
+    /**
+     * Test hashed protection handler overlap
+     */
+    @Test
+    public void hashedProtectionOverlap() {
+        HashedProtectionHandler protections = new HashedProtectionHandler();
+
+        Protection protection = new Protection("Pr1", "world", -200, 200, -200, 200,
+                "owner", new Location(overworld, 0, 80, 0));
+
+        protections.addNewProtection(protection);
+        try {
+            protections.addNewProtection(new Protection("Pr2", "world", 200, 400, 0, 47));
+            fail();
+        } catch (InvalidProtectionException e) {
+        }
+
+        try {
+            protections.addNewProtection(new Protection("Pr2", "world", 0, 400, 200, 270));
+            fail();
+        } catch (InvalidProtectionException e) {
+        }
+
+
+    }
+
+    /**
+     * Test remove. All these protections are added to the same cell hash
+     */
+    @Test
+    public void hashedProtectionRemove() {
+        HashedProtectionHandler protections = new HashedProtectionHandler();
+
+        Protection protection1 = new Protection("Pr1", "world", 1, 19, 1, 19,
+                "owner", new Location(overworld, 0, 80, 0));
+        Protection protection2 = new Protection("Pr2", "world", 20, 40, 1, 19,
+                "owner", new Location(overworld, 0, 80, 0));
+        Protection protection3 = new Protection("Pr3", "world", 1, 19, 20, 40,
+                "owner", new Location(overworld, 0, 80, 0));
+        Protection protection4 = new Protection("Pr4", "world", 20, 40, 20, 40,
+                "owner", new Location(overworld, 0, 80, 0));
+
+        protections.addNewProtection(protection1);
+        protections.addNewProtection(protection2);
+        protections.addNewProtection(protection3);
+        protections.addNewProtection(protection4);
+
+        assertEquals(1, protections.getProtectionsByLocationHash().size());
+
+        assertEquals("Pr1", protections.getProtectionAt(new Location(overworld,5,80,5)).getName());
+        assertEquals("Pr2", protections.getProtectionAt(new Location(overworld,25,80,5)).getName());
+        assertEquals("Pr3", protections.getProtectionAt(new Location(overworld,5,80,25)).getName());
+        assertEquals("Pr4", protections.getProtectionAt(new Location(overworld,25,80,25)).getName());
+
+        protections.removeProtection("Pr4");
+        assertEquals(1, protections.getProtectionsByLocationHash().size());
+
+        assertEquals("Pr1", protections.getProtectionAt(new Location(overworld,5,80,5)).getName());
+        assertEquals("Pr2", protections.getProtectionAt(new Location(overworld,25,80,5)).getName());
+        assertEquals("Pr3", protections.getProtectionAt(new Location(overworld,5,80,25)).getName());
+        assertNull(protections.getProtectionAt(new Location(overworld,25,80,25)));
+
+        protections.removeProtection("Pr1");
+        protections.removeProtection("Pr2");
+        protections.removeProtection("Pr3");
+
+        assertEquals(0, protections.getProtectionsByLocationHash().size());
+
+        assertNull(protections.getProtectionAt(new Location(overworld,5,80,5)));
+        assertNull(protections.getProtectionAt(new Location(overworld,25,80,5)));
+        assertNull(protections.getProtectionAt(new Location(overworld,5,80,25)));
+        assertNull(protections.getProtectionAt(new Location(overworld,25,80,25)));
     }
 }
