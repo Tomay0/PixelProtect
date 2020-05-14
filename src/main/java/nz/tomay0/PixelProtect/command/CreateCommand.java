@@ -1,5 +1,6 @@
 package nz.tomay0.PixelProtect.command;
 
+import net.milkbowl.vault.economy.Economy;
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
 import nz.tomay0.PixelProtect.protection.Protection;
@@ -82,6 +83,12 @@ public class CreateCommand extends AbstractCommand {
 
         // create the protection IF POSSIBLE
         try {
+            int cost = 100; // TODO work out cost
+
+            double balance = getEconomy().getBalance(player);
+
+            player.sendMessage("Your balance: " + balance);
+
             getPlayerStateHandler().requestCreate(player, protectionName, size);
 
             player.sendMessage(ChatColor.YELLOW + "Creating a new protection named " + ChatColor.GREEN + protectionName);

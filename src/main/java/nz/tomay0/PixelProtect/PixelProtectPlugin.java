@@ -1,8 +1,10 @@
 package nz.tomay0.PixelProtect;
 
+import net.milkbowl.vault.economy.Economy;
 import nz.tomay0.PixelProtect.command.CommandHandler;
 import nz.tomay0.PixelProtect.protection.ProtectionHandler;
 import nz.tomay0.PixelProtect.protection.SequentialProtectionHandler;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import nz.tomay0.PixelProtect.playerstate.PlayerStateHandler;
 
@@ -56,7 +58,6 @@ public class PixelProtectPlugin extends JavaPlugin {
      */
 
 
-
     /*
 
     TODO config option ideas
@@ -75,13 +76,20 @@ public class PixelProtectPlugin extends JavaPlugin {
     Pressure plate = interaction sorta thing
 
      */
-
+    private static final boolean REQUIRES_VAULT = true;
 
     private ProtectionHandler protectionHandler;
     private PlayerStateHandler playerStateHandler;
+    private Economy vaultEconomy;
 
     @Override
     public void onEnable() {
+        // init vault
+        if (!setupEconomy() && REQUIRES_VAULT) {
+            getLogger().log(Level.SEVERE, "Error: Could not load Economy. Vault 1.7 and an economy plugin are required to run Pixel Protect.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
 
         // setup protection handler
         protectionHandler = new SequentialProtectionHandler(getProtectionDirectory());
@@ -99,6 +107,22 @@ public class PixelProtectPlugin extends JavaPlugin {
 
         // log that the plugin has loaded successfully
         getLogger().log(Level.INFO, "Initialized PixelProtect successfully");
+    }
+
+    /**
+     * Setup vault economy.
+     *
+     * @return if the setup was successful.
+     */
+    private boolean setupEconomy() {
+        if (getServer().getPluginManager().getPlugin("Vault") == null) return false;
+
+        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+
+        if (rsp == null) return false;
+
+        vaultEconomy = rsp.getProvider();
+        return vaultEconomy != null;
     }
 
 
@@ -136,5 +160,12 @@ public class PixelProtectPlugin extends JavaPlugin {
      */
     public PlayerStateHandler getPlayerStateHandler() {
         return playerStateHandler;
+    }
+
+    /**
+     * Get economy
+     */
+    public Economy getEconomy() {
+        return vaultEconomy;
     }
 }

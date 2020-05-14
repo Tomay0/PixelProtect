@@ -1,3 +1,4 @@
+import net.milkbowl.vault.economy.Economy;
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
 import nz.tomay0.PixelProtect.command.*;
 import nz.tomay0.PixelProtect.protection.*;
@@ -41,6 +42,9 @@ public class CommandTests {
     @Mock
     private PixelProtectPlugin plugin;
 
+    @Mock
+    private Economy economy;
+
     private ProtectionHandler protections;
     private PlayerStateHandler playerState;
 
@@ -83,6 +87,13 @@ public class CommandTests {
         when(Bukkit.getOfflinePlayer("Member1")).thenReturn(memberPlayer);
         when(Bukkit.getOfflinePlayer("Noone1")).thenReturn(noonePlayer);
 
+        // mock economy, give everyone a balance of 10000
+        economy = mock(Economy.class);
+        when(economy.getBalance(ownerPlayer)).thenReturn(10000.0);
+        when(economy.getBalance(adminPlayer)).thenReturn(10000.0);
+        when(economy.getBalance(memberPlayer)).thenReturn(10000.0);
+        when(economy.getBalance(noonePlayer)).thenReturn(10000.0);
+
         // mock plugin
         plugin = mock(PixelProtectPlugin.class);
         protections = new HashedProtectionHandler();
@@ -95,6 +106,9 @@ public class CommandTests {
 
         when(plugin.getPlayerStateHandler()).thenReturn(playerState);
         when(plugin.getProtections()).thenReturn(protections);
+        when(plugin.getEconomy()).thenReturn(economy);
+
+
 
     }
 
