@@ -49,13 +49,6 @@ public abstract class AbstractCommand {
     }
 
     /**
-     * Get the plugin config
-     */
-    protected PluginConfig getConfig() {
-        return plugin.getPluginConfig();
-    }
-
-    /**
      * Get command label.
      *
      * @return string

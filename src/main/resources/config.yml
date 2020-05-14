@@ -1,0 +1,34 @@
+# ------------------------------------------------------------------ #
+#                                                                    #
+#                                                                    #
+#                       Pixel Protect config                         #
+#                                                                    #
+#                                                                    #
+# ------------------------------------------------------------------ #
+
+
+
+
+# Maximum amount of players a player is allowed to own. -1 = no limit
+max-protections: -1
+
+# Maximum protection size in blocks. -1 = no limit
+max-area: -1
+
+# Default protection radius. The radius it enters for you if you don't include a size with /pr create. To force players to type a size set this as -1.
+default-radius: 3
+
+# Minimum protection diameter. This limits how wide the protection can be in any direction. This number cannot be lower than 1.
+min-diameter: 5
+
+# Maximum number of homes a protection is allowed to have. -1 = no limit
+max-homes: -1
+
+# Number of blocks needed to claim per extra home in a protection. -1 = number of homes are not limited by protection size
+blocks-per-home: 2000
+
+# Cost per block for creating and expanding a protection.
+cost-per-block: 0.5
+
+# An initial non=refundable fee for creating a protection.
+initial-cost: 25.5

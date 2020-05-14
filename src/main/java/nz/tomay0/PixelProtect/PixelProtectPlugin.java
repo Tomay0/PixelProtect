@@ -8,7 +8,8 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import nz.tomay0.PixelProtect.playerstate.PlayerStateHandler;
 
-import java.io.File;
+import java.io.*;
+import java.net.URL;
 import java.util.logging.Level;
 
 /**
@@ -81,7 +82,6 @@ public class PixelProtectPlugin extends JavaPlugin {
     private ProtectionHandler protectionHandler;
     private PlayerStateHandler playerStateHandler;
     private Economy vaultEconomy;
-    private PluginConfig config;
 
     @Override
     public void onEnable() {
@@ -95,7 +95,7 @@ public class PixelProtectPlugin extends JavaPlugin {
         // setup protection handler
         protectionHandler = new SequentialProtectionHandler(getProtectionDirectory());
         playerStateHandler = new PlayerStateHandler(protectionHandler);
-        config = new PluginConfig(this);
+        PluginConfig.loadConfig(getConfigFile());
 
         GriefListener griefListener = new GriefListener(this);
 
@@ -147,6 +147,48 @@ public class PixelProtectPlugin extends JavaPlugin {
     }
 
     /**
+     * Return the config.yml file. If it doesn't exist it will create it using the default one in the resources.
+     *
+     * @return file
+     */
+    private File getConfigFile() {
+        File dataFolder = getDataFolder();
+
+        if (!dataFolder.exists())
+            dataFolder.mkdir();
+
+        File config = new File(dataFolder, "config.yml");
+        if (!config.exists()) {
+            try {
+                // copy the file
+                InputStream is = PixelProtectPlugin.class.getResourceAsStream("/config.yml");
+                if(is == null) {
+                    getLogger().log(Level.WARNING, "Could not load default config.yml. Resource not found in jar");
+                    return null;
+                }
+
+                OutputStream os = new FileOutputStream(config);
+                byte[] buffer = new byte[2048];
+                int bytesRead;
+
+                while ((bytesRead = is.read(buffer)) != -1) {
+                    os.write(buffer, 0, bytesRead);
+                }
+                is.close();
+                os.flush();
+                os.close();
+
+            } catch (IOException e) {
+                getLogger().log(Level.WARNING, "Could not load default config.yml");
+            }
+
+
+        }
+
+        return config;
+    }
+
+    /**
      * Get protections
      *
      * @return
@@ -169,14 +211,5 @@ public class PixelProtectPlugin extends JavaPlugin {
      */
     public Economy getEconomy() {
         return vaultEconomy;
-    }
-
-    /**
-     * Get the plugin configuration
-     *
-     * @return
-     */
-    public PluginConfig getPluginConfig() {
-        return config;
     }
 }

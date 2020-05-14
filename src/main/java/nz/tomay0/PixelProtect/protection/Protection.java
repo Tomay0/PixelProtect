@@ -1,5 +1,6 @@
 package nz.tomay0.PixelProtect.protection;
 
+import nz.tomay0.PixelProtect.PluginConfig;
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
 import nz.tomay0.PixelProtect.protection.perms.Perm;
 import nz.tomay0.PixelProtect.protection.perms.PermLevel;
@@ -24,7 +25,6 @@ import static nz.tomay0.PixelProtect.exception.ProtectionExceptionReason.*;
  * Class representing a protection
  */
 public class Protection {
-    public static final int MIN_SIZE = 5;
     public static final String DEFAULT_HOME = "home";
 
     /**
@@ -252,12 +252,12 @@ public class Protection {
 
         // check coordinates are valid. south > north, east > west
 
-        if (east - west < MIN_SIZE - 1) {
-            throw new InvalidProtectionException("Eastern boundary must be at least " + MIN_SIZE + " of the western boundary.", INVALID_BORDERS);
+        if (east - west < PluginConfig.getInstance().getMinDiameter() - 1) {
+            throw new InvalidProtectionException("Eastern boundary must be at least " + PluginConfig.getInstance().getMinDiameter() + " of the western boundary.", INVALID_BORDERS);
         }
 
-        if (south - north < MIN_SIZE - 1) {
-            throw new InvalidProtectionException("Southern boundary must be at least " + MIN_SIZE + " of the northern boundary.", INVALID_BORDERS);
+        if (south - north < PluginConfig.getInstance().getMinDiameter() - 1) {
+            throw new InvalidProtectionException("Southern boundary must be at least " + PluginConfig.getInstance().getMinDiameter() + " of the northern boundary.", INVALID_BORDERS);
         }
 
         // check perm levels aren't null

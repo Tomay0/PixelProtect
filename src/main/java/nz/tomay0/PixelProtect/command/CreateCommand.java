@@ -1,7 +1,7 @@
 package nz.tomay0.PixelProtect.command;
 
-import net.milkbowl.vault.economy.Economy;
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
+import nz.tomay0.PixelProtect.PluginConfig;
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
 import nz.tomay0.PixelProtect.protection.Protection;
 import nz.tomay0.PixelProtect.protection.ProtectionBuilder;
@@ -13,8 +13,6 @@ import org.bukkit.entity.Player;
  * Creation of a new protection
  */
 public class CreateCommand extends AbstractCommand {
-    private static final int DEFAULT_SIZE = 3;
-
     /**
      * Create new abstract command with a protection handler
      *
@@ -46,11 +44,18 @@ public class CreateCommand extends AbstractCommand {
         Integer[] size;
         boolean nameSpecified = false;
 
+        int defaultSize = PluginConfig.getInstance().getDefaultRadius();
+
+
         if (args.length < 2) {
+            if (defaultSize == -1) {
+                incorrectFormatting(player);
+                return;
+            }
             // no arguments - protection with a set size and your name
             protectionName = player.getName();
             size = new Integer[]{
-                    DEFAULT_SIZE, DEFAULT_SIZE, DEFAULT_SIZE, DEFAULT_SIZE
+                    defaultSize, defaultSize, defaultSize, defaultSize
             };
         } else {
             // first assume the name is not specified
@@ -69,9 +74,13 @@ public class CreateCommand extends AbstractCommand {
                         return;
                     }
                 } else {
+                    if (defaultSize == -1) {
+                        incorrectFormatting(player);
+                        return;
+                    }
                     // use default size
                     size = new Integer[]{
-                            DEFAULT_SIZE, DEFAULT_SIZE, DEFAULT_SIZE, DEFAULT_SIZE
+                            defaultSize, defaultSize, defaultSize, defaultSize
                     };
                 }
             } else {
@@ -84,7 +93,7 @@ public class CreateCommand extends AbstractCommand {
         try {
             Protection protection = ProtectionBuilder.fromCommand(protectionName, player, size, getProtections());
 
-            double cost = getConfig().getProtectionSetupCost() + getConfig().getProtectionBlockCost() * protection.getArea();
+            double cost = PluginConfig.getInstance().getInitialCost() + PluginConfig.getInstance().getCostPerBlock() * protection.getArea();
             double balance = getEconomy().getBalance(player);
 
             if (cost > balance) {
@@ -96,7 +105,7 @@ public class CreateCommand extends AbstractCommand {
             getPlayerStateHandler().requestCreate(player, protection, cost);
 
             player.sendMessage(ChatColor.YELLOW + "Creating a new protection named " + ChatColor.GREEN + protectionName);
-            player.sendMessage(ChatColor.YELLOW + "This will cost you " + ChatColor.AQUA + "$" + String.format("%.2f",cost));
+            player.sendMessage(ChatColor.YELLOW + "This will cost you " + ChatColor.AQUA + "$" + String.format("%.2f", cost));
             player.sendMessage(ChatColor.YELLOW + "Confirm by typing " + ChatColor.AQUA + "/pr confirm");
             player.sendMessage(ChatColor.LIGHT_PURPLE + "Retype " + ChatColor.RED + "/pr create <name> <size>" + ChatColor.LIGHT_PURPLE + " to change the name and/or size.");
             player.sendMessage(ChatColor.LIGHT_PURPLE + "Type " + ChatColor.RED + "/pr cancel" + ChatColor.LIGHT_PURPLE + " to cancel your creation.");
@@ -111,8 +120,8 @@ public class CreateCommand extends AbstractCommand {
                     player.sendMessage(ChatColor.RED + "/pr create <name> <size> " + ChatColor.LIGHT_PURPLE + " is the command to create a protection. Replace <name> with a different name that doesn't exist already.");
                     break;
                 case INVALID_BORDERS:
-                    int minRadius = (Protection.MIN_SIZE - 1) / 2;
-                    player.sendMessage(ChatColor.YELLOW + "The minimum diameter of a protection for either direction is " + ChatColor.RED + Protection.MIN_SIZE +
+                    int minRadius = (PluginConfig.getInstance().getMinDiameter() - 1) / 2;
+                    player.sendMessage(ChatColor.YELLOW + "The minimum diameter of a protection for either direction is " + ChatColor.RED + PluginConfig.getInstance().getMinDiameter() +
                             ChatColor.YELLOW + " blocks. (radius of " + ChatColor.RED + minRadius + ChatColor.YELLOW + ")");
                     player.sendMessage(ChatColor.LIGHT_PURPLE + "For the smallest radius protection, type: " + ChatColor.RED + "/pr create <name>");
                     break;

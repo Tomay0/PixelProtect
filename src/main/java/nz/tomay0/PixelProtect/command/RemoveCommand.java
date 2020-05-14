@@ -1,6 +1,7 @@
 package nz.tomay0.PixelProtect.command;
 
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
+import nz.tomay0.PixelProtect.PluginConfig;
 import nz.tomay0.PixelProtect.protection.perms.Perm;
 import nz.tomay0.PixelProtect.protection.Protection;
 import org.bukkit.ChatColor;
@@ -49,7 +50,7 @@ public class RemoveCommand extends AbstractCommand {
         // check amount of money you get back
         double cost = 0;
         if (sender instanceof Player) {
-            cost = -getConfig().getProtectionBlockCost() * protection.getArea();
+            cost = -PluginConfig.getInstance().getCostPerBlock() * protection.getArea();
         }
 
 

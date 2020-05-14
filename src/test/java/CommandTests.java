@@ -112,7 +112,6 @@ public class CommandTests {
         when(plugin.getPlayerStateHandler()).thenReturn(playerState);
         when(plugin.getProtections()).thenReturn(protections);
         when(plugin.getEconomy()).thenReturn(economy);
-        when(plugin.getPluginConfig()).thenReturn(config);
 
 
     }

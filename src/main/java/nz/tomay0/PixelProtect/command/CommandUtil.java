@@ -1,5 +1,6 @@
 package nz.tomay0.PixelProtect.command;
 
+import nz.tomay0.PixelProtect.PluginConfig;
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
 import nz.tomay0.PixelProtect.exception.ProtectionExceptionReason;
 import nz.tomay0.PixelProtect.protection.Protection;
@@ -132,7 +133,7 @@ public class CommandUtil {
                 sender.sendMessage(ChatColor.YELLOW + "Try making your expansion smaller.");
                 break;
             case INVALID_BORDERS:
-                sender.sendMessage(ChatColor.YELLOW + "The minimum diameter of a protection for either direction is " + ChatColor.RED + Protection.MIN_SIZE +
+                sender.sendMessage(ChatColor.YELLOW + "The minimum diameter of a protection for either direction is " + ChatColor.RED + PluginConfig.getInstance().getMinDiameter() +
                         ChatColor.YELLOW + " blocks.");
                 break;
         }
