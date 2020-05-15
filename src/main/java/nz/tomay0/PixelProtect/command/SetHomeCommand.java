@@ -1,11 +1,13 @@
 package nz.tomay0.PixelProtect.command;
 
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
+import nz.tomay0.PixelProtect.PluginConfig;
 import nz.tomay0.PixelProtect.protection.perms.Perm;
 import nz.tomay0.PixelProtect.protection.Protection;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import sun.plugin2.main.server.Plugin;
 
 /**
  * Set a protections home
@@ -56,6 +58,21 @@ public class SetHomeCommand extends AbstractCommand {
 
         if (args.length > homeArg) {
             home = args[homeArg];
+        }
+
+        int homeCount = protection.getHomeCount();
+        int totalMaxHomes = PluginConfig.getInstance().getMaxHomes();
+        int blocksPerHome = PluginConfig.getInstance().getBlocksPerHome();
+
+        if (totalMaxHomes != -1 && homeCount >= totalMaxHomes) {
+            sender.sendMessage(ChatColor.RED + "You are not allowed to set more than " + PluginConfig.getInstance().getMaxHomes() + " homes.");
+            return;
+        } else if (blocksPerHome > 0) {
+            int requiredArea = blocksPerHome * homeCount;
+            if (protection.getArea() < requiredArea) {
+                sender.sendMessage(ChatColor.RED + "Your protection is not big enough to set another home. You need to claim another " + (requiredArea - protection.getArea()) + " blocks.");
+                return;
+            }
         }
 
         protection.setHome(home, player.getLocation());

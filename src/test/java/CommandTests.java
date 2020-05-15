@@ -109,7 +109,7 @@ public class CommandTests {
         when(config.getDefaultRadius()).thenReturn(3);
         when(config.getBlocksPerHome()).thenReturn(100);
         when(config.getMaxProtections()).thenReturn(3);
-        when(config.getMaxHomes()).thenReturn(4);
+        when(config.getMaxHomes()).thenReturn(3);
 
         PowerMockito.mockStatic(PluginConfig.class);
         when(PluginConfig.getInstance()).thenReturn(config);
@@ -908,5 +908,46 @@ public class CommandTests {
         assertEquals(PermLevel.MEMBER, protections.getProtection("pr4").getPermissionLevel(ownerUUID.toString()));
         assertEquals(PermLevel.OWNER, protections.getProtection("pr4").getPermissionLevel(adminUUID.toString()));
 
+    }
+
+    /**
+     * Test sethome limit
+     */
+    @Test
+    public void testSetHome() {
+        CreateCommand create = new CreateCommand(plugin);
+        ExpandCommand expand = new ExpandCommand(plugin);
+        SetHomeCommand sethome = new SetHomeCommand(plugin);
+
+        // size 5 (121 - can set 2 homes)
+        create.onCommand(ownerPlayer, "create 5".split(" "));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
+
+
+        Protection protection = protections.getProtection("Owner1");
+
+        // set 1 home
+        sethome.onCommand(ownerPlayer, "sethome home1".split(" "));
+        assertNotNull(protection.getHome("home1"));
+
+        // set a 2nd home (too many per protection)
+        sethome.onCommand(ownerPlayer, "sethome home2".split(" "));
+        assertNull(protection.getHome("home2"));
+
+        // expand 10
+        expand.onCommand(ownerPlayer, "expand w10".split(" "));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
+
+        sethome.onCommand(ownerPlayer, "sethome home2".split(" "));
+        assertNotNull(protection.getHome("home2"));
+
+        sethome.onCommand(ownerPlayer, "sethome home3".split(" "));
+        assertNull(protection.getHome("home3"));
+
+        expand.onCommand(ownerPlayer, "expand w100".split(" "));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
+
+        sethome.onCommand(ownerPlayer, "sethome home3".split(" "));
+        assertNull(protection.getHome("home3"));
     }
 }

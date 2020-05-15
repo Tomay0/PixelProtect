@@ -705,4 +705,13 @@ public class Protection {
             sender.sendMessage(ChatColor.RED + "/pr home " + name + " " + home);
         }
     }
+
+    /**
+     * Get number of homes
+     *
+     * @return
+     */
+    public int getHomeCount() {
+        return homes.size();
+    }
 }

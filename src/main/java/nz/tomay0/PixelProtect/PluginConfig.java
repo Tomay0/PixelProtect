@@ -75,7 +75,7 @@ public class PluginConfig {
 
         if (initialCost < 0) initialCost = 0;
 
-        if (maxArea < -1) maxArea = -1;
+        if (maxArea <= -1) maxArea = -1;
         else if (maxArea < 1) maxArea = 1;
     }
 
