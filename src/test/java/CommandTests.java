@@ -19,9 +19,8 @@ import org.mockito.Mock;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import sun.plugin2.main.server.Plugin;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -29,7 +28,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(Bukkit.class)
+@PrepareForTest({Bukkit.class, PluginConfig.class})
 public class CommandTests {
     // TODO /pr confirm tests
 
@@ -48,9 +47,11 @@ public class CommandTests {
     @Mock
     private Economy economy;
 
+    @Mock
+    private PluginConfig config;
+
     private ProtectionHandler protections;
     private PlayerStateHandler playerState;
-    private PluginConfig config;
 
     @Mock
     ConsoleCommandSender console;
@@ -93,16 +94,30 @@ public class CommandTests {
 
         // mock economy, give everyone a balance of 10000
         economy = mock(Economy.class);
-        when(economy.getBalance(ownerPlayer)).thenReturn(10000.0);
-        when(economy.getBalance(adminPlayer)).thenReturn(10000.0);
-        when(economy.getBalance(memberPlayer)).thenReturn(10000.0);
-        when(economy.getBalance(noonePlayer)).thenReturn(10000.0);
+        when(economy.getBalance(ownerPlayer)).thenReturn(11000.0);
+        when(economy.getBalance(adminPlayer)).thenReturn(11000.0);
+        when(economy.getBalance(memberPlayer)).thenReturn(11000.0);
+        when(economy.getBalance(noonePlayer)).thenReturn(11000.0);
+
+
+        // mock config
+        config = mock(PluginConfig.class);
+        when(config.getMinDiameter()).thenReturn(5);
+        when(config.getCostPerBlock()).thenReturn(1.0);
+        when(config.getInitialCost()).thenReturn(5.0);
+        when(config.getMaxArea()).thenReturn(15000);
+        when(config.getDefaultRadius()).thenReturn(3);
+        when(config.getBlocksPerHome()).thenReturn(100);
+        when(config.getMaxProtections()).thenReturn(3);
+        when(config.getMaxHomes()).thenReturn(4);
+
+        PowerMockito.mockStatic(PluginConfig.class);
+        when(PluginConfig.getInstance()).thenReturn(config);
 
         // mock plugin
         plugin = mock(PixelProtectPlugin.class);
         protections = new HashedProtectionHandler();
         playerState = new PlayerStateHandler(protections);
-        config = new PluginConfig();
 
         playerState.onPlayerJoin(new PlayerJoinEvent(ownerPlayer, null));
         playerState.onPlayerJoin(new PlayerJoinEvent(adminPlayer, null));
@@ -112,7 +127,6 @@ public class CommandTests {
         when(plugin.getPlayerStateHandler()).thenReturn(playerState);
         when(plugin.getProtections()).thenReturn(protections);
         when(plugin.getEconomy()).thenReturn(economy);
-
 
     }
 
@@ -839,7 +853,60 @@ public class CommandTests {
 
         setMinLevel.onCommand(ownerPlayer, "setminlevel Owner1 home owner".split(" "));
         assertFalse(protection.hasPermission(adminUUID.toString(), Perm.HOME));
+    }
 
+    /**
+     * Test max protections, max area
+     */
+    @Test
+    public void testMaxProtections() {
+        CreateCommand create = new CreateCommand(plugin);
+        ExpandCommand expand = new ExpandCommand(plugin);
+        ShiftCommand shift = new ShiftCommand(plugin);
+        SetPermCommand setPerm = new SetPermCommand(plugin);
+
+        // test paying too much
+        create.onCommand(ownerPlayer, "create pr1 52".split(" "));
+        assertFalse(playerState.confirm(ownerPlayer, economy));
+
+        create.onCommand(ownerPlayer, "create pr1 51".split(" "));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
+
+        // note that in the test cases the money is not subtracted
+
+        // area 10609. 103x103. Area to go over = 4391. expand 43 blocks.
+        expand.onCommand(ownerPlayer, "expand pr1 w43".split(" "));
+        assertFalse(playerState.confirm(ownerPlayer, economy));
+
+        expand.onCommand(ownerPlayer, "expand pr1 w42".split(" "));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
+
+        shift.onCommand(ownerPlayer, "shift pr1 w10000".split(" "));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
+
+
+        // try to create 3 more protections. Max is 3.
+        create.onCommand(ownerPlayer, "create pr2 10".split(" "));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
+        shift.onCommand(ownerPlayer, "shift pr2 n10000".split(" "));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
+
+        create.onCommand(ownerPlayer, "create pr3 10".split(" "));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
+        shift.onCommand(ownerPlayer, "shift pr3 s10000".split(" "));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
+
+        create.onCommand(ownerPlayer, "create pr4 10".split(" "));
+        assertFalse(playerState.confirm(ownerPlayer, economy));
+
+        // other player create and try to give ownership away
+        create.onCommand(adminPlayer, "create pr4 10".split(" "));
+        assertTrue(playerState.confirm(adminPlayer, economy));
+
+        setPerm.onCommand(adminPlayer, "setperm pr4 Owner1 member".split(" "));
+        setPerm.onCommand(adminPlayer, "setperm pr4 Owner1 owner".split(" "));
+        assertEquals(PermLevel.MEMBER, protections.getProtection("pr4").getPermissionLevel(ownerUUID.toString()));
+        assertEquals(PermLevel.OWNER, protections.getProtection("pr4").getPermissionLevel(adminUUID.toString()));
 
     }
 }

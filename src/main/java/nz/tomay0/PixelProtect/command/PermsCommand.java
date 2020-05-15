@@ -2,9 +2,12 @@ package nz.tomay0.PixelProtect.command;
 
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
 import nz.tomay0.PixelProtect.protection.Protection;
+import nz.tomay0.PixelProtect.protection.perms.PlayerPerms;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.Collection;
 
 /**
  * Show permissions of a protection
@@ -50,7 +53,19 @@ public class PermsCommand extends AbstractCommand {
 
             Player player = (Player) sender;
 
-            getProtections().showPerms(player);
+            Collection<Protection> protections = getProtections().getAllProtections(player);
+
+            if (protections.size() > 0) {
+                // display all perms
+                for (Protection pr : protections) {
+                    PlayerPerms perms = pr.getPlayerPerms(player.getUniqueId().toString());
+                    player.sendMessage(ChatColor.AQUA + pr.getName() + ChatColor.YELLOW + ": " + ChatColor.GREEN + perms.getPermissionLevel().toString());
+                    perms.sendAdditionalPermissions(player);
+                }
+            } else {
+                // no perms found
+                player.sendMessage(ChatColor.RED + "You do not have permissions in any protections.");
+            }
         } else {
             // perms for a protection
             protection.showPerms(sender);

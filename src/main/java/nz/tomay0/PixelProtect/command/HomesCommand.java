@@ -2,9 +2,12 @@ package nz.tomay0.PixelProtect.command;
 
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
 import nz.tomay0.PixelProtect.protection.Protection;
+import nz.tomay0.PixelProtect.protection.perms.Perm;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.Collection;
 
 /**
  * Show homes of a protection
@@ -50,7 +53,20 @@ public class HomesCommand extends AbstractCommand {
 
             Player player = (Player) sender;
 
-            getProtections().showHomes(player);
+            Collection<Protection> protections = getProtections().getAvaliableHomes(player);
+
+            if (protections.size() > 0) {
+                player.sendMessage(ChatColor.YELLOW + "Type " + ChatColor.RED + "/pr homes <name>" + ChatColor.YELLOW + " to see a list of homes from that protection you can teleport to.");
+                StringBuilder sb = new StringBuilder();
+
+                for (Protection pr : protections) {
+                    sb.append(pr.getName() + ", ");
+                }
+
+                player.sendMessage(sb.substring(0, sb.length() - 2));
+            } else {
+                player.sendMessage(ChatColor.RED + "There are no protections you can teleport to.");
+            }
         } else {
             // perms for a protection
             protection.showHomes(sender);

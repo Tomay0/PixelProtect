@@ -1,6 +1,7 @@
 package nz.tomay0.PixelProtect.command;
 
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
+import nz.tomay0.PixelProtect.PluginConfig;
 import nz.tomay0.PixelProtect.protection.perms.Perm;
 import nz.tomay0.PixelProtect.protection.perms.PermLevel;
 import nz.tomay0.PixelProtect.protection.Protection;
@@ -124,6 +125,14 @@ public class SetPermCommand extends AbstractCommand {
                 sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to update the permission level of that player to that level.");
                 return;
             }
+            // check the player you are setting won't go over the max protections
+            if (permLevel == PermLevel.OWNER && PluginConfig.getInstance().getMaxProtections() != -1 &&
+                    getProtections().getProtectionsOwned(player).size() >= PluginConfig.getInstance().getMaxProtections()) {
+                sender.sendMessage(ChatColor.DARK_RED + "This player has reached the maximum number of protections. They cannot be set to owner.");
+                return;
+            }
+
+
             protection.setPermissionLevel(uuid, permLevel);
 
             sender.sendMessage(ChatColor.GREEN + username + ChatColor.YELLOW + " now has the permission level of " +

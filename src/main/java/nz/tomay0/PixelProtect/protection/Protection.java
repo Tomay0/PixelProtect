@@ -260,6 +260,9 @@ public class Protection {
             throw new InvalidProtectionException("Southern boundary must be at least " + PluginConfig.getInstance().getMinDiameter() + " of the northern boundary.", INVALID_BORDERS);
         }
 
+        if (PluginConfig.getInstance().getMaxArea() != -1 && getArea() > PluginConfig.getInstance().getMaxArea())
+            throw new InvalidProtectionException("Protection is above the max area of " + PluginConfig.getInstance().getMaxArea(), TOO_LARGE);
+
         // check perm levels aren't null
         if (playerPermissions == null) {
             throw new InvalidProtectionException(new NullPointerException(), UNEXPECTED_EXCEPTION);

@@ -1,7 +1,12 @@
 package nz.tomay0.PixelProtect.protection;
 
+import nz.tomay0.PixelProtect.protection.perms.Perm;
+import nz.tomay0.PixelProtect.protection.perms.PermLevel;
+import nz.tomay0.PixelProtect.protection.perms.PlayerPerms;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.util.*;
@@ -203,5 +208,42 @@ public class HashedProtectionHandler extends ProtectionHandler {
     @Override
     public Iterator<Protection> iterator() {
         return protectionsByName.values().iterator();
+    }
+
+    @Override
+    public Collection<Protection> getAvaliableHomes(OfflinePlayer player) {
+        Collection<Protection> protections = new ArrayList<>();
+
+        for (Protection protection : this) {
+            if (protection.hasPermission(player.getUniqueId().toString(), Perm.HOME)) {
+                protections.add(protection);
+            }
+        }
+        return protections;
+    }
+
+    @Override
+    public Collection<Protection> getAllProtections(OfflinePlayer player) {
+        Collection<Protection> protections = new ArrayList<>();
+
+        for (Protection protection : this) {
+            PlayerPerms perms = protection.getPlayerPerms(player.getUniqueId().toString());
+            if (perms != null) {
+                protections.add(protection);
+            }
+        }
+        return protections;
+    }
+
+    @Override
+    public Collection<Protection> getProtectionsOwned(OfflinePlayer player) {
+        Collection<Protection> protections = new ArrayList<>();
+
+        for (Protection protection : this) {
+            if (protection.getPermissionLevel(player.getUniqueId().toString()) == PermLevel.OWNER) {
+                protections.add(protection);
+            }
+        }
+        return protections;
     }
 }

@@ -4,11 +4,10 @@ import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
 import nz.tomay0.PixelProtect.protection.perms.Perm;
 import nz.tomay0.PixelProtect.protection.perms.PermLevel;
 import nz.tomay0.PixelProtect.protection.perms.PlayerPerms;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import java.io.File;
@@ -338,6 +337,30 @@ public abstract class ProtectionHandler implements Iterable<Protection> {
         return idName.equals(protection.getIdSafeName());
     }
 
+    /**
+     * Get all protections this player can teleport to
+     *
+     * @param player player
+     * @return
+     */
+    public abstract Collection<Protection> getAvaliableHomes(OfflinePlayer player);
+
+    /**
+     * Get all protections where the player has permissions
+     *
+     * @param player player
+     * @return
+     */
+    public abstract Collection<Protection> getAllProtections(OfflinePlayer player);
+
+    /**
+     * Get all protections the player owns
+     *
+     * @param player player
+     * @return
+     */
+    public abstract Collection<Protection> getProtectionsOwned(OfflinePlayer player);
+
 
     /**
      * Get an ID safe name from an unchecked string
@@ -347,45 +370,5 @@ public abstract class ProtectionHandler implements Iterable<Protection> {
      */
     public static String getIdSafeName(String name) {
         return name.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
-    }
-
-    /**
-     * Show all permissions of a player
-     *
-     * @param player
-     */
-    public void showPerms(Player player) {
-        int numProtections = 0;
-
-        for (Protection protection : this) {
-            PlayerPerms perms = protection.getPlayerPerms(player.getUniqueId().toString());
-            if (perms != null) {
-                player.sendMessage(ChatColor.AQUA + protection.getName() + ChatColor.YELLOW + ": " + ChatColor.GREEN + perms.getPermissionLevel().toString());
-                perms.sendAdditionalPermissions(player);
-                numProtections++;
-            }
-        }
-
-        if (numProtections == 0) {
-            player.sendMessage(ChatColor.RED + "You do not have permissions in any protections.");
-        }
-    }
-
-    /**
-     * Show all homes a player has access
-     *
-     * @param player
-     */
-    public void showHomes(Player player) {
-        player.sendMessage(ChatColor.YELLOW + "Type " + ChatColor.RED + "/pr homes <name>" + ChatColor.YELLOW + " to see a list of homes from that protection you can teleport to.");
-        StringBuilder sb = new StringBuilder();
-
-        for (Protection protection : this) {
-            if (protection.hasPermission(player.getUniqueId().toString(), Perm.HOME)) {
-                sb.append(protection.getName() + ", ");
-            }
-        }
-
-        player.sendMessage(sb.substring(0, sb.length() - 2));
     }
 }

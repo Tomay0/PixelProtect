@@ -40,6 +40,8 @@ public class CreateCommand extends AbstractCommand {
         }
 
         Player player = (Player) sender;
+
+
         String protectionName;
         Integer[] size;
         boolean nameSpecified = false;
@@ -88,6 +90,14 @@ public class CreateCommand extends AbstractCommand {
                 protectionName = player.getName();
             }
         }
+
+
+        // check the player is allowed to set more protections
+        if (PluginConfig.getInstance().getMaxProtections() != -1 && getProtections().getProtectionsOwned(player).size() >= PluginConfig.getInstance().getMaxProtections()) {
+            player.sendMessage(ChatColor.DARK_RED + "You have reached the maximum number of protections you can own: " + PluginConfig.getInstance().getMaxProtections());
+            return;
+        }
+
 
         // create the protection IF POSSIBLE
         try {
