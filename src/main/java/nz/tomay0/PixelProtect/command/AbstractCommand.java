@@ -63,6 +63,14 @@ public abstract class AbstractCommand {
     public abstract String getDescription();
 
     /**
+     * Get permissions required to execute the command
+     * @return
+     */
+    public String getPermission() {
+        return null;
+    }
+
+    /**
      * When you type the command
      *
      * @param sender sender, either a player or the console

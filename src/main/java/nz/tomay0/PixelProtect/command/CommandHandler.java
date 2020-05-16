@@ -43,7 +43,12 @@ public class CommandHandler implements CommandExecutor {
         commandsList.add(new HereCommand(plugin));
         commandsList.add(new SizeCommand(plugin));
 
-        commandsList.add(new HelpCommand(plugin, new ArrayList<>(commandsList))); // all commands after here are not contained in /pr help
+        // commands that require perms
+        commandsList.add(new CreateAdminCommand(plugin));
+
+        commandsList.add(new HelpCommand(plugin, new ArrayList<>(commandsList)));
+
+        // commands that don't appear in /pr help
         commandsList.add(new ConfirmCommand(plugin));
         commandsList.add(new CancelCommand(plugin));
 
@@ -69,7 +74,13 @@ public class CommandHandler implements CommandExecutor {
         String prCommand = args[0].toLowerCase();
 
         if (commandMap.containsKey(prCommand)) {
-            commandMap.get(prCommand).onCommand(sender, args);
+            AbstractCommand command = commandMap.get(prCommand);
+
+            if (command.getPermission() != null && !sender.hasPermission(command.getPermission())) {
+                sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to use this command.");
+            }
+
+            command.onCommand(sender, args);
         } else {
             sender.sendMessage(ChatColor.LIGHT_PURPLE + "Unknown command. Use " + ChatColor.RED + "/pr help " + ChatColor.LIGHT_PURPLE + "for a list of commands.");
         }

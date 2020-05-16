@@ -146,7 +146,7 @@ public class SequentialProtectionHandler extends ProtectionHandler {
         Collection<Protection> protections = new ArrayList<>();
 
         for (Protection protection : this) {
-            if (protection.getPermissionLevel(player.getUniqueId().toString()) == PermLevel.OWNER) {
+            if (protection.getPermissionLevel(player.getUniqueId().toString()) == PermLevel.OWNER && !protection.isAdminProtection()) {
                 protections.add(protection);
             }
         }

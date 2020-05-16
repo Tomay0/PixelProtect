@@ -59,7 +59,7 @@ public class SetPermCommand extends AbstractCommand {
             return;
         }
 
-        // get username
+        // get username TODO use non deprecated version (this is very slow)
 
         String username = args[usernameArg];
         OfflinePlayer player = Bukkit.getOfflinePlayer(username);

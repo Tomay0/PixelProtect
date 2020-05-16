@@ -653,6 +653,7 @@ public class Protection {
 
     /**
      * if this is an admin protection
+     *
      * @return
      */
     public boolean isAdminProtection() {
@@ -674,8 +675,14 @@ public class Protection {
      * @return string
      */
     public String getMotd() {
-        return ChatColor.YELLOW + "Entered " + ChatColor.GREEN + name;
+
+        if (isAdminProtection()) {
+            return ChatColor.YELLOW + "Entered " + ChatColor.AQUA + name;
+        } else {
+            return ChatColor.YELLOW + "Entered " + ChatColor.GREEN + name;
+        }
     }
+
 
     /**
      * Get player permissions for this protection
