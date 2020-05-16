@@ -88,16 +88,17 @@ public class HashedProtectionHandler extends ProtectionHandler {
     }
 
     @Override
-    public Protection getProtectionAt(Location location) {
+    public Set<Protection> getProtectionsAt(Location location) {
         Set<Protection> protections = protectionsByLocationHash.get(getHash(location));
+        Set<Protection> returnProtections = new HashSet<>();
 
-        if (protections == null) return null;
+        if (protections == null) return new HashSet<>();
         for (Protection p : protections) {
             if (p.withinBounds(location)) {
-                return p;
+                returnProtections.add(p);
             }
         }
-        return null;
+        return returnProtections;
     }
 
     @Override

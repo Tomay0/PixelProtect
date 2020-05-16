@@ -121,7 +121,7 @@ public class PerformanceTests {
                 int n = north + j * size;
                 int s = n + size - 1;
 
-                prs.add(new Protection("pr" + i + "b" + j, "world", w, e, n, s, "owner", new Location(overworld, (w + e) / 2.0, 80, (n + s) / 2)));
+                prs.add(new Protection("pr" + i + "b" + j, "world", w, e, n, s, "owner", new Location(overworld, (w + e) / 2.0, 80, (n + s) / 2), false));
             }
         }
 
@@ -153,7 +153,7 @@ public class PerformanceTests {
 
         time = System.currentTimeMillis();
         for (Location location : locationsToTest) {
-            sequential.getProtectionAt(location);
+            sequential.getProtectionsAt(location);
         }
         time = System.currentTimeMillis() - time;
 
@@ -161,7 +161,7 @@ public class PerformanceTests {
 
         time = System.currentTimeMillis();
         for (Location location : locationsToTest) {
-            hashed.getProtectionAt(location);
+            hashed.getProtectionsAt(location);
         }
         time = System.currentTimeMillis() - time;
 

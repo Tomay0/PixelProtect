@@ -85,13 +85,14 @@ public class SequentialProtectionHandler extends ProtectionHandler {
     }
 
     @Override
-    public Protection getProtectionAt(Location location) {
+    public Set<Protection> getProtectionsAt(Location location) {
+        Set<Protection> protections = new HashSet<>();
         for (Protection p : protectionsByName.values()) {
             if (p.withinBounds(location)) {
-                return p;
+                protections.add(p);
             }
         }
-        return null;
+        return protections;
     }
 
     @Override

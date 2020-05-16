@@ -33,18 +33,14 @@ public class PixelProtectPlugin extends JavaPlugin {
     - colour
 
     optimization/performance
-    - optimize offline player name recognition
+    - optimize offline player name recognition?
 
     integration
     - grief prevention importer
-    - economy integration
     - dynmap integration
 
     config
     - default perms - some perm presets maybe
-    - home limit
-    - protection cost
-    - max protection size
     - dynmap colour?
 
     misc
@@ -58,25 +54,6 @@ public class PixelProtectPlugin extends JavaPlugin {
 
      */
 
-
-    /*
-
-    TODO config option ideas
-
-    PVP
-    Dispenser projectiles doing damage
-    Pickup blocks/items
-    Pistons
-    Nether portal generation
-    Fluid flow
-    dispenser projectiles
-    block form
-    Mob griefing in general
-    fire spread
-    Hostile mobs doing damage to other entities
-    Pressure plate = interaction sorta thing
-
-     */
     private static final boolean REQUIRES_VAULT = true;
 
     private ProtectionHandler protectionHandler;

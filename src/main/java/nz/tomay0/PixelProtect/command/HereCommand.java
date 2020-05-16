@@ -38,7 +38,7 @@ public class HereCommand extends AbstractCommand {
 
         Player player = (Player) sender;
 
-        Protection protection = getProtections().getProtectionAt(player.getLocation());
+        Protection protection = getProtections().getMainProtectionAt(player.getLocation());
 
         if (protection == null) {
             player.sendMessage(ChatColor.YELLOW + "You are in the wilderness");

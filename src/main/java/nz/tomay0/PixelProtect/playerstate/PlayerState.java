@@ -136,7 +136,7 @@ public class PlayerState {
     public void move() {
         if (confirmation != null) return;
 
-        Protection protection = protections.getProtectionAt(player.getLocation());
+        Protection protection = protections.getMainProtectionAt(player.getLocation());
 
         if (protection != currentProtection) {
             if (protection == null) {

@@ -68,6 +68,11 @@ public class Protection {
     private Map<String, Location> homes;
 
     /**
+     * If the protection is an admin protection. Admin protections can overlap other admin protections
+     */
+    private boolean isAdmin = false;
+
+    /**
      * Yml configuration to save to
      */
     private YamlConfiguration yml = null;
@@ -107,14 +112,16 @@ public class Protection {
      * @param south     Southern boundary coordinate
      * @param ownerUuid owner id
      * @param home      location of the home
+     * @param isAdmin   is an admin protection
      */
-    public Protection(String name, String world, int west, int east, int north, int south, String ownerUuid, Location home) {
+    public Protection(String name, String world, int west, int east, int north, int south, String ownerUuid, Location home, boolean isAdmin) {
         this.name = name;
         this.world = world;
         this.west = west;
         this.north = north;
         this.east = east;
         this.south = south;
+        this.isAdmin = isAdmin;
 
 
         playerPermissions = new HashMap<>();
@@ -144,7 +151,7 @@ public class Protection {
      */
     public Protection(String name, String world, int west, int east, int north, int south, Map<String, Location> homes,
                       Map<String, PlayerPerms> playerPermissions, Map<Perm, PermLevel> defaultPermissions,
-                      Map<Flag, Boolean> flags, YamlConfiguration yml, File dir) {
+                      Map<Flag, Boolean> flags, boolean isAdmin, YamlConfiguration yml, File dir) {
         this.name = name;
         this.world = world;
         this.west = west;
@@ -159,6 +166,8 @@ public class Protection {
 
         this.yml = yml;
         this.dir = dir;
+
+        this.isAdmin = isAdmin;
 
         // get owner
         for (PlayerPerms perms : playerPermissions.values()) {
@@ -186,6 +195,10 @@ public class Protection {
             yml.set("south", south);
             yml.set("player-perms", null);
             yml.set("default-perms", null);
+
+            if (isAdmin) {
+                yml.set("admin", true);
+            }
 
             // homes
             for (String home : homes.keySet()) {
@@ -636,6 +649,14 @@ public class Protection {
      */
     public int getSouth() {
         return south;
+    }
+
+    /**
+     * if this is an admin protection
+     * @return
+     */
+    public boolean isAdminProtection() {
+        return isAdmin;
     }
 
     /**

@@ -101,7 +101,7 @@ public class CreateCommand extends AbstractCommand {
 
         // create the protection IF POSSIBLE
         try {
-            Protection protection = ProtectionBuilder.fromCommand(protectionName, player, size, getProtections());
+            Protection protection = ProtectionBuilder.fromCommand(protectionName, player, size, getProtections(), false);
 
             double cost = PluginConfig.getInstance().getInitialCost() + PluginConfig.getInstance().getCostPerBlock() * protection.getArea();
             double balance = getEconomy().getBalance(player);

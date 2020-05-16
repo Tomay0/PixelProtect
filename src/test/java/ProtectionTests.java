@@ -1,4 +1,5 @@
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
+import nz.tomay0.PixelProtect.exception.ProtectionExceptionReason;
 import nz.tomay0.PixelProtect.protection.*;
 import nz.tomay0.PixelProtect.protection.perms.Perm;
 import nz.tomay0.PixelProtect.protection.perms.PermLevel;
@@ -138,7 +139,7 @@ public class ProtectionTests {
     @Test
     public void testBoundaries() {
         // create protection
-        Protection protection = new Protection("Protection1", "world", -100, 100, -100, 100, "owner", new Location(overworld, 0, 80, 0));
+        Protection protection = new Protection("Protection1", "world", -100, 100, -100, 100, "owner", new Location(overworld, 0, 80, 0), false);
 
         assertTrue(protection.withinBounds(new Location(overworld, 0, 20, 0)));
         assertTrue(protection.withinBounds(new Location(overworld, 0, 10000, 0)));
@@ -159,49 +160,49 @@ public class ProtectionTests {
     public void testInvalidProtection() {
         // spaces in name
         try {
-            new Protection("Protection with spaces", "world", -100, 100, -100, 100, "owner", new Location(overworld, 0, 80, 0));
+            new Protection("Protection with spaces", "world", -100, 100, -100, 100, "owner", new Location(overworld, 0, 80, 0), false);
             fail();
         } catch (InvalidProtectionException e) {
         }
 
         // too small
         try {
-            new Protection("Protection1", "world", -1, 1, -1, 1, "owner", new Location(overworld, 0, 80, 0));
+            new Protection("Protection1", "world", -1, 1, -1, 1, "owner", new Location(overworld, 0, 80, 0), false);
             fail();
         } catch (InvalidProtectionException e) {
         }
 
         // west > east
         try {
-            new Protection("Protection1", "world", 100, -100, -100, 100, "owner", new Location(overworld, 0, 80, 0));
+            new Protection("Protection1", "world", 100, -100, -100, 100, "owner", new Location(overworld, 0, 80, 0), false);
             fail();
         } catch (InvalidProtectionException e) {
         }
 
         // north > south
         try {
-            new Protection("Protection1", "world", -100, 100, 100, -100, "owner", new Location(overworld, 0, 80, 0));
+            new Protection("Protection1", "world", -100, 100, 100, -100, "owner", new Location(overworld, 0, 80, 0), false);
             fail();
         } catch (InvalidProtectionException e) {
         }
 
         // boundary invalid
         try {
-            new Protection("Protection1", "world", -2, 1, -5, 5, "owner", new Location(overworld, 0, 80, 0));
+            new Protection("Protection1", "world", -2, 1, -5, 5, "owner", new Location(overworld, 0, 80, 0), false);
             fail();
         } catch (InvalidProtectionException e) {
         }
 
         // null owner
         try {
-            new Protection("Protection1", "world", -2, 2, -2, 2, null, new Location(overworld, 0, 80, 0));
+            new Protection("Protection1", "world", -2, 2, -2, 2, null, new Location(overworld, 0, 80, 0), false);
             fail();
         } catch (InvalidProtectionException e) {
         }
 
         // null home
         try {
-            new Protection("Protection1", "world", -2, 2, -2, 2, "owner", null);
+            new Protection("Protection1", "world", -2, 2, -2, 2, "owner", null, false);
             fail();
         } catch (InvalidProtectionException e) {
         }
@@ -213,7 +214,7 @@ public class ProtectionTests {
      */
     @Test
     public void testDefaultPermissions() {
-        Protection protection1 = new Protection("Protection1", "world", -50, 50, -50, 50, "owner", new Location(overworld, 0, 80, 0));
+        Protection protection1 = new Protection("Protection1", "world", -50, 50, -50, 50, "owner", new Location(overworld, 0, 80, 0), false);
 
         protection1.setPermissionLevel("admin", PermLevel.ADMIN);
         protection1.setPermissionLevel("member", PermLevel.MEMBER);
@@ -242,7 +243,7 @@ public class ProtectionTests {
      */
     @Test
     public void testPlayerSpecificPermissions() {
-        Protection protection1 = new Protection("Protection1", "world", -50, 50, -50, 50, "owner", new Location(overworld, 0, 80, 0));
+        Protection protection1 = new Protection("Protection1", "world", -50, 50, -50, 50, "owner", new Location(overworld, 0, 80, 0), false);
 
         protection1.setPermissionLevel("member1", PermLevel.MEMBER);
         protection1.setPermissionLevel("member2", PermLevel.MEMBER);
@@ -289,7 +290,7 @@ public class ProtectionTests {
      */
     @Test
     public void testLevelPermissions() {
-        Protection protection1 = new Protection("Protection1", "world", -50, 50, -50, 50, "owner", new Location(overworld, 0, 80, 0));
+        Protection protection1 = new Protection("Protection1", "world", -50, 50, -50, 50, "owner", new Location(overworld, 0, 80, 0), false);
 
         protection1.setPermissionLevel("member", PermLevel.MEMBER);
         protection1.setPermissionLevel("admin", PermLevel.ADMIN);
@@ -322,7 +323,7 @@ public class ProtectionTests {
      */
     @Test
     public void testLevelPermissions2() {
-        Protection protection1 = new Protection("Protection1", "world", -50, 50, -50, 50, "owner", new Location(overworld, 0, 80, 0));
+        Protection protection1 = new Protection("Protection1", "world", -50, 50, -50, 50, "owner", new Location(overworld, 0, 80, 0), false);
 
         protection1.setPermissionLevel("member", PermLevel.MEMBER);
         protection1.setPermissionLevel("admin", PermLevel.ADMIN);
@@ -353,7 +354,7 @@ public class ProtectionTests {
      */
     @Test
     public void testOwner() {
-        Protection protection1 = new Protection("Protection1", "world", -50, 50, -50, 50, "player1", new Location(overworld, 0, 80, 0));
+        Protection protection1 = new Protection("Protection1", "world", -50, 50, -50, 50, "player1", new Location(overworld, 0, 80, 0), false);
 
         protection1.setPermissionLevel("player2", PermLevel.ADMIN);
 
@@ -403,32 +404,32 @@ public class ProtectionTests {
     public void testOverlapping() {
         ProtectionHandler handler = new SequentialProtectionHandler();
 
-        Protection pr = new Protection("pr1", "world", -10, 10, -10, 10, "owner", new Location(overworld, 0, 80, 0));
+        Protection pr = new Protection("pr1", "world", -10, 10, -10, 10, "owner", new Location(overworld, 0, 80, 0), false);
 
         doubleOverlapTest(handler, true, pr,
-                new Protection("pr2", "world", -5, 5, -5, 5, "owner", new Location(overworld, 0, 80, 0)));
+                new Protection("pr2", "world", -5, 5, -5, 5, "owner", new Location(overworld, 0, 80, 0), false));
         doubleOverlapTest(handler, false, pr,
-                new Protection("pr2", "world_nether", -5, 5, -5, 5, "owner", new Location(overworld, 0, 80, 0)));
+                new Protection("pr2", "world_nether", -5, 5, -5, 5, "owner", new Location(overworld, 0, 80, 0), false));
         doubleOverlapTest(handler, false, pr,
-                new Protection("pr2", "world_nether", -50, -30, -5, 5, "owner", new Location(overworld, 0, 80, 0)));
+                new Protection("pr2", "world_nether", -50, -30, -5, 5, "owner", new Location(overworld, 0, 80, 0), false));
         doubleOverlapTest(handler, true, pr,
-                new Protection("pr2", "world", -16, -10, -16, -10, "owner", new Location(overworld, 0, 80, 0)));
+                new Protection("pr2", "world", -16, -10, -16, -10, "owner", new Location(overworld, 0, 80, 0), false));
         doubleOverlapTest(handler, false, pr,
-                new Protection("pr2", "world", -16, -10, -17, -11, "owner", new Location(overworld, 0, 80, 0)));
+                new Protection("pr2", "world", -16, -10, -17, -11, "owner", new Location(overworld, 0, 80, 0), false));
         doubleOverlapTest(handler, false, pr,
-                new Protection("pr2", "world", -17, -11, -16, -10, "owner", new Location(overworld, 0, 80, 0)));
+                new Protection("pr2", "world", -17, -11, -16, -10, "owner", new Location(overworld, 0, 80, 0), false));
         doubleOverlapTest(handler, false, pr,
-                new Protection("pr2", "world", -16, -10, -17, -11, "owner", new Location(overworld, 0, 80, 0)));
+                new Protection("pr2", "world", -16, -10, -17, -11, "owner", new Location(overworld, 0, 80, 0), false));
         doubleOverlapTest(handler, false, pr,
-                new Protection("pr2", "world", -17, -11, -16, -10, "owner", new Location(overworld, 0, 80, 0)));
+                new Protection("pr2", "world", -17, -11, -16, -10, "owner", new Location(overworld, 0, 80, 0), false));
         doubleOverlapTest(handler, true, pr,
-                new Protection("pr2", "world", -10, 1000, -1000, 1000, "owner", new Location(overworld, 0, 80, 0)));
+                new Protection("pr2", "world", -10, 1000, -1000, 1000, "owner", new Location(overworld, 0, 80, 0), false));
         doubleOverlapTest(handler, false, pr,
-                new Protection("pr2", "world", -10, 1000, -1000, -11, "owner", new Location(overworld, 0, 80, 0)));
+                new Protection("pr2", "world", -10, 1000, -1000, -11, "owner", new Location(overworld, 0, 80, 0), false));
         doubleOverlapTest(handler, true, pr,
-                new Protection("pr2", "world", -10, 1000, -1000, -10, "owner", new Location(overworld, 0, 80, 0)));
+                new Protection("pr2", "world", -10, 1000, -1000, -10, "owner", new Location(overworld, 0, 80, 0), false));
         doubleOverlapTest(handler, false, pr,
-                new Protection("pr2", "world", -50, -30, -5, 5, "owner", new Location(overworld, 0, 80, 0)));
+                new Protection("pr2", "world", -50, -30, -5, 5, "owner", new Location(overworld, 0, 80, 0), false));
     }
 
     /**
@@ -441,34 +442,34 @@ public class ProtectionTests {
 
         // check valid creation
 
-        handler.addNewProtection(new Protection("pr1", "world", -20, -1, 0, 100, "owner", new Location(overworld, 0, 80, 0)));
+        handler.addNewProtection(new Protection("pr1", "world", -20, -1, 0, 100, "owner", new Location(overworld, 0, 80, 0), false));
 
         // check creation with same name - ignore case
         try {
-            handler.addNewProtection(new Protection("PR1", "world", -40, -21, 0, 100, "owner", new Location(overworld, 0, 80, 0)));
+            handler.addNewProtection(new Protection("PR1", "world", -40, -21, 0, 100, "owner", new Location(overworld, 0, 80, 0), false));
             fail();
         } catch (InvalidProtectionException e) {
             assertEquals("A protection already exists with the name: pr1", e.getMessage());
         }
         // overlap
         try {
-            handler.addNewProtection(new Protection("pr2", "world", -40, -20, 0, 100, "owner", new Location(overworld, 0, 80, 0)));
+            handler.addNewProtection(new Protection("pr2", "world", -40, -20, 0, 100, "owner", new Location(overworld, 0, 80, 0), false));
             fail();
         } catch (InvalidProtectionException e) {
             assertEquals("A protection cannot overlap another protection", e.getMessage());
         }
         // valid
-        handler.addNewProtection(new Protection("pr2", "world", -40, -21, 0, 100, "owner", new Location(overworld, 0, 80, 0)));
+        handler.addNewProtection(new Protection("pr2", "world", -40, -21, 0, 100, "owner", new Location(overworld, 0, 80, 0), false));
 
         // same name with extra characters
         try {
-            handler.addNewProtection(new Protection("[pr1]", "world", -400, -200, 0, 100, "owner", new Location(overworld, 0, 80, 0)));
+            handler.addNewProtection(new Protection("[pr1]", "world", -400, -200, 0, 100, "owner", new Location(overworld, 0, 80, 0), false));
             fail();
         } catch (InvalidProtectionException e) {
             assertEquals("A protection already exists with the name: pr1", e.getMessage());
         }
         // valid, smallest possible
-        handler.addNewProtection(new Protection("pr3", "world", -104, -100, -104, -100, "owner", new Location(overworld, 0, 80, 0)));
+        handler.addNewProtection(new Protection("pr3", "world", -104, -100, -104, -100, "owner", new Location(overworld, 0, 80, 0), false));
     }
 
     /**
@@ -483,7 +484,7 @@ public class ProtectionTests {
         Location l1 = new Location(overworld, -10, 20, -10);
         Location l2 = new Location(overworld, -11, 20, -10);
 
-        Protection protection = handler.getProtectionAt(l1);
+        Protection protection = handler.getProtection("BigProtection");
 
         assertEquals("BigProtection", protection.getName());
 
@@ -532,7 +533,7 @@ public class ProtectionTests {
 
         Location home = new Location(overworld, -5, 80, 2);
 
-        Protection protection = new Protection("protection-1", "world", -10, 10, -10, 10, ownerUUID.toString(), home);
+        Protection protection = new Protection("protection-1", "world", -10, 10, -10, 10, ownerUUID.toString(), home, false);
         protection.setDir(dir);
 
         // check file was created
@@ -564,8 +565,8 @@ public class ProtectionTests {
         ProtectionHandler handler = new SequentialProtectionHandler(dir);
 
         // add some protections
-        handler.addNewProtection(new Protection("pr1", "world", -10, 10, -10, 10, ownerUUID.toString(), new Location(overworld, 0, 80, 0)));
-        handler.addNewProtection(new Protection("pr2", "world", -21, -11, -10, 10, ownerUUID.toString(), new Location(overworld, 0, 80, 0)));
+        handler.addNewProtection(new Protection("pr1", "world", -10, 10, -10, 10, ownerUUID.toString(), new Location(overworld, 0, 80, 0), false));
+        handler.addNewProtection(new Protection("pr2", "world", -21, -11, -10, 10, ownerUUID.toString(), new Location(overworld, 0, 80, 0), false));
 
         assertTrue(new File(dir, "pr1.yml").exists());
         assertTrue(new File(dir, "pr2.yml").exists());
@@ -609,20 +610,20 @@ public class ProtectionTests {
         ProtectionHandler protections = new HashedProtectionHandler();
 
         protections.addNewProtection(new Protection("Pr1", "world", -1000, 422, -1000, 0,
-                "owner", new Location(overworld, 0, 80, 0)));
+                "owner", new Location(overworld, 0, 80, 0), false));
         protections.addNewProtection(new Protection("Pr2", "world", 423, 962, -1000, 0,
-                "owner", new Location(overworld, 0, 80, 0)));
+                "owner", new Location(overworld, 0, 80, 0), false));
 
         // test lots of locations within Pr1
 
         for (int x = -1000; x <= 422; x += 18) {
             for (int z = -1000; z <= 0; z += 11) {
-                assertEquals("Pr1", protections.getProtectionAt(new Location(overworld, x, 80, z)).getName());
+                assertEquals("Pr1", protections.getProtectionsAt(new Location(overworld, x, 80, z)).iterator().next().getName());
             }
         }
         for (int x = 423; x <= 962; x += 18) {
             for (int z = -1000; z <= 0; z += 11) {
-                assertEquals("Pr2", protections.getProtectionAt(new Location(overworld, x, 80, z)).getName());
+                assertEquals("Pr2", protections.getProtectionsAt(new Location(overworld, x, 80, z)).iterator().next().getName());
             }
         }
 
@@ -636,7 +637,7 @@ public class ProtectionTests {
         HashedProtectionHandler protections = new HashedProtectionHandler();
 
         Protection protection = new Protection("Pr1", "world", -1000, 422, -1000, 0,
-                "owner", new Location(overworld, 0, 80, 0));
+                "owner", new Location(overworld, 0, 80, 0), false);
 
         protections.addNewProtection(protection);
 
@@ -666,7 +667,7 @@ public class ProtectionTests {
         HashedProtectionHandler protections = new HashedProtectionHandler();
 
         Protection protection = new Protection("Pr1", "world", -200, 200, -200, 200,
-                "owner", new Location(overworld, 0, 80, 0));
+                "owner", new Location(overworld, 0, 80, 0), false);
 
         protections.addNewProtection(protection);
         try {
@@ -692,13 +693,13 @@ public class ProtectionTests {
         HashedProtectionHandler protections = new HashedProtectionHandler();
 
         Protection protection1 = new Protection("Pr1", "world", 1, 19, 1, 19,
-                "owner", new Location(overworld, 0, 80, 0));
+                "owner", new Location(overworld, 0, 80, 0), false);
         Protection protection2 = new Protection("Pr2", "world", 20, 40, 1, 19,
-                "owner", new Location(overworld, 0, 80, 0));
+                "owner", new Location(overworld, 0, 80, 0), false);
         Protection protection3 = new Protection("Pr3", "world", 1, 19, 20, 40,
-                "owner", new Location(overworld, 0, 80, 0));
+                "owner", new Location(overworld, 0, 80, 0), false);
         Protection protection4 = new Protection("Pr4", "world", 20, 40, 20, 40,
-                "owner", new Location(overworld, 0, 80, 0));
+                "owner", new Location(overworld, 0, 80, 0), false);
 
         protections.addNewProtection(protection1);
         protections.addNewProtection(protection2);
@@ -707,18 +708,18 @@ public class ProtectionTests {
 
         assertEquals(1, protections.getProtectionsByLocationHash().size());
 
-        assertEquals("Pr1", protections.getProtectionAt(new Location(overworld,5,80,5)).getName());
-        assertEquals("Pr2", protections.getProtectionAt(new Location(overworld,25,80,5)).getName());
-        assertEquals("Pr3", protections.getProtectionAt(new Location(overworld,5,80,25)).getName());
-        assertEquals("Pr4", protections.getProtectionAt(new Location(overworld,25,80,25)).getName());
+        assertEquals("Pr1", protections.getProtectionsAt(new Location(overworld, 5, 80, 5)).iterator().next().getName());
+        assertEquals("Pr2", protections.getProtectionsAt(new Location(overworld, 25, 80, 5)).iterator().next().getName());
+        assertEquals("Pr3", protections.getProtectionsAt(new Location(overworld, 5, 80, 25)).iterator().next().getName());
+        assertEquals("Pr4", protections.getProtectionsAt(new Location(overworld, 25, 80, 25)).iterator().next().getName());
 
         protections.removeProtection("Pr4");
         assertEquals(1, protections.getProtectionsByLocationHash().size());
 
-        assertEquals("Pr1", protections.getProtectionAt(new Location(overworld,5,80,5)).getName());
-        assertEquals("Pr2", protections.getProtectionAt(new Location(overworld,25,80,5)).getName());
-        assertEquals("Pr3", protections.getProtectionAt(new Location(overworld,5,80,25)).getName());
-        assertNull(protections.getProtectionAt(new Location(overworld,25,80,25)));
+        assertEquals("Pr1", protections.getProtectionsAt(new Location(overworld, 5, 80, 5)).iterator().next().getName());
+        assertEquals("Pr2", protections.getProtectionsAt(new Location(overworld, 25, 80, 5)).iterator().next().getName());
+        assertEquals("Pr3", protections.getProtectionsAt(new Location(overworld, 5, 80, 25)).iterator().next().getName());
+        assertTrue(protections.getProtectionsAt(new Location(overworld, 25, 80, 25)).isEmpty());
 
         protections.removeProtection("Pr1");
         protections.removeProtection("Pr2");
@@ -726,9 +727,124 @@ public class ProtectionTests {
 
         assertEquals(0, protections.getProtectionsByLocationHash().size());
 
-        assertNull(protections.getProtectionAt(new Location(overworld,5,80,5)));
-        assertNull(protections.getProtectionAt(new Location(overworld,25,80,5)));
-        assertNull(protections.getProtectionAt(new Location(overworld,5,80,25)));
-        assertNull(protections.getProtectionAt(new Location(overworld,25,80,25)));
+        assertTrue(protections.getProtectionsAt(new Location(overworld, 5, 80, 5)).isEmpty());
+        assertTrue(protections.getProtectionsAt(new Location(overworld, 25, 80, 5)).isEmpty());
+        assertTrue(protections.getProtectionsAt(new Location(overworld, 5, 80, 25)).isEmpty());
+        assertTrue(protections.getProtectionsAt(new Location(overworld, 25, 80, 25)).isEmpty());
+    }
+
+
+    /**
+     * Test that admin protections are allowed to overlap, but not with normal protections
+     */
+    @Test
+    public void testAdminProtections() {
+        HashedProtectionHandler handler = new HashedProtectionHandler();
+
+        Protection spawn = new Protection("Spawn", "world", -10, 10, -10, 10,
+                "owner", new Location(overworld, 0, 80, 0), true);
+        Protection unclaimable = new Protection("Unclaimable", "world", -100, 100, -100, 100,
+                "owner", new Location(overworld, 0, 80, 0), true);
+        handler.addNewProtection(spawn);
+        handler.addNewProtection(unclaimable);
+
+        assertEquals("Spawn", handler.getMainProtectionAt(new Location(overworld, 0, 80, 0)).getName());
+        assertEquals("Unclaimable", handler.getMainProtectionAt(new Location(overworld, 11, 80, 0)).getName());
+
+        // test that other protections can't overlap
+        Protection protection = new Protection("test", "world", 50, 100, -50, 50, "owner", new Location(overworld, 0, 80, 0), false);
+
+        try {
+            handler.addNewProtection(protection);
+            fail();
+        } catch (InvalidProtectionException e) {
+            assertEquals(ProtectionExceptionReason.PROTECTION_OVERLAPPING, e.getReason());
+        }
+    }
+
+    /**
+     * Test griefing from outside to inside. Eg: water flow, piston pushing.
+     */
+    @Test
+    public void testInsideOutsideGrief() {
+        HashedProtectionHandler handler = new HashedProtectionHandler();
+
+        Protection bigAdmin = new Protection("BigAdmin", "world", -100, 100, -100, 100,
+                "owner", new Location(overworld, 0, 80, 0), true);
+        Protection smallAdmin1 = new Protection("small1", "world", -10, 10, -20, 0,
+                "owner", new Location(overworld, 0, 80, 0), true);
+        Protection smallAdmin2 = new Protection("small2", "world", -10, 10, 1, 20,
+                "owner", new Location(overworld, 0, 80, 0), true);
+        Protection otherProtection = new Protection("test", "world", 101, 200, -100, 100,
+                "owner", new Location(overworld, 0, 80, 0), false);
+
+        smallAdmin1.setFlag(Flag.BORDER_FLUID_PROTECTION, true);
+        smallAdmin2.setFlag(Flag.BORDER_FLUID_PROTECTION, true);
+        otherProtection.setFlag(Flag.BORDER_FLUID_PROTECTION, true);
+        bigAdmin.setFlag(Flag.BORDER_FLUID_PROTECTION, false);
+
+        smallAdmin1.setFlag(Flag.BORDER_PISTON_PROTECTION, true);
+        smallAdmin2.setFlag(Flag.BORDER_PISTON_PROTECTION, true);
+        otherProtection.setFlag(Flag.BORDER_PISTON_PROTECTION, true);
+        bigAdmin.setFlag(Flag.BORDER_PISTON_PROTECTION, true);
+
+        smallAdmin1.setFlag(Flag.BORDER_TREE_PROTECTION, false);
+        smallAdmin2.setFlag(Flag.BORDER_TREE_PROTECTION, true);
+        otherProtection.setFlag(Flag.BORDER_TREE_PROTECTION, false);
+        bigAdmin.setFlag(Flag.BORDER_TREE_PROTECTION, true);
+
+        handler.addNewProtection(bigAdmin);
+        handler.addNewProtection(smallAdmin1);
+        handler.addNewProtection(smallAdmin2);
+        handler.addNewProtection(otherProtection);
+
+        Location small1 = new Location(overworld, 0, 80, -10);
+        Location small2 = new Location(overworld, 0, 80, 10);
+        Location big = new Location(overworld, -25, 80, 0);
+        Location outside = new Location(overworld, -250, 80, 0);
+        Location other = new Location(overworld, 150, 80, 0);
+
+        // doublecheck the locations are the main protections
+        assertEquals("small1", handler.getMainProtectionAt(small1).getName());
+        assertEquals("small2", handler.getMainProtectionAt(small2).getName());
+        assertEquals("BigAdmin", handler.getMainProtectionAt(big).getName());
+        assertEquals("test", handler.getMainProtectionAt(other).getName());
+        assertNull(handler.getMainProtectionAt(outside));
+
+        // test fluid protection
+        assertTrue(handler.testInsideOutsideProtected(small1, small2, Flag.BORDER_FLUID_PROTECTION));
+        assertTrue(handler.testInsideOutsideProtected(small2, small1, Flag.BORDER_FLUID_PROTECTION));
+
+        assertFalse(handler.testInsideOutsideProtected(small1, big, Flag.BORDER_FLUID_PROTECTION));
+        assertTrue(handler.testInsideOutsideProtected(big, small1, Flag.BORDER_FLUID_PROTECTION));
+
+        assertFalse(handler.testInsideOutsideProtected(small1, outside, Flag.BORDER_FLUID_PROTECTION));
+        assertTrue(handler.testInsideOutsideProtected(outside, small1, Flag.BORDER_FLUID_PROTECTION));
+
+        assertFalse(handler.testInsideOutsideProtected(other, big, Flag.BORDER_FLUID_PROTECTION));
+        assertTrue(handler.testInsideOutsideProtected(big, other, Flag.BORDER_FLUID_PROTECTION));
+
+        // test piston protection
+        assertTrue(handler.testInsideOutsideProtected(small1, small2, Flag.BORDER_PISTON_PROTECTION));
+        assertTrue(handler.testInsideOutsideProtected(small2, small1, Flag.BORDER_PISTON_PROTECTION));
+
+        assertFalse(handler.testInsideOutsideProtected(small1, big, Flag.BORDER_PISTON_PROTECTION));
+        assertTrue(handler.testInsideOutsideProtected(big, small1, Flag.BORDER_PISTON_PROTECTION));
+
+        assertFalse(handler.testInsideOutsideProtected(big, outside, Flag.BORDER_PISTON_PROTECTION));
+        assertTrue(handler.testInsideOutsideProtected(outside, big, Flag.BORDER_PISTON_PROTECTION));
+
+        // test tree protection
+        assertTrue(handler.testInsideOutsideProtected(small1, small2, Flag.BORDER_TREE_PROTECTION));
+        assertFalse(handler.testInsideOutsideProtected(small2, small1, Flag.BORDER_TREE_PROTECTION));
+
+        assertTrue(handler.testInsideOutsideProtected(small1, small2, Flag.BORDER_TREE_PROTECTION));
+        assertFalse(handler.testInsideOutsideProtected(small2, small1, Flag.BORDER_TREE_PROTECTION));
+
+        assertFalse(handler.testInsideOutsideProtected(small2, big, Flag.BORDER_TREE_PROTECTION));
+        assertTrue(handler.testInsideOutsideProtected(big, small2, Flag.BORDER_TREE_PROTECTION));
+
+        assertFalse(handler.testInsideOutsideProtected(small1, big, Flag.BORDER_TREE_PROTECTION));
+        assertFalse(handler.testInsideOutsideProtected(big, small1, Flag.BORDER_TREE_PROTECTION));
     }
 }

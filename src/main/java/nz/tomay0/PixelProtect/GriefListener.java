@@ -469,13 +469,10 @@ public class GriefListener implements Listener {
 
         Location sourceLoc = (Location) metadata;
 
-        Protection p1 = protections.getProtectionAt(hitLocation);
+        // check if the area affected is unprotected
+        if (protections.getFlagAt(hitLocation, Flag.ENTITY_DAMAGE_ENTITY)) return false;
 
-        if (p1 == null || !p1.getFlag(Flag.ENTITY_DAMAGE_ENTITY)) return false; // ignore if hit an unprotected area
-
-        Protection p2 = protections.getProtectionAt(sourceLoc);
-
-        return p1 != p2;
+        return protections.testInsideOutsideProtected(sourceLoc, hitLocation, Flag.ENTITY_DAMAGE_ENTITY);
     }
 
 
@@ -571,16 +568,12 @@ public class GriefListener implements Listener {
 
             if (!(metadata instanceof Location)) return;
 
-            Protection sourcePr = protections.getProtectionAt((Location) metadata);
+            Location sourceLoc = (Location) metadata;
 
             for (LivingEntity entity : e.getAffectedEntities()) {
-                if (sourcePr != null && sourcePr.withinBounds(entity.getLocation())) continue; // same protection
-
-                // different protections
-                Protection destPr = protections.getProtectionAt(entity.getLocation());
-
-                if (destPr != null)
-                    e.setIntensity(entity, 0); // potion came from another protection or outside
+                if (protections.testInsideOutsideProtected(sourceLoc, entity.getLocation(), Flag.ENTITY_DAMAGE_ENTITY)) {
+                    e.setIntensity(entity, 0); // potion came from another protection
+                }
             }
 
             return;
@@ -789,6 +782,27 @@ public class GriefListener implements Listener {
      */
     @EventHandler
     public void onEntityChangeBlock(EntityChangeBlockEvent e) {
+        Entity entity = e.getEntity();
+        if (e.getEntityType() == EntityType.FALLING_BLOCK) {
+            if (e.getBlock().getType() != Material.AIR) {
+                // block starts falling
+                entity.setMetadata("SOURCE_LOCATION", new FixedMetadataValue(plugin, entity.getLocation()));
+            } else {
+                // block lands, check that the protection did not change in the process
+                if (entity.hasMetadata("SOURCE_LOCATION")) {
+                    Object metadata = entity.getMetadata("SOURCE_LOCATION").get(0).value();
+                    if (metadata instanceof Location) {
+                        Location source = (Location) metadata;
+
+                        if (protections.testInsideOutsideProtected(source, e.getBlock().getLocation(), Flag.MOB_GRIEFING)) {
+                            e.setCancelled(true);
+                        }
+                    }
+                }
+            }
+            return;
+        }
+
         if (!protections.getFlagAt(e.getBlock().getLocation(), Flag.MOB_GRIEFING)) {
             e.setCancelled(true);
         }
@@ -897,15 +911,11 @@ public class GriefListener implements Listener {
             }
         }
 
-        Protection sourcePr = protections.getProtectionAt(source);
 
         for (BlockState block : new ArrayList<>(e.getBlocks())) {
-            Protection pr = protections.getProtectionAt(block.getLocation());
-            if (pr != null && pr.getFlag(Flag.BORDER_TREE_PROTECTION) && pr != sourcePr) {
-                if (player != null && pr.hasPermission(player.getUniqueId().toString(), Perm.BUILD)) continue;
-
+            if (player != null && protections.hasPermission(player, block.getLocation(), Perm.BUILD)) continue;
+            if (protections.testInsideOutsideProtected(source, block.getLocation(), Flag.BORDER_TREE_PROTECTION))
                 e.getBlocks().remove(block);
-            }
         }
     }
 
@@ -918,8 +928,6 @@ public class GriefListener implements Listener {
     public void onPistonExtend(BlockPistonExtendEvent e) {
         Block piston = e.getBlock();
 
-        Protection sourcePr = protections.getProtectionAt(piston.getLocation());
-
         Set<Location> locations = new HashSet<>();
 
         for (Block block : e.getBlocks()) {
@@ -928,8 +936,7 @@ public class GriefListener implements Listener {
         }
 
         for (Location location : locations) {
-            Protection pr = protections.getProtectionAt(location);
-            if (pr != null && pr.getFlag(Flag.BORDER_PISTON_PROTECTION) && pr != sourcePr) {
+            if (protections.testInsideOutsideProtected(piston.getLocation(), location, Flag.BORDER_PISTON_PROTECTION)) {
                 e.setCancelled(true);
                 return;
             }
@@ -946,8 +953,6 @@ public class GriefListener implements Listener {
     public void onPistonRetract(BlockPistonRetractEvent e) {
         Block piston = e.getBlock();
 
-        Protection sourcePr = protections.getProtectionAt(piston.getLocation());
-
         Set<Location> locations = new HashSet<>();
 
         for (Block block : e.getBlocks()) {
@@ -956,8 +961,7 @@ public class GriefListener implements Listener {
         }
 
         for (Location location : locations) {
-            Protection pr = protections.getProtectionAt(location);
-            if (pr != null && pr.getFlag(Flag.BORDER_PISTON_PROTECTION) && pr != sourcePr) {
+            if (protections.testInsideOutsideProtected(piston.getLocation(), location, Flag.BORDER_PISTON_PROTECTION)) {
                 e.setCancelled(true);
                 return;
             }
@@ -972,10 +976,7 @@ public class GriefListener implements Listener {
      */
     @EventHandler
     public void onFluidFlow(BlockFromToEvent e) {
-        Protection pr = protections.getProtectionAt(e.getToBlock().getLocation());
-        if (pr == null) return;
-
-        if (pr.getFlag(Flag.BORDER_FLUID_PROTECTION) && !pr.withinBounds(e.getBlock().getLocation())) {
+        if (protections.testInsideOutsideProtected(e.getBlock().getLocation(), e.getToBlock().getLocation(), Flag.BORDER_FLUID_PROTECTION)) {
             e.setCancelled(true);
         }
     }
@@ -989,9 +990,8 @@ public class GriefListener implements Listener {
 
 
         Location l = e.getBlock().getLocation();
-        Protection protection = protections.getProtectionAt(l);
 
-        if (protection == null || !protection.getFlag(Flag.BORDER_TREE_PROTECTION)) return;
+        if (!protections.getFlagAt(l, Flag.BORDER_TREE_PROTECTION)) return; // no protection
 
         // work out where growth was from
         Set<Location> locations = new HashSet<>();
@@ -1004,7 +1004,7 @@ public class GriefListener implements Listener {
         }
 
         for (Location location : locations) {
-            if (!protection.withinBounds(location)) {
+            if (protections.testInsideOutsideProtected(location, l, Flag.BORDER_PISTON_PROTECTION)) {
                 e.setCancelled(true);
                 return;
             }

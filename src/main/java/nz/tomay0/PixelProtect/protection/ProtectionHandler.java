@@ -179,12 +179,39 @@ public abstract class ProtectionHandler implements Iterable<Protection> {
     public abstract Set<Protection> getOverlappingProtections(Protection protection);
 
     /**
-     * Get the protection at a given location. If unprotected, this will be null.
+     * Get the protection(s) at a given location. If unprotected, this will be empty.
      *
      * @param location location to check
-     * @return The protection at that location
+     * @return The protection(s) at that location
      */
-    public abstract Protection getProtectionAt(Location location);
+    public abstract Set<Protection> getProtectionsAt(Location location);
+
+
+    /**
+     * Get a singular protection at a location. If there are multiple, pick the smallest.
+     *
+     * @param location location to check
+     * @return a protection, null if none.
+     */
+    public Protection getMainProtectionAt(Location location) {
+        Set<Protection> protections = getProtectionsAt(location);
+
+        if (protections.size() == 0) return null;
+
+        if (protections.size() == 1) return protections.iterator().next();
+
+        Protection smallest = null;
+        int area = 0;
+
+        for (Protection protection : protections) {
+            if (smallest == null || protection.getArea() < area) {
+                smallest = protection;
+                area = protection.getArea();
+            }
+        }
+
+        return smallest;
+    }
 
     /**
      * Test if a player has permission to do an action at a location
@@ -195,11 +222,20 @@ public abstract class ProtectionHandler implements Iterable<Protection> {
      * @return boolean if allowed
      */
     public boolean hasPermission(Player player, Location location, Perm perm) {
-        Protection protection = getProtectionAt(location);
+        Set<Protection> protections = getProtectionsAt(location);
+        if (protections.size() == 0) return true;
+        else if (protections.size() == 1) {
+            return protections.iterator().next().hasPermission(player.getUniqueId().toString(), perm);
+        }
 
-        if (protection == null) return true; // you have permission if there is no protection
+        // multiple protections, you need permission in all of them.
+        else {
+            for (Protection protection : protections) {
+                if (!protection.hasPermission(player.getUniqueId().toString(), perm)) return false;
+            }
 
-        return protection.hasPermission(player.getUniqueId().toString(), perm);
+            return true;
+        }
     }
 
     /**
@@ -210,11 +246,22 @@ public abstract class ProtectionHandler implements Iterable<Protection> {
      * @return
      */
     public boolean getFlagAt(Location location, Flag flag) {
-        Protection protection = getProtectionAt(location);
-        // TODO admin protections mutliple protections
-        if (protection == null) return flag.getNoProtection();
+        Set<Protection> protections = getProtectionsAt(location);
+        if (protections.size() == 0) return flag.getNoProtection();
+        else if (protections.size() == 1) {
+            return protections.iterator().next().getFlag(flag);
+        }
 
-        return protection.getFlag(flag);
+        // multiple protections, if any don't have the no protection flag it returns that.
+        else {
+            for (Protection protection : protections) {
+                if (protection.getFlag(flag) != flag.getNoProtection()) {
+                    return !flag.getNoProtection();
+                }
+            }
+
+            return flag.getNoProtection();
+        }
     }
 
 
@@ -279,6 +326,33 @@ public abstract class ProtectionHandler implements Iterable<Protection> {
     }
 
     /**
+     * An action that occurs outside a protection is not allowed to cross the border.
+     * <p>
+     * If any of the protections in the destination are protected by the flag, then the source must contain that protection.
+     *
+     * @param source source location
+     * @param dest   dest location
+     * @param flag   flag to test
+     * @return if the action is protected and should be cancelled
+     */
+    public boolean testInsideOutsideProtected(Location source, Location dest, Flag flag) {
+        Set<Protection> sourcePrs = getProtectionsAt(source);
+        Set<Protection> destPrs = getProtectionsAt(dest);
+
+        Set<Protection> allProtected = new HashSet<>();
+
+        for (Protection protection : destPrs) {
+            if (protection.getFlag(flag) != flag.getNoProtection()) {
+                allProtected.add(protection);
+            }
+        }
+        if (allProtected.size() == 0) return false;
+
+        // source prs must contain all of allProtected
+        return !sourcePrs.containsAll(allProtected);
+    }
+
+    /**
      * Test if a command sender has the permission do an action for a protection
      *
      * @param sender     command sender to test
@@ -305,6 +379,9 @@ public abstract class ProtectionHandler implements Iterable<Protection> {
      * @return if they overlap
      */
     public boolean isOverlapping(Protection protection1, Protection protection2) {
+        // if both are admin protections, ignore.
+        if (protection1.isAdminProtection() && protection2.isAdminProtection()) return false;
+
         // check world
         if (!protection1.getWorld().equals(protection2.getWorld())) return false;
 

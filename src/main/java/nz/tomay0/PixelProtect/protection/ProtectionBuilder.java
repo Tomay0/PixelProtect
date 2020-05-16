@@ -42,6 +42,8 @@ public class ProtectionBuilder {
         int north = yml.getInt("north");
         int south = yml.getInt("south");
 
+        boolean isAdmin = yml.contains("admin") && yml.getBoolean("admin");
+
         // homes
         Map<String, Location> homes = new HashMap<>();
 
@@ -164,7 +166,7 @@ public class ProtectionBuilder {
             }
         }
 
-        return new Protection(name, world, west, east, north, south, homes, playerPermissions, defaultPermissions, configuration, yml, dir);
+        return new Protection(name, world, west, east, north, south, homes, playerPermissions, defaultPermissions, configuration, isAdmin, yml, dir);
     }
 
     /**
@@ -176,7 +178,7 @@ public class ProtectionBuilder {
      * @param protections    protection handler to test that it does not overlap
      * @return a protection
      */
-    public static Protection fromCommand(String protectionName, Player player, Integer[] size, ProtectionHandler protections) {
+    public static Protection fromCommand(String protectionName, Player player, Integer[] size, ProtectionHandler protections, boolean isAdmin) {
         if (size.length != 4) throw new InvalidProtectionException("Invalid size arguments.", COMMAND_FORMAT_EXCEPTION);
 
         if (protections.getProtection(protectionName) != null)
@@ -192,7 +194,7 @@ public class ProtectionBuilder {
 
         String uuid = player.getUniqueId().toString();
 
-        Protection protection = new Protection(protectionName, world, west, east, north, south, uuid, player.getLocation());
+        Protection protection = new Protection(protectionName, world, west, east, north, south, uuid, player.getLocation(), isAdmin);
 
         if (protections.getOverlappingProtections(protection).size() > 0) {
             throw new InvalidProtectionException("This protection will overlap other protections.", PROTECTION_OVERLAPPING);
@@ -222,7 +224,8 @@ public class ProtectionBuilder {
         int north = protection.getNorth() - size[2];
         int south = protection.getSouth() + size[3];
 
-        Protection newBounds = new Protection(protection.getName(), world, west, east, north, south, protection.getOwnerID(), protection.getHome(Protection.DEFAULT_HOME));
+        Protection newBounds = new Protection(protection.getName(), world, west, east, north, south,
+                protection.getOwnerID(), protection.getHome(Protection.DEFAULT_HOME), protection.isAdminProtection());
 
         if (protections.getOverlappingProtections(newBounds).size() > 0) {
             throw new InvalidProtectionException("This protection will overlap other protections.", PROTECTION_OVERLAPPING);
@@ -253,7 +256,8 @@ public class ProtectionBuilder {
         int north = protection.getNorth() - shift[2] + shift[3];
         int south = protection.getSouth() - shift[2] + shift[3];
 
-        Protection newBounds = new Protection(protection.getName(), world, west, east, north, south, protection.getOwnerID(), protection.getHome(Protection.DEFAULT_HOME));
+        Protection newBounds = new Protection(protection.getName(), world, west, east, north, south,
+                protection.getOwnerID(), protection.getHome(Protection.DEFAULT_HOME), protection.isAdminProtection());
 
         if (protections.getOverlappingProtections(newBounds).size() > 0) {
             throw new InvalidProtectionException("This protection will overlap other protections.", PROTECTION_OVERLAPPING);

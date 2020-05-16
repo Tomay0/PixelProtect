@@ -263,11 +263,13 @@ public class CommandTests {
         // not enough funds
         createCommand.onCommand(ownerPlayer, "create 1000".split(" "));
         assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer, economy));
-        assertNull(protections.getProtectionAt(new Location(overworld, 0, 100, 0)));
+        assertTrue(protections.getProtectionsAt(new Location(overworld, 0, 100, 0)).isEmpty());
 
         // create some test protections
-        protections.addNewProtection(new Protection("Owner1", "world", -100, -50, -100, 100, ownerUUID.toString(), new Location(overworld, 0, 80, 0)));
-        protections.addNewProtection(new Protection("Owner2", "world", -10, 10, -50, -20, ownerUUID.toString(), new Location(overworld, 0, 80, 0)));
+        protections.addNewProtection(new Protection("Owner1", "world", -100, -50, -100, 100,
+                ownerUUID.toString(), new Location(overworld, 0, 80, 0), false));
+        protections.addNewProtection(new Protection("Owner2", "world", -10, 10, -50, -20,
+                ownerUUID.toString(), new Location(overworld, 0, 80, 0), false));
 
         // no size
         createCommand.onCommand(ownerPlayer, "create Owner3 yes".split(" "));
@@ -307,17 +309,17 @@ public class CommandTests {
         // create with same name
         createCommand.onCommand(ownerPlayer, "create 10".split(" "));
         assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer, economy));
-        assertNull(protections.getProtectionAt(new Location(overworld, 0, 100, 0)));
+        assertTrue(protections.getProtectionsAt(new Location(overworld, 0, 100, 0)).isEmpty());
 
         // create but overlapping
         createCommand.onCommand(ownerPlayer, "create Owner3 20".split(" "));
         assertFalse(plugin.getPlayerStateHandler().confirm(ownerPlayer, economy));
-        assertNull(protections.getProtectionAt(new Location(overworld, 0, 100, 0)));
+        assertTrue(protections.getProtectionsAt(new Location(overworld, 0, 100, 0)).isEmpty());
 
         // create valid
         createCommand.onCommand(ownerPlayer, "create Owner3 19".split(" "));
         plugin.getPlayerStateHandler().confirm(ownerPlayer, economy);
-        assertNotNull(protections.getProtectionAt(new Location(overworld, 0, 100, 0)));
+        assertFalse(protections.getProtectionsAt(new Location(overworld, 0, 100, 0)).isEmpty());
 
     }
 
