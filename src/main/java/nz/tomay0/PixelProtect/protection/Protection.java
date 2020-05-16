@@ -526,6 +526,19 @@ public class Protection {
     }
 
     /**
+     * Get min permission level
+     *
+     * @param perm
+     * @return
+     */
+    public PermLevel getMinPermissionLevel(Perm perm) {
+        if (defaultPermissions.containsKey(perm)) {
+            return defaultPermissions.get(perm);
+        }
+        return perm.getDefaultLevelRequired();
+    }
+
+    /**
      * Get the permission level of a player
      *
      * @param uuid player uuid

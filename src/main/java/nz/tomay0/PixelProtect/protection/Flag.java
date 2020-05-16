@@ -8,7 +8,7 @@ public enum Flag {
     ENTITY_DAMAGE_ENTITY(false, true),
     FIRE_SPREAD(false, true),
     MOB_GRIEFING(false, true),
-    EXPLOSION_DAMAGE(true, true),
+    EXPLOSION_DAMAGE(false, true),
     BORDER_PISTON_PROTECTION(true, false),
     NETHER_PORTAL_PROTECTION(true, false),
     PRESSURE_PLATE_PROTECTION(true, false),

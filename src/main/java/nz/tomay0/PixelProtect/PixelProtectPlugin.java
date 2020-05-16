@@ -23,11 +23,9 @@ public class PixelProtectPlugin extends JavaPlugin {
 
     commands
     - /pr config
-    - /pr preset
     - consider making the command formatting more lenient
     - consider making /pr perms have multiple pages.
     - command for admins to override permissions
-    - administrative protections (eg spawn)
     - auto sizes??
     - motd
     - colour
