@@ -43,6 +43,7 @@ public class CommandHandler implements CommandExecutor {
         commandsList.add(new HideCommand(plugin));
         commandsList.add(new HereCommand(plugin));
         commandsList.add(new SizeCommand(plugin));
+        commandsList.add(new ConfigCommand(plugin));
 
         // commands that require perms
         commandsList.add(new CreateAdminCommand(plugin));

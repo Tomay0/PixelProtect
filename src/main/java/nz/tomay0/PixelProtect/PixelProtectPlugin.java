@@ -18,37 +18,25 @@ import java.util.logging.Level;
 public class PixelProtectPlugin extends JavaPlugin {
     /*
 
-    TODO overall:
-
-
-    commands
-    - /pr config
-    - consider making the command formatting more lenient
-    - consider making /pr perms have multiple pages.
-    - command for admins to override permissions
-    - auto sizes??
-    - motd
-    - colour
-
-    optimization/performance
-    - optimize offline player name recognition?
-
-    integration
+    TODO:
     - grief prevention importer
+    - command for admins to override permissions
     - dynmap integration
-
-    config
-    - default perms - some perm presets maybe
-    - dynmap colour?
-
-    misc
+    - optimize offline player name recognition
     - help for players. eg: tell them "oh this is the wilderness you can't build here"
+    - maybe some more bug fixing
 
-    grief
-
-    -pickup blocks on the ground
+    Maybe?
+    - config default perms - some perm presets maybe
+    - config dynmap colour?
+    - disable pickup blocks on the ground
     - bonemeal grass over border?
     - seperate out entity interact? could allow people to interact with their own pets/vehicles storage minecarts can be considered chests
+    - consider making the command formatting more lenient
+    - consider making /pr perms have multiple pages.
+    - auto sizes??
+    - motd changer
+    - colour changer
 
      */
 
