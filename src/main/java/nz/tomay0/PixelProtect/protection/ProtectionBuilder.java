@@ -28,8 +28,7 @@ public class ProtectionBuilder {
      * @return
      */
     public static Protection fromYaml(YamlConfiguration yml, File dir) {
-        if (!yml.contains("name") || !yml.contains("world") || !yml.contains("west") || !yml.contains("east") || !yml.contains("north") || !yml.contains("south")
-                || !yml.contains("player-perms") || !yml.contains("homes"))
+        if (!yml.contains("name") || !yml.contains("world") || !yml.contains("west") || !yml.contains("east") || !yml.contains("north") || !yml.contains("south"))
             throw new InvalidProtectionException("Invalid Protection yml. Missing values.", YML_EXCEPTION);
 
         // name
@@ -44,89 +43,6 @@ public class ProtectionBuilder {
 
         boolean isAdmin = yml.contains("admin") && yml.getBoolean("admin");
 
-        // homes
-        Map<String, Location> homes = new HashMap<>();
-
-        ConfigurationSection homeSection = yml.getConfigurationSection("homes");
-
-        if (homeSection == null) {
-            throw new InvalidProtectionException("Invalid Protection yml. Homes not formatted correctly.", YML_EXCEPTION);
-        }
-
-        for (String home : homeSection.getKeys(false)) {
-            ConfigurationSection section = homeSection.getConfigurationSection(home);
-
-            if (section == null)
-                throw new InvalidProtectionException("Invalid Protection yml. Homes not formatted correctly.", YML_EXCEPTION);
-
-            if (!section.contains("world") || !section.contains("x") || !section.contains("y") || !section.contains("z"))
-                throw new InvalidProtectionException("Invalid Protection yml. Home needs world, x, y and z.", INVALID_HOME);
-
-            World homeWorld = Bukkit.getWorld(section.getString("world"));
-            double x = section.getDouble("x");
-            double y = section.getDouble("y");
-            double z = section.getDouble("z");
-
-            if (homeWorld == null)
-                throw new InvalidProtectionException("Invalid Protection yml. Invalid world name.", INVALID_HOME);
-
-            if (section.contains("yaw") && section.contains("pitch")) {
-                float yaw = (float) section.getDouble("yaw");
-                float pitch = (float) section.getDouble("pitch");
-                Location location = new Location(homeWorld, x, y, z, yaw, pitch);
-                homes.put(home, location);
-
-            } else {
-                Location location = new Location(homeWorld, x, y, z);
-                homes.put(home, location);
-            }
-        }
-
-
-        // player perms
-
-        Map<String, PlayerPerms> playerPermissions = new HashMap<>();
-
-        ConfigurationSection playerPerms = yml.getConfigurationSection("player-perms");
-
-        for (String uuid : playerPerms.getKeys(false)) {
-            ConfigurationSection section = playerPerms.getConfigurationSection(uuid);
-
-            if (section == null)
-                throw new InvalidProtectionException("Invalid Protection yml. Player perms not formatted correctly.", YML_EXCEPTION);
-
-            if (!section.contains("level"))
-                throw new InvalidProtectionException("Invalid Protection yml. Player perms must contain the level", YML_EXCEPTION);
-
-            PermLevel level = PermLevel.fromString(section.getString("level"));
-
-            if (level == null)
-                throw new InvalidProtectionException("Invalid Protection yml. Unknown perm level.", YML_EXCEPTION);
-
-            PlayerPerms perms = new PlayerPerms(uuid, level);
-
-            if (section.contains("perms")) {
-                ConfigurationSection permSection = section.getConfigurationSection("perms");
-
-                if (permSection == null)
-                    throw new InvalidProtectionException("Invalid Protection yml. Player perms not formatted correctly.", YML_EXCEPTION);
-
-                for (String permName : permSection.getKeys(false)) {
-                    Perm perm = Perm.fromString(permName);
-
-                    if (perm == null)
-                        throw new InvalidProtectionException("Invalid Protection yml. Unknown perm " + permName + ".", YML_EXCEPTION);
-
-                    boolean value = permSection.getBoolean(permName);
-
-                    perms.setSpecificPermission(perm, value);
-                }
-
-            }
-
-            playerPermissions.put(uuid, perms);
-
-        }
 
         // level perms
         Map<Perm, PermLevel> defaultPermissions = new HashMap<>();
@@ -166,7 +82,100 @@ public class ProtectionBuilder {
             }
         }
 
-        return new Protection(name, world, west, east, north, south, homes, playerPermissions, defaultPermissions, configuration, isAdmin, yml, dir);
+        // NON ADMIN PROTECTIONS
+        if (!isAdmin) {
+            if (!yml.contains("player-perms") || !yml.contains("homes"))
+                throw new InvalidProtectionException("Invalid Protection yml. Missing values.", YML_EXCEPTION);
+
+            // homes
+            Map<String, Location> homes = new HashMap<>();
+
+            ConfigurationSection homeSection = yml.getConfigurationSection("homes");
+
+            if (homeSection == null) {
+                throw new InvalidProtectionException("Invalid Protection yml. Homes not formatted correctly.", YML_EXCEPTION);
+            }
+
+            for (String home : homeSection.getKeys(false)) {
+                ConfigurationSection section = homeSection.getConfigurationSection(home);
+
+                if (section == null)
+                    throw new InvalidProtectionException("Invalid Protection yml. Homes not formatted correctly.", YML_EXCEPTION);
+
+                if (!section.contains("world") || !section.contains("x") || !section.contains("y") || !section.contains("z"))
+                    throw new InvalidProtectionException("Invalid Protection yml. Home needs world, x, y and z.", INVALID_HOME);
+
+                World homeWorld = Bukkit.getWorld(section.getString("world"));
+                double x = section.getDouble("x");
+                double y = section.getDouble("y");
+                double z = section.getDouble("z");
+
+                if (homeWorld == null)
+                    throw new InvalidProtectionException("Invalid Protection yml. Invalid world name.", INVALID_HOME);
+
+                if (section.contains("yaw") && section.contains("pitch")) {
+                    float yaw = (float) section.getDouble("yaw");
+                    float pitch = (float) section.getDouble("pitch");
+                    Location location = new Location(homeWorld, x, y, z, yaw, pitch);
+                    homes.put(home, location);
+
+                } else {
+                    Location location = new Location(homeWorld, x, y, z);
+                    homes.put(home, location);
+                }
+            }
+
+
+            // player perms
+
+            Map<String, PlayerPerms> playerPermissions = new HashMap<>();
+
+            ConfigurationSection playerPerms = yml.getConfigurationSection("player-perms");
+
+            for (String uuid : playerPerms.getKeys(false)) {
+                ConfigurationSection section = playerPerms.getConfigurationSection(uuid);
+
+                if (section == null)
+                    throw new InvalidProtectionException("Invalid Protection yml. Player perms not formatted correctly.", YML_EXCEPTION);
+
+                if (!section.contains("level"))
+                    throw new InvalidProtectionException("Invalid Protection yml. Player perms must contain the level", YML_EXCEPTION);
+
+                PermLevel level = PermLevel.fromString(section.getString("level"));
+
+                if (level == null)
+                    throw new InvalidProtectionException("Invalid Protection yml. Unknown perm level.", YML_EXCEPTION);
+
+                PlayerPerms perms = new PlayerPerms(uuid, level);
+
+                if (section.contains("perms")) {
+                    ConfigurationSection permSection = section.getConfigurationSection("perms");
+
+                    if (permSection == null)
+                        throw new InvalidProtectionException("Invalid Protection yml. Player perms not formatted correctly.", YML_EXCEPTION);
+
+                    for (String permName : permSection.getKeys(false)) {
+                        Perm perm = Perm.fromString(permName);
+
+                        if (perm == null)
+                            throw new InvalidProtectionException("Invalid Protection yml. Unknown perm " + permName + ".", YML_EXCEPTION);
+
+                        boolean value = permSection.getBoolean(permName);
+
+                        perms.setSpecificPermission(perm, value);
+                    }
+
+                }
+
+                playerPermissions.put(uuid, perms);
+
+            }
+            return new Protection(name, world, west, east, north, south, homes, playerPermissions, defaultPermissions, configuration, yml, dir);
+        }
+
+        // admin protection
+        return new AdminProtection(name, world, west, east, north, south, defaultPermissions, configuration, yml, dir);
+
     }
 
     /**
@@ -178,7 +187,7 @@ public class ProtectionBuilder {
      * @param protections    protection handler to test that it does not overlap
      * @return a protection
      */
-    public static Protection fromCommand(String protectionName, Player player, Integer[] size, ProtectionHandler protections, boolean isAdmin) {
+    public static Protection fromCommand(String protectionName, Player player, Integer[] size, ProtectionHandler protections) {
         if (size.length != 4) throw new InvalidProtectionException("Invalid size arguments.", COMMAND_FORMAT_EXCEPTION);
 
         if (protections.getProtection(protectionName) != null)
@@ -194,7 +203,39 @@ public class ProtectionBuilder {
 
         String uuid = player.getUniqueId().toString();
 
-        Protection protection = new Protection(protectionName, world, west, east, north, south, uuid, player.getLocation(), isAdmin);
+        Protection protection = new Protection(protectionName, world, west, east, north, south, uuid, player.getLocation());
+
+        if (protections.getOverlappingProtections(protection).size() > 0) {
+            throw new InvalidProtectionException("This protection will overlap other protections.", PROTECTION_OVERLAPPING);
+        }
+
+        return protection;
+    }
+
+    /**
+     * Admin protection creation from a command. The size is specified as blocks from the player's location.
+     *
+     * @param protectionName name
+     * @param player         player who is creating
+     * @param size           size of the protection as blocks from the centre.
+     * @param protections    protection handler to test that it does not overlap
+     * @return a protection
+     */
+    public static Protection fromAdminCommand(String protectionName, Player player, Integer[] size, ProtectionHandler protections) {
+        if (size.length != 4) throw new InvalidProtectionException("Invalid size arguments.", COMMAND_FORMAT_EXCEPTION);
+
+        if (protections.getProtection(protectionName) != null)
+            throw new InvalidProtectionException("A protection with that name already exists.", PROTECTION_ALREADY_EXISTS);
+
+        Location l = player.getLocation();
+
+        String world = l.getWorld().getName();
+        int west = l.getBlockX() - size[0];
+        int east = l.getBlockX() + size[1];
+        int north = l.getBlockZ() - size[2];
+        int south = l.getBlockZ() + size[3];
+
+        Protection protection = new AdminProtection(protectionName, world, west, east, north, south);
 
         if (protections.getOverlappingProtections(protection).size() > 0) {
             throw new InvalidProtectionException("This protection will overlap other protections.", PROTECTION_OVERLAPPING);
@@ -224,8 +265,13 @@ public class ProtectionBuilder {
         int north = protection.getNorth() - size[2];
         int south = protection.getSouth() + size[3];
 
-        Protection newBounds = new Protection(protection.getName(), world, west, east, north, south,
-                protection.getOwnerID(), protection.getHome(Protection.DEFAULT_HOME), protection.isAdminProtection());
+        Protection newBounds;
+        if (protection.isAdminProtection()) {
+            newBounds = new AdminProtection(protection.getName(), world, west, east, north, south);
+        }else{
+            newBounds = new Protection(protection.getName(), world, west, east, north, south,
+                    protection.getOwnerID(), protection.getHome(Protection.DEFAULT_HOME));
+        }
 
         if (protections.getOverlappingProtections(newBounds).size() > 0) {
             throw new InvalidProtectionException("This protection will overlap other protections.", PROTECTION_OVERLAPPING);
@@ -256,8 +302,13 @@ public class ProtectionBuilder {
         int north = protection.getNorth() - shift[2] + shift[3];
         int south = protection.getSouth() - shift[2] + shift[3];
 
-        Protection newBounds = new Protection(protection.getName(), world, west, east, north, south,
-                protection.getOwnerID(), protection.getHome(Protection.DEFAULT_HOME), protection.isAdminProtection());
+        Protection newBounds;
+        if (protection.isAdminProtection()) {
+            newBounds = new AdminProtection(protection.getName(), world, west, east, north, south);
+        }else{
+            newBounds = new Protection(protection.getName(), world, west, east, north, south,
+                    protection.getOwnerID(), protection.getHome(Protection.DEFAULT_HOME));
+        }
 
         if (protections.getOverlappingProtections(newBounds).size() > 0) {
             throw new InvalidProtectionException("This protection will overlap other protections.", PROTECTION_OVERLAPPING);

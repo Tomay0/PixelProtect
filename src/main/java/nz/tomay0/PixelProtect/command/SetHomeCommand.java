@@ -46,6 +46,10 @@ public class SetHomeCommand extends AbstractCommand {
             commandHelp(player);
             return;
         }
+        if (protection.isAdminProtection()) {
+            sender.sendMessage(ChatColor.DARK_RED + "This command is not avaliable for admin protections.");
+            return;
+        }
 
         // check if they have permission
         if (!getProtections().hasPermission(sender, protection, Perm.SETHOME)) {

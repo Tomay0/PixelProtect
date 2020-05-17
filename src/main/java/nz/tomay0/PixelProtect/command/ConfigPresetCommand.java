@@ -62,7 +62,7 @@ public class ConfigPresetCommand extends AbstractCommand {
 
                 if (oldLevel != newLevel &&
                         getProtections().hasPermission(sender, protection, perm) &&
-                        sender instanceof Player && !protection.getPermissionLevel(((Player) sender).getUniqueId().toString()).hasPermissionsOfLevel(newLevel)) {
+                        (!(sender instanceof Player) || protection.isAdminProtection() || protection.getPermissionLevel(((Player) sender).getUniqueId().toString()).hasPermissionsOfLevel(newLevel))) {
                     protection.setDefaultPermissionLevel(perm, newLevel);
                 }
             }

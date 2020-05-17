@@ -101,6 +101,11 @@ public class MoveCommand extends AbstractCommand {
             west = px - xlen;
             north = pz - zlen;
         } else if (location.equals("relhome") || location.equals("home")) {
+
+            if (protection.isAdminProtection()) {
+                sender.sendMessage(ChatColor.DARK_RED + "Relhome is not available for admin protections.");
+                return;
+            }
             Location home = protection.getHome(Protection.DEFAULT_HOME);
             if (!player.getLocation().getWorld().getName().equals(home.getWorld().getName())) {
                 player.sendMessage(ChatColor.DARK_RED + "You must be in the same world as the home to use /pr move relhome");

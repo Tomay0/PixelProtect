@@ -77,10 +77,10 @@ public class CommandTests {
         console = mock(ConsoleCommandSender.class);
 
         // mock players
-        ownerPlayer = mockPlayer(new Location(overworld, 0, 100, 0), ownerUUID, "Owner1");
-        adminPlayer = mockPlayer(new Location(overworld, -200, 100, 50), adminUUID, "Admin1");
-        memberPlayer = mockPlayer(new Location(nether, 0, 100, 0), memberUUID, "Member1");
-        noonePlayer = mockPlayer(new Location(overworld, 0, 100, 20), nooneUUID, "Noone1");
+        ownerPlayer = mockPlayer(new Location(overworld, 0, 100, 0), ownerUUID, "Owner1", true);
+        adminPlayer = mockPlayer(new Location(overworld, -200, 100, 50), adminUUID, "Admin1", true);
+        memberPlayer = mockPlayer(new Location(nether, 0, 100, 0), memberUUID, "Member1", false);
+        noonePlayer = mockPlayer(new Location(overworld, 0, 100, 20), nooneUUID, "Noone1", false);
 
         // mock Bukkit.getWorld() call
         PowerMockito.mockStatic(Bukkit.class);
@@ -138,7 +138,7 @@ public class CommandTests {
      * @param name
      * @return
      */
-    private Player mockPlayer(Location location, UUID uuid, String name) {
+    private Player mockPlayer(Location location, UUID uuid, String name, boolean admin) {
         Player player = mock(Player.class);
         Player.Spigot spigot = mock(Player.Spigot.class);
 
@@ -147,6 +147,7 @@ public class CommandTests {
         when(player.getLocation()).thenReturn(location);
         when(player.getUniqueId()).thenReturn(uuid);
         when(player.hasPlayedBefore()).thenReturn(true);
+        when(player.hasPermission("pixelprotect.admin")).thenReturn(admin);
 
         return player;
     }
@@ -267,9 +268,9 @@ public class CommandTests {
 
         // create some test protections
         protections.addNewProtection(new Protection("Owner1", "world", -100, -50, -100, 100,
-                ownerUUID.toString(), new Location(overworld, 0, 80, 0), false));
+                ownerUUID.toString(), new Location(overworld, 0, 80, 0)));
         protections.addNewProtection(new Protection("Owner2", "world", -10, 10, -50, -20,
-                ownerUUID.toString(), new Location(overworld, 0, 80, 0), false));
+                ownerUUID.toString(), new Location(overworld, 0, 80, 0)));
 
         // no size
         createCommand.onCommand(ownerPlayer, "create Owner3 yes".split(" "));
@@ -951,5 +952,39 @@ public class CommandTests {
 
         sethome.onCommand(ownerPlayer, "sethome home3".split(" "));
         assertNull(protection.getHome("home3"));
+    }
+
+    /**
+     * Test createadmin
+     */
+    @Test
+    public void testCreateAdmin() {
+        CreateAdminCommand create = new CreateAdminCommand(plugin);
+        ExpandCommand expand = new ExpandCommand(plugin);
+        ConfigPresetCommand cmd = new ConfigPresetCommand(plugin);
+
+        // size 5 (121 - can set 2 homes)
+        create.onCommand(ownerPlayer, "createadmin Spawn 5".split(" "));
+        assertTrue(playerState.confirm(ownerPlayer, economy));
+
+
+        Protection protection = protections.getProtection("Spawn");
+
+        assertTrue(protections.hasPermission(adminPlayer, new Location(overworld, 0, 80, 0), Perm.BUILD));
+        assertFalse(protections.hasPermission(memberPlayer, new Location(overworld, 0, 80, 0), Perm.BUILD));
+
+        expand.onCommand(adminPlayer, "expand Spawn w5".split(" "));
+        assertTrue(playerState.confirm(adminPlayer, economy));
+
+        assertTrue(protections.hasPermission(ownerPlayer, new Location(overworld, -6, 80, 0), Perm.BUILD));
+        assertFalse(protections.hasPermission(memberPlayer, new Location(overworld, -6, 80, 0), Perm.BUILD));
+
+        cmd.onCommand(adminPlayer, "configpreset Spawn wilderness".split(" "));
+
+        assertTrue(protections.hasPermission(memberPlayer, new Location(overworld, -6, 80, 0), Perm.BUILD));
+
+        cmd.onCommand(adminPlayer, "configpreset Spawn default".split(" "));
+
+        assertFalse(protections.hasPermission(memberPlayer, new Location(overworld, -6, 80, 0), Perm.BUILD));
     }
 }

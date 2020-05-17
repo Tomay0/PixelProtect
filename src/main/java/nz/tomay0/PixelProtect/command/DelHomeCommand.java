@@ -46,6 +46,11 @@ public class DelHomeCommand extends AbstractCommand {
             return;
         }
 
+        if (protection.isAdminProtection()) {
+            sender.sendMessage(ChatColor.DARK_RED + "This command is not avaliable for admin protections.");
+            return;
+        }
+
         // check if they have permission
         if (!getProtections().hasPermission(sender, protection, Perm.SETHOME)) {
             sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to delete this protection's home: " + protection.getName());

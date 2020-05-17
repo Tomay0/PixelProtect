@@ -45,6 +45,10 @@ public class SetPermCommand extends AbstractCommand {
             commandHelp(sender);
             return;
         }
+        if (protection.isAdminProtection()) {
+            sender.sendMessage(ChatColor.DARK_RED + "This command is not avaliable for admin protections.");
+            return;
+        }
 
         int usernameArg = (getProtections().isProtection(args[1], protection)) ? 2 : 1;
 

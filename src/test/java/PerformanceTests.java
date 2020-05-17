@@ -121,7 +121,7 @@ public class PerformanceTests {
                 int n = north + j * size;
                 int s = n + size - 1;
 
-                prs.add(new Protection("pr" + i + "b" + j, "world", w, e, n, s, "owner", new Location(overworld, (w + e) / 2.0, 80, (n + s) / 2), false));
+                prs.add(new Protection("pr" + i + "b" + j, "world", w, e, n, s, "owner", new Location(overworld, (w + e) / 2.0, 80, (n + s) / 2)));
             }
         }
 

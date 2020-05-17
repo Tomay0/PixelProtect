@@ -64,7 +64,7 @@ public class ExpandCommand extends AbstractCommand {
             Protection newBounds = ProtectionBuilder.expand(protection, size, getProtections());
 
             // calculate cost
-            if (sender instanceof Player) {
+            if (sender instanceof Player && !protection.isAdminProtection()) {
                 Player player = (Player) sender;
 
 

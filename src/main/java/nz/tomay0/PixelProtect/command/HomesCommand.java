@@ -68,6 +68,10 @@ public class HomesCommand extends AbstractCommand {
                 player.sendMessage(ChatColor.RED + "There are no protections you can teleport to.");
             }
         } else {
+            if (protection.isAdminProtection()) {
+                sender.sendMessage(ChatColor.DARK_RED + "This command is not avaliable for admin protections.");
+                return;
+            }
             // perms for a protection
             protection.showHomes(sender);
         }

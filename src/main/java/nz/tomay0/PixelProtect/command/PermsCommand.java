@@ -67,6 +67,10 @@ public class PermsCommand extends AbstractCommand {
                 player.sendMessage(ChatColor.RED + "You do not have permissions in any protections.");
             }
         } else {
+            if (protection.isAdminProtection()) {
+                sender.sendMessage(ChatColor.DARK_RED + "This command is not avaliable for admin protections.");
+                return;
+            }
             // perms for a protection
             protection.showPerms(sender);
         }

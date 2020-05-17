@@ -85,7 +85,7 @@ public class SetMinLevelCommand extends AbstractCommand {
 
 
         // if the level you changed this to is higher than your current level - don't allow
-        if (sender instanceof Player && !protection.getPermissionLevel(((Player) sender).getUniqueId().toString()).hasPermissionsOfLevel(level)) {
+        if (sender instanceof Player && !protection.isAdminProtection() && !protection.getPermissionLevel(((Player) sender).getUniqueId().toString()).hasPermissionsOfLevel(level)) {
             sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to set the default permission level to higher than your own permission level.");
             return;
         }

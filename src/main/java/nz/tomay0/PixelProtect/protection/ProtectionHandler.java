@@ -225,13 +225,14 @@ public abstract class ProtectionHandler implements Iterable<Protection> {
         Set<Protection> protections = getProtectionsAt(location);
         if (protections.size() == 0) return true;
         else if (protections.size() == 1) {
-            return protections.iterator().next().hasPermission(player.getUniqueId().toString(), perm);
+
+            return hasPermission(player, protections.iterator().next(), perm);
         }
 
         // multiple protections, you need permission in all of them.
         else {
             for (Protection protection : protections) {
-                if (!protection.hasPermission(player.getUniqueId().toString(), perm)) return false;
+                if (!hasPermission(player, protection, perm)) return false;
             }
 
             return true;
@@ -366,6 +367,11 @@ public abstract class ProtectionHandler implements Iterable<Protection> {
         if (!(sender instanceof Player)) return false;
 
         Player player = (Player) sender;
+
+        // admin protection
+        if (protection.isAdminProtection() && player.hasPermission("pixelprotect.admin")) {
+            return true;
+        }
 
         return protection.hasPermission(player.getUniqueId().toString(), perm);
     }

@@ -46,6 +46,11 @@ public class HomeCommand extends AbstractCommand {
             return;
         }
 
+        if (protection.isAdminProtection()) {
+            sender.sendMessage(ChatColor.DARK_RED + "This command is not avaliable for admin protections.");
+            return;
+        }
+
         // check if they have permission
         if (!getProtections().hasPermission(sender, protection, Perm.HOME)) {
             sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to teleport to this protection: " + protection.getName());

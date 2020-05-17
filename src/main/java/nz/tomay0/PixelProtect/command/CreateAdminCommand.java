@@ -29,7 +29,7 @@ public class CreateAdminCommand extends AbstractCommand {
 
     @Override
     public String getPermission() {
-        return "pixelprotect.admin.create";
+        return "pixelprotect.admin";
     }
 
     @Override
@@ -97,7 +97,7 @@ public class CreateAdminCommand extends AbstractCommand {
 
         // create the protection IF POSSIBLE
         try {
-            Protection protection = ProtectionBuilder.fromCommand(protectionName, player, size, getProtections(), true);
+            Protection protection = ProtectionBuilder.fromAdminCommand(protectionName, player, size, getProtections());
             getPlayerStateHandler().requestCreate(player, protection, 0);
 
             player.sendMessage(ChatColor.YELLOW + "Creating a new admin protection named " + ChatColor.GREEN + protectionName);

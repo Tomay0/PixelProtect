@@ -50,37 +50,32 @@ public class Protection {
     /**
      * Player permissions
      */
-    private Map<String, PlayerPerms> playerPermissions;
+    protected Map<String, PlayerPerms> playerPermissions;
 
     /**
      * Default minimum perm level permissions
      */
-    private Map<Perm, PermLevel> defaultPermissions;
+    protected Map<Perm, PermLevel> defaultPermissions;
 
     /**
      * Configuration
      */
-    private Map<Flag, Boolean> flags;
+    protected Map<Flag, Boolean> flags;
 
     /**
      * Homes
      */
-    private Map<String, Location> homes;
-
-    /**
-     * If the protection is an admin protection. Admin protections can overlap other admin protections
-     */
-    private boolean isAdmin = false;
+    protected Map<String, Location> homes;
 
     /**
      * Yml configuration to save to
      */
-    private YamlConfiguration yml = null;
+    protected YamlConfiguration yml = null;
 
     /**
      * Directory to save yml configuration to
      */
-    private File dir = null;
+    protected File dir = null;
 
     /**
      * Temporary protection with only bounds and no permissions
@@ -112,16 +107,14 @@ public class Protection {
      * @param south     Southern boundary coordinate
      * @param ownerUuid owner id
      * @param home      location of the home
-     * @param isAdmin   is an admin protection
      */
-    public Protection(String name, String world, int west, int east, int north, int south, String ownerUuid, Location home, boolean isAdmin) {
+    public Protection(String name, String world, int west, int east, int north, int south, String ownerUuid, Location home) {
         this.name = name;
         this.world = world;
         this.west = west;
         this.north = north;
         this.east = east;
         this.south = south;
-        this.isAdmin = isAdmin;
 
 
         playerPermissions = new HashMap<>();
@@ -151,7 +144,7 @@ public class Protection {
      */
     public Protection(String name, String world, int west, int east, int north, int south, Map<String, Location> homes,
                       Map<String, PlayerPerms> playerPermissions, Map<Perm, PermLevel> defaultPermissions,
-                      Map<Flag, Boolean> flags, boolean isAdmin, YamlConfiguration yml, File dir) {
+                      Map<Flag, Boolean> flags, YamlConfiguration yml, File dir) {
         this.name = name;
         this.world = world;
         this.west = west;
@@ -167,8 +160,6 @@ public class Protection {
         this.yml = yml;
         this.dir = dir;
 
-        this.isAdmin = isAdmin;
-
         // get owner
         for (PlayerPerms perms : playerPermissions.values()) {
             if (perms.getPermissionLevel() == PermLevel.OWNER) {
@@ -182,7 +173,7 @@ public class Protection {
     /**
      * Update the protection by updating the config file and validating the data
      */
-    private void update() {
+    protected void update() {
         validate();
 
         // update the yml file
@@ -195,10 +186,6 @@ public class Protection {
             yml.set("south", south);
             yml.set("player-perms", null);
             yml.set("default-perms", null);
-
-            if (isAdmin) {
-                yml.set("admin", true);
-            }
 
             // homes
             for (String home : homes.keySet()) {
@@ -252,7 +239,7 @@ public class Protection {
     /**
      * Validate that the state of the protection is valid. If not, an IllegalStateException will be thrown.
      */
-    private void validate() {
+    protected void validate() {
         // check name has no spaces
         if (name.contains(" ")) {
             throw new InvalidProtectionException("Protection name can't have spaces", INVALID_NAME);
@@ -493,7 +480,7 @@ public class Protection {
     /**
      * Returns if this player have this permission in this protection
      *
-     * @param uuid player id
+     * @param uuid uuid
      * @param perm permission to check
      * @return
      */
@@ -620,6 +607,15 @@ public class Protection {
     }
 
     /**
+     * If this protection is an admin protection
+     *
+     * @return
+     */
+    public boolean isAdminProtection() {
+        return false;
+    }
+
+    /**
      * Get the world name of the protection
      *
      * @return string
@@ -665,15 +661,6 @@ public class Protection {
     }
 
     /**
-     * if this is an admin protection
-     *
-     * @return
-     */
-    public boolean isAdminProtection() {
-        return isAdmin;
-    }
-
-    /**
      * Get the ID of the owner
      *
      * @return owner id
@@ -688,12 +675,7 @@ public class Protection {
      * @return string
      */
     public String getMotd() {
-
-        if (isAdminProtection()) {
-            return ChatColor.YELLOW + "Entered " + ChatColor.AQUA + name;
-        } else {
-            return ChatColor.YELLOW + "Entered " + ChatColor.GREEN + name;
-        }
+        return ChatColor.YELLOW + "Entered " + ChatColor.GREEN + name;
     }
 
 
