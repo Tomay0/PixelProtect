@@ -154,6 +154,15 @@ public abstract class ProtectionHandler implements Iterable<Protection> {
     }
 
     /**
+     * Remove all protections
+     */
+    public void removeAll() {
+        for (Protection protection : this) {
+            removeProtection(protection.getName());
+        }
+    }
+
+    /**
      * Get directory
      *
      * @return

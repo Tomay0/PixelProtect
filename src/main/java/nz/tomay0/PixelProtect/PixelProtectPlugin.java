@@ -96,7 +96,7 @@ public class PixelProtectPlugin extends JavaPlugin {
      *
      * @return claims directory
      */
-    private File getProtectionDirectory() {
+    public File getProtectionDirectory() {
         File dataFolder = getDataFolder();
 
         if (!dataFolder.exists())

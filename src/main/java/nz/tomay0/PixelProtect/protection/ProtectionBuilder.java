@@ -4,16 +4,16 @@ import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
 import nz.tomay0.PixelProtect.protection.perms.Perm;
 import nz.tomay0.PixelProtect.protection.perms.PermLevel;
 import nz.tomay0.PixelProtect.protection.perms.PlayerPerms;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static nz.tomay0.PixelProtect.exception.ProtectionExceptionReason.*;
 
@@ -268,7 +268,7 @@ public class ProtectionBuilder {
         Protection newBounds;
         if (protection.isAdminProtection()) {
             newBounds = new AdminProtection(protection.getName(), world, west, east, north, south);
-        }else{
+        } else {
             newBounds = new Protection(protection.getName(), world, west, east, north, south,
                     protection.getOwnerID(), protection.getHome(Protection.DEFAULT_HOME));
         }
@@ -305,7 +305,7 @@ public class ProtectionBuilder {
         Protection newBounds;
         if (protection.isAdminProtection()) {
             newBounds = new AdminProtection(protection.getName(), world, west, east, north, south);
-        }else{
+        } else {
             newBounds = new Protection(protection.getName(), world, west, east, north, south,
                     protection.getOwnerID(), protection.getHome(Protection.DEFAULT_HOME));
         }
@@ -315,5 +315,133 @@ public class ProtectionBuilder {
         }
 
         return newBounds;
+    }
+
+    /**
+     * Import from grief prevention
+     *
+     * @param yml         yml file to import from
+     * @param newDir      claims directory for pixel protect
+     * @param protections created protections
+     * @return
+     */
+    public static Protection fromGriefPreventionYaml(YamlConfiguration yml, File newDir, ProtectionHandler protections) {
+        String lesser = yml.getString("Lesser Boundary Corner");
+        String greater = yml.getString("Greater Boundary Corner");
+
+        String owner = yml.getString("Owner");
+
+        // can build - members
+        List<String> builders = yml.getStringList("Builders");
+
+        // can access chests - chest access
+        List<String> containers = yml.getStringList("Containers");
+
+        // something ? - interact?
+        List<String> accessors = yml.getStringList("Accessors");
+
+        // managers ? - admins?
+        List<String> managers = yml.getStringList("Managers");
+
+        if (lesser == null || greater == null || owner == null || builders == null || containers == null || accessors == null || managers == null)
+            throw new InvalidProtectionException("Invalid Grief Prevention yml. Missing values", YML_EXCEPTION);
+
+        // get dimensions
+        String[] lessSplit = lesser.split(";");
+        String[] greaterSplit = greater.split(";");
+
+        if (lessSplit.length < 4 || greaterSplit.length < 4)
+            throw new InvalidProtectionException("Invalid Grief Prevention yml. Incorrectly formatted corners.", YML_EXCEPTION);
+
+        try {
+            String world = lessSplit[0];
+            int west = Integer.parseInt(lessSplit[1]);
+            int east = Integer.parseInt(greaterSplit[1]);
+            int north = Integer.parseInt(lessSplit[3]);
+            int south = Integer.parseInt(greaterSplit[3]);
+
+            // admin protection
+            if (owner.equals("")) {
+                int i = 1;
+                // get a name
+                while (protections.getProtection("admin" + i) != null) {
+                    i++;
+                }
+                String name = "admin" + i;
+
+                YamlConfiguration newYml = YamlConfiguration.loadConfiguration(new File(newDir, name + ".yml"));
+
+                return new AdminProtection(name, world, west, east, north, south, new HashMap<>(), new HashMap<>(), newYml, newDir);
+            }
+            // player protection
+            else {
+                // create a name based on the user's name
+                OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(owner));
+                String name = player.getName();
+
+                if (protections.getProtection(name) != null) {
+                    int i = 2;
+                    while (protections.getProtection(name + i) != null) {
+                        i++;
+                    }
+                    name = name + i;
+                }
+
+                YamlConfiguration newYml = YamlConfiguration.loadConfiguration(new File(newDir, name + ".yml"));
+
+                // work out the home
+                World worldActual = Bukkit.getWorld(world);
+                int x = (west + east) / 2;
+                int z = (south + north) / 2;
+                int y = 255;
+
+                Location home = new Location(worldActual, x, y, z);
+                while (home.getBlock().getType() == Material.AIR) {
+                    home = home.add(0, -1, 0);
+                }
+
+                Map<String, Location> homes = new HashMap<>();
+                homes.put(Protection.DEFAULT_HOME, home);
+
+                // perms
+                Map<String, PlayerPerms> perms = new HashMap<>();
+
+                for (String uuid : builders) {
+                    perms.put(uuid, new PlayerPerms(uuid, PermLevel.MEMBER));
+                }
+
+                perms.put(owner, new PlayerPerms(owner, PermLevel.OWNER));
+
+                for (String uuid : containers) {
+                    if (!perms.containsKey(uuid)) {
+                        PlayerPerms perm = new PlayerPerms(uuid, PermLevel.NONE);
+                        perm.setSpecificPermission(Perm.CHEST, true);
+                        perm.setSpecificPermission(Perm.INTERACT, true);
+                        perms.put(uuid, perm);
+                    }
+                }
+
+                for (String uuid : accessors) {
+                    if (!perms.containsKey(uuid)) {
+                        PlayerPerms perm = new PlayerPerms(uuid, PermLevel.NONE);
+                        perm.setSpecificPermission(Perm.INTERACT, true);
+                        perms.put(uuid, perm);
+                    }
+                }
+                for (String uuid : managers) {
+                    if (!perms.containsKey(uuid)) {
+                        perms.put(uuid, new PlayerPerms(uuid, PermLevel.ADMIN));
+                    } else {
+                        perms.get(uuid).setPermissionLevel(PermLevel.ADMIN);
+                    }
+                }
+
+                return new Protection(name, world, west, east, north, south, homes, perms, new HashMap<>(), new HashMap<>(), newYml, newDir);
+            }
+
+        } catch (NumberFormatException e) {
+            throw new InvalidProtectionException(e, YML_EXCEPTION);
+        }
+
     }
 }

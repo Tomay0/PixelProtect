@@ -47,6 +47,7 @@ public class CommandHandler implements CommandExecutor {
 
         // commands that require perms
         commandsList.add(new CreateAdminCommand(plugin));
+        commandsList.add(new ImportCommand(plugin));
 
         commandsList.add(new HelpCommand(plugin, new ArrayList<>(commandsList)));
 

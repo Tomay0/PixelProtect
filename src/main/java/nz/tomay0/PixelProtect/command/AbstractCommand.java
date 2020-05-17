@@ -49,6 +49,15 @@ public abstract class AbstractCommand {
     }
 
     /**
+     * Get the plugin
+     *
+     * @return
+     */
+    protected PixelProtectPlugin getPlugin() {
+        return plugin;
+    }
+
+    /**
      * Get command label.
      *
      * @return string
@@ -64,6 +73,7 @@ public abstract class AbstractCommand {
 
     /**
      * Get permissions required to execute the command
+     *
      * @return
      */
     public String getPermission() {
