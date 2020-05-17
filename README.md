@@ -1,9 +1,9 @@
 # PixelProtect
 Grief Protection plugin designed for the Pixel Origins server
 
-## Installation (Wait for release)
+## Installation
 
-Add the jar to your plugins/ folder. This plugin is designed for spigot 1.15.2. Other versions will not be made unless requested.
+Add the jar to your plugins/ folder. This plugin is designed for spigot 1.15.2. This plugin requires Vault 1.7 and any economy plugin that uses vault (such as Essentials).
 
 ## Wiki
 
