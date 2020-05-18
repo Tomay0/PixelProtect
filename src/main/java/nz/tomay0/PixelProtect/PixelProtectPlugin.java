@@ -19,9 +19,6 @@ public class PixelProtectPlugin extends JavaPlugin {
     /*
 
     TODO:
-    - reduce lag on command to show borders
-    - teleport timer
-    - fix disabled worlds
     - command for admins to override permissions
     - dynmap integration
     - optimize offline player name recognition
@@ -37,6 +34,7 @@ public class PixelProtectPlugin extends JavaPlugin {
     - consider making the command formatting more lenient
     - consider making /pr perms have multiple pages.
     - auto sizes??
+    - shift for when you look in a particular direction
     - motd changer
     - colour changer
 

@@ -8,6 +8,7 @@ import nz.tomay0.PixelProtect.protection.ProtectionBuilder;
 import nz.tomay0.PixelProtect.protection.ProtectionHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -149,6 +150,16 @@ public class PlayerStateHandler implements Listener, Runnable {
     }
 
     /**
+     * Request to teleport to a location
+     *
+     * @param player   player to teleport
+     * @param location location to teleport to
+     */
+    public void requestTeleport(Player player, Location location) {
+        playerStates.get(player).requestTeleport(location);
+    }
+
+    /**
      * Add player
      *
      * @param e
@@ -173,11 +184,11 @@ public class PlayerStateHandler implements Listener, Runnable {
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent e) {
         Player player = e.getPlayer();
-        playerStates.get(player).move();
+        playerStates.get(player).move(e);
     }
 
     /**
-     * Runs every second, reminds players to use /pr confirm and shows border particles
+     * Runs every second, reminds players to use /pr confirm and shows border particles and teleport countdown
      */
     public void run() {
         for (Player player : playerStates.keySet()) {
@@ -187,6 +198,8 @@ public class PlayerStateHandler implements Listener, Runnable {
                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.YELLOW + "Type " + ChatColor.AQUA + "/pr confirm" + ChatColor.YELLOW + " to confirm."));
 
             state.displayParticles();
+
+            state.teleportCountDown();
         }
 
     }

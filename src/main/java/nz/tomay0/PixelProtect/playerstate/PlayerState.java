@@ -6,6 +6,7 @@ import nz.tomay0.PixelProtect.protection.Protection;
 import nz.tomay0.PixelProtect.protection.ProtectionHandler;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerMoveEvent;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -26,6 +27,10 @@ public class PlayerState {
 
     private Confirmation confirmation = null;
 
+    private Location teleportLocation = null;
+
+    private int teleportCountDown = 0;
+
     /**
      * Create player state
      *
@@ -35,7 +40,7 @@ public class PlayerState {
     public PlayerState(ProtectionHandler protections, Player player) {
         this.protections = protections;
         this.player = player;
-        move();
+        move(null);
     }
 
     /**
@@ -48,12 +53,17 @@ public class PlayerState {
 
 
         if (confirmation == null) {
-            move();
+            move(null);
             setShowingBorder(null);
         } else {
             setShowingBorder(confirmation.getProtection());
             currentProtection = null;
         }
+    }
+
+    public void requestTeleport(Location location) {
+        teleportLocation = location;
+        teleportCountDown = 3;
     }
 
     /**
@@ -134,8 +144,24 @@ public class PlayerState {
 
     /**
      * Update the protection to where you are standing
+     *
+     * @param e
      */
-    public void move() {
+    public void move(PlayerMoveEvent e) {
+        // teleport countdown
+        if (teleportLocation != null && e != null) {
+            double dx = e.getFrom().getX() - e.getTo().getX();
+            double dy = e.getFrom().getY() - e.getTo().getY();
+            double dz = e.getFrom().getZ() - e.getTo().getZ();
+
+            if (dx != 0 || dy != 0 || dz != 0) {
+                player.sendMessage(ChatColor.RED + "Teleportation cancelled.");
+                teleportLocation = null;
+                teleportCountDown = 0;
+            }
+        }
+
+        // tell the user what protection they are in
         if (confirmation != null) return;
 
         Protection protection = protections.getMainProtectionAt(player.getLocation());
@@ -157,6 +183,20 @@ public class PlayerState {
      */
     public Confirmation getConfirmation() {
         return confirmation;
+    }
+
+    /**
+     * Teleport countdown
+     */
+    public void teleportCountDown() {
+        if (teleportCountDown > 0) {
+            teleportCountDown--;
+        }
+
+        if (teleportCountDown == 0 && teleportLocation != null) {
+            player.teleport(teleportLocation);
+            teleportLocation = null;
+        }
     }
 
     /**

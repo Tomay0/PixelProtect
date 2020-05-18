@@ -70,10 +70,10 @@ public class HomeCommand extends AbstractCommand {
             return;
         }
 
-        // TODO timer countdown
-        player.teleport(location);
+        getPlayerStateHandler().requestTeleport(player, location);
 
         sender.sendMessage(ChatColor.YELLOW + "Teleporting to " + ChatColor.GREEN + home + ChatColor.YELLOW + " of " + ChatColor.GREEN + protection.getName());
+        sender.sendMessage(ChatColor.YELLOW + "Stand still for 3 seconds to confirm your teleport...");
     }
 
     /**
