@@ -37,6 +37,7 @@ public class SetPermCommand extends AbstractCommand {
     public boolean getConsole() {
         return true;
     }
+
     @Override
     public void onCommand(CommandSender sender, String[] args) {
         if (args.length < 3) {
@@ -67,16 +68,15 @@ public class SetPermCommand extends AbstractCommand {
             return;
         }
 
-        // get username TODO use non deprecated version (this is very slow)
-
         String username = args[usernameArg];
-        OfflinePlayer player = Bukkit.getOfflinePlayer(username);
+        OfflinePlayer player = getPlugin().getOfflinePlayer(username);
 
-        username = player.getName();
-        if (!player.hasPlayedBefore()) {
+        if (player == null) {
             sender.sendMessage(ChatColor.RED + "The player, " + username + ", has not joined this server before.");
             return;
         }
+
+        username = player.getName();
         String uuid = player.getUniqueId().toString();
 
         // get perm level

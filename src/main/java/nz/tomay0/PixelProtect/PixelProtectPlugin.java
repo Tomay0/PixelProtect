@@ -3,8 +3,11 @@ package nz.tomay0.PixelProtect;
 import net.milkbowl.vault.economy.Economy;
 import nz.tomay0.PixelProtect.command.CommandHandler;
 import nz.tomay0.PixelProtect.dynmap.DynmapHandler;
+import nz.tomay0.PixelProtect.playerdata.UUIDMap;
 import nz.tomay0.PixelProtect.protection.HashedProtectionHandler;
 import nz.tomay0.PixelProtect.protection.ProtectionHandler;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -12,6 +15,7 @@ import nz.tomay0.PixelProtect.playerstate.PlayerStateHandler;
 import org.dynmap.DynmapAPI;
 
 import java.io.*;
+import java.util.UUID;
 import java.util.logging.Level;
 
 /**
@@ -21,9 +25,9 @@ public class PixelProtectPlugin extends JavaPlugin {
     /*
 
     TODO:
-    - dynmap integration
     - help for players. eg: tell them "oh this is the wilderness you can't build here"
-    - player data: can store uuids, and maybe some economy stuff?
+    - some economy stuff
+    - final bug fixing
 
     Maybe?
     - config default perms - some perm presets maybe
@@ -45,6 +49,7 @@ public class PixelProtectPlugin extends JavaPlugin {
     private ProtectionHandler protectionHandler;
     private PlayerStateHandler playerStateHandler;
     private Economy vaultEconomy;
+    private UUIDMap uuidMap;
 
     @Override
     public void onEnable() {
@@ -78,9 +83,13 @@ public class PixelProtectPlugin extends JavaPlugin {
         // load grief listener
         GriefListener griefListener = new GriefListener(this);
 
+        // get the uuid map
+        uuidMap = new UUIDMap(new File(getDataFolder(), "playerUUIDs.txt"));
+
         // register listeners
         getServer().getPluginManager().registerEvents(playerStateHandler, this);
         getServer().getPluginManager().registerEvents(griefListener, this);
+        getServer().getPluginManager().registerEvents(uuidMap, this);
 
         getServer().getScheduler().scheduleSyncRepeatingTask(this, playerStateHandler, 20, 20);
 
@@ -208,5 +217,18 @@ public class PixelProtectPlugin extends JavaPlugin {
      */
     public Economy getEconomy() {
         return vaultEconomy;
+    }
+
+    /**
+     * Get an offline player from a player name
+     *
+     * @param playerName
+     * @return
+     */
+    public OfflinePlayer getOfflinePlayer(String playerName) {
+        if (uuidMap == null) return null;
+        UUID uuid = uuidMap.getUUID(playerName);
+        if (uuid == null) return null;
+        return Bukkit.getOfflinePlayer(uuid);
     }
 }

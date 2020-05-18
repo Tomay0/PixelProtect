@@ -7,7 +7,6 @@ import nz.tomay0.PixelProtect.protection.Protection;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import sun.plugin2.main.server.Plugin;
 
 /**
  * Set a protections home
