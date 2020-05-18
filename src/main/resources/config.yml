@@ -42,6 +42,12 @@ cost-per-block: 0.5
 # Set to 0 to disable this.
 initial-cost: 25.5
 
+# If a player places a block in an unprotected area ___ minutes after they join the server, a warning will appear with a link suggesting how to create protections.
+# After the first warning, the server will wait this same amount of time before it asks again.
+# This warning does not appear for players who already have protections.
+# Disable this feature by making this -1.
+unprotected-warning-cooldown: 20
+
 # Worlds where claiming is disabled. This is recommended for any worlds that are not a part of regular survival world (and potentially the end or nether, if you feel like it)
 # You are still allowed to create admin protections in these worlds, but it prevents other users from claiming in them.
 #
@@ -58,7 +64,6 @@ disabled-worlds: []
 # If your server does not have dynmap, enabling this will show a warning in the console. The plugin will work still work perfectly fine though.
 enable-dynmap: true
 
-# Use this command to choose a custom help page for the plugin. This could be on a server website or a youtube video.
-# By default this is the github wiki page for Pixel Protect
+# Change the help link to choose a custom help page for the plugin. This could be on a server website or a youtube video.
+# By default this is the github wiki page for Pixel Protect.
 help-link: https://bit.ly/2zOvuoe
-

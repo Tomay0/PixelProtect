@@ -2,6 +2,7 @@ package nz.tomay0.PixelProtect.playerstate;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
+import nz.tomay0.PixelProtect.PluginConfig;
 import nz.tomay0.PixelProtect.protection.Protection;
 import nz.tomay0.PixelProtect.protection.ProtectionHandler;
 import org.bukkit.*;
@@ -30,6 +31,8 @@ public class PlayerState {
     private Location teleportLocation = null;
 
     private int teleportCountDown = 0;
+
+    private int wildernessNotifyCooldown = 60 * PluginConfig.getInstance().getUnprotectedWarningCooldown();
 
     private boolean overridePermissions = false;
 
@@ -209,9 +212,12 @@ public class PlayerState {
     }
 
     /**
-     * Teleport countdown
+     * Cooldowns for teleporting and wilderness notification
      */
-    public void teleportCountDown() {
+    public void cooldown() {
+        if (wildernessNotifyCooldown > 0) {
+            wildernessNotifyCooldown--;
+        }
         if (teleportCountDown > 0) {
             teleportCountDown--;
         }
@@ -233,6 +239,20 @@ public class PlayerState {
             double distance = player.getLocation().distance(location);
             if (distance < MAX_PARTICLE_DISTANCE)
                 player.spawnParticle(Particle.CLOUD, location, 1, 0, 0, 0, 0);
+        }
+    }
+
+    /**
+     * Check that the player is building in the wilderness and has no protection, tell them to consider creating a protection.
+     *
+     * @param location
+     */
+    public void placeBlock(Location location) {
+        if (wildernessNotifyCooldown == 0 && protections.getAllProtections(player).size() == 0 && protections.getProtectionsAt(location).size() == 0) {
+            wildernessNotifyCooldown = 60 * PluginConfig.getInstance().getUnprotectedWarningCooldown();
+
+            player.sendMessage(ChatColor.YELLOW + "This area is unprotected! Consider creating a protection. You can see a guide on how to create protections here: " +
+                    ChatColor.AQUA + PluginConfig.getInstance().getHelpLink());
         }
     }
 }

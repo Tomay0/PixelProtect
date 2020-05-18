@@ -1,6 +1,7 @@
 package nz.tomay0.PixelProtect.playerstate;
 
 import net.milkbowl.vault.economy.Economy;
+import nz.tomay0.PixelProtect.PluginConfig;
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
 import nz.tomay0.PixelProtect.exception.ProtectionExceptionReason;
 import nz.tomay0.PixelProtect.protection.Protection;
@@ -75,8 +76,7 @@ public class Confirmation {
                 protections.addNewProtection(tempProtection);
 
                 sender.sendMessage(ChatColor.YELLOW + "Created " + ChatColor.GREEN + tempProtection.getName() + ChatColor.YELLOW + " successfully!");
-                sender.sendMessage(ChatColor.LIGHT_PURPLE + "Type " + ChatColor.RED + "/pr setperm " + tempProtection.getIdSafeName() + " <name> member" + ChatColor.LIGHT_PURPLE + " to add new members to your protection.");
-                sender.sendMessage(ChatColor.LIGHT_PURPLE + "You can see more commands you can use to manage your protection by typing " + ChatColor.RED + "/pr help");
+                sender.sendMessage(ChatColor.YELLOW + "Check out " + ChatColor.AQUA + PluginConfig.getInstance().getHelpLink() + ChatColor.YELLOW + " for additional help with managing your protection.");
                 break;
             case UPDATE:
                 protections.updateBounds(tempProtection);

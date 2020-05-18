@@ -47,6 +47,7 @@ public class PluginConfig {
     private String helpLink = "https://bit.ly/2zOvuoe";
     private List<String> disabledWorlds = new ArrayList<>();
     private boolean enableDynmap = true;
+    private int unprotectedWarningCooldown = 10;
 
     /**
      * Plugin config from a yml
@@ -67,6 +68,7 @@ public class PluginConfig {
         disabledWorlds = getValue(config, "disabled-worlds", disabledWorlds);
         helpLink = getValue(config, "help-link", helpLink);
         enableDynmap = getValue(config, "enable-dynmap", enableDynmap);
+        unprotectedWarningCooldown = getValue(config, "unprotected-warning-cooldown", unprotectedWarningCooldown);
 
         // check for invalid values
         if (maxProtections < -1) maxProtections = -1;
@@ -82,6 +84,8 @@ public class PluginConfig {
         if (blocksPerHome <= 0) blocksPerHome = -1;
 
         if (costPerBlock < 0) costPerBlock = 0;
+
+        if (unprotectedWarningCooldown < 0) unprotectedWarningCooldown = -1;
 
         if (initialCost < 0) initialCost = 0;
 
@@ -220,5 +224,14 @@ public class PluginConfig {
      */
     public boolean getDynmapEnabled() {
         return true;
+    }
+
+    /**
+     * Get unprotected warning cooldown
+     *
+     * @return
+     */
+    public int getUnprotectedWarningCooldown() {
+        return unprotectedWarningCooldown;
     }
 }

@@ -24,12 +24,7 @@ import java.util.logging.Level;
 public class PixelProtectPlugin extends JavaPlugin {
     /*
 
-    TODO:
-    - help for players. eg: tell them "oh this is the wilderness you can't build here"
-    - some economy stuff
-    - final bug fixing
-
-    Maybe?
+    TODO possible features
     - config default perms - some perm presets maybe
     - config dynmap colour?
     - disable pickup blocks on the ground

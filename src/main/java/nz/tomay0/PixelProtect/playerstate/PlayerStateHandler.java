@@ -12,6 +12,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -212,6 +213,14 @@ public class PlayerStateHandler implements Listener, Runnable {
         playerStates.get(player).move(e);
     }
 
+    @EventHandler
+    public void onPlayerPlaceBlock(BlockPlaceEvent e) {
+        // if the player has placed a block, doesn't have any protections and hasn't been told in the last 5 minutes
+        PlayerState state = playerStates.get(e.getPlayer());
+
+        state.placeBlock(e.getBlock().getLocation());
+    }
+
     /**
      * Runs every second, reminds players to use /pr confirm and shows border particles and teleport countdown
      */
@@ -224,7 +233,7 @@ public class PlayerStateHandler implements Listener, Runnable {
 
             state.displayParticles();
 
-            state.teleportCountDown();
+            state.cooldown();
         }
 
     }
