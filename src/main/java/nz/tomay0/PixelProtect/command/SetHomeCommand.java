@@ -68,7 +68,7 @@ public class SetHomeCommand extends AbstractCommand {
             home = args[homeArg];
         }
 
-        if (PluginConfig.getInstance().getDisabledWorlds().contains(player.getWorld().getName())) {
+        if (PluginConfig.getInstance().getDisabledWorlds().contains(player.getLocation().getWorld().getName())) {
             player.sendMessage(ChatColor.DARK_RED + "You are not allowed to set protection homes in this world.");
             return;
         }

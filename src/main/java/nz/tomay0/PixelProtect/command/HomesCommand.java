@@ -60,20 +60,21 @@ public class HomesCommand extends AbstractCommand {
             Collection<Protection> protections = getProtections().getAvaliableHomes(player);
 
             if (protections.size() > 0) {
-                player.sendMessage(ChatColor.YELLOW + "Type " + ChatColor.RED + "/pr homes <name>" + ChatColor.YELLOW + " to see a list of homes from that protection you can teleport to.");
                 StringBuilder sb = new StringBuilder();
 
                 for (Protection pr : protections) {
                     sb.append(pr.getName() + ", ");
                 }
 
+                player.sendMessage(ChatColor.YELLOW + "List of protections you can teleport to:");
                 player.sendMessage(sb.substring(0, sb.length() - 2));
+                player.sendMessage(ChatColor.YELLOW + "Type " + ChatColor.RED + "/pr homes <name>" + ChatColor.YELLOW + " to see a list of homes from that protection.");
             } else {
                 player.sendMessage(ChatColor.RED + "There are no protections you can teleport to.");
             }
         } else {
             if (protection.isAdminProtection()) {
-                sender.sendMessage(ChatColor.DARK_RED + "This command is not avaliable for admin protections.");
+                sender.sendMessage(ChatColor.DARK_RED + "This command is not available for admin protections.");
                 return;
             }
             // perms for a protection

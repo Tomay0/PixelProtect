@@ -103,16 +103,25 @@ public class CommandUtil {
         }
 
         if (!(sender instanceof Player)) {
+            if (args.length >= 2) {
+                sender.sendMessage(ChatColor.RED + "Unknown protection: " + args[1]);
+            }
             return null;
         }
 
         Player player = (Player) sender;
 
-        Protection protection = protections.getProtection(player.getName());
+        // first check if there is a protection where they are standing
+        Protection protection = protections.getMainProtectionAt(player.getLocation());
+
+        if (protection != null) return protection;
+
+        // then check if there is a protection with their own name.
+        protection = protections.getProtection(player.getName());
 
         if (protection == null) {
             if (args.length >= 2) {
-                player.sendMessage(ChatColor.DARK_RED + "Unknown protection: " + args[1]);
+                player.sendMessage(ChatColor.RED + "Unknown protection: " + args[1]);
             }
             return null;
         }

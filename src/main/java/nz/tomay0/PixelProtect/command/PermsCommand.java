@@ -60,6 +60,7 @@ public class PermsCommand extends AbstractCommand {
             Collection<Protection> protections = getProtections().getAllProtections(player);
 
             if (protections.size() > 0) {
+                sender.sendMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + "Displaying your permissions in other protections:");
                 // display all perms
                 for (Protection pr : protections) {
                     PlayerPerms perms = pr.getPlayerPerms(player.getUniqueId().toString());
@@ -76,6 +77,7 @@ public class PermsCommand extends AbstractCommand {
                 return;
             }
             // perms for a protection
+            sender.sendMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + "Displaying permissions for: " + ChatColor.GREEN + "" + ChatColor.BOLD + protection.getName());
             protection.showPerms(sender);
         }
     }

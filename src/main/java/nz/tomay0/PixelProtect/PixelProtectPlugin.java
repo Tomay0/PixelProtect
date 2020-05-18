@@ -20,9 +20,8 @@ public class PixelProtectPlugin extends JavaPlugin {
 
     TODO:
     - dynmap integration
-    - optimize offline player name recognition
     - help for players. eg: tell them "oh this is the wilderness you can't build here"
-    - maybe some more bug fixing
+    - player data: can store uuids, and maybe some economy stuff?
 
     Maybe?
     - config default perms - some perm presets maybe

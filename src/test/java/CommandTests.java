@@ -21,6 +21,9 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import sun.plugin2.main.server.Plugin;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -110,6 +113,7 @@ public class CommandTests {
         when(config.getBlocksPerHome()).thenReturn(100);
         when(config.getMaxProtections()).thenReturn(3);
         when(config.getMaxHomes()).thenReturn(3);
+        when(config.getDisabledWorlds()).thenReturn(new HashSet<>());
 
         PowerMockito.mockStatic(PluginConfig.class);
         when(PluginConfig.getInstance()).thenReturn(config);
