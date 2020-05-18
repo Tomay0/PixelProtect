@@ -34,6 +34,10 @@ public class ImportCommand extends AbstractCommand {
     }
 
     @Override
+    public boolean getConsole() {
+        return true;
+    }
+    @Override
     public String getPermission() {
         return "pixelprotect.import";
     }

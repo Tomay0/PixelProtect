@@ -280,6 +280,41 @@ public class ProtectionBuilder {
         return newBounds;
     }
 
+
+    /**
+     * Create a new temporary protection which moves the north/west corner of a protection elsewhere.
+     *
+     * @param protection  protection to update
+     * @param north       northern border
+     * @param west        western border
+     * @param world       world name
+     * @param protections protection handler
+     * @return
+     */
+    public static Protection move(Protection protection, int north, int west, String world, ProtectionHandler protections) {
+        if (protection == null)
+            throw new InvalidProtectionException("Protection to expand not specified.", PROTECTION_DOES_NOT_EXIST);
+
+
+        int xlen = protection.getEast() - protection.getWest();
+        int zlen = protection.getSouth() - protection.getNorth();
+        int east = west + xlen;
+        int south = north + zlen;
+
+        Protection newBounds;
+        if (protection.isAdminProtection()) {
+            newBounds = new AdminProtection(protection.getName(), world, west, east, north, south);
+        } else {
+            newBounds = new Protection(protection.getName(), world, west, east, north, south, protection.getOwnerID(), protection.getHome(Protection.DEFAULT_HOME));
+        }
+
+        if (protections.getOverlappingProtections(newBounds).size() > 0) {
+            throw new InvalidProtectionException("This protection will overlap other protections.", PROTECTION_OVERLAPPING);
+        }
+
+        return newBounds;
+    }
+
     /**
      * Create a new temporary protection with updated bounds that are a shifted version of the original
      *

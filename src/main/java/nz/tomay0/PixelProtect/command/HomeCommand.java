@@ -27,6 +27,11 @@ public class HomeCommand extends AbstractCommand {
     }
 
     @Override
+    public boolean getConsole() {
+        return false;
+    }
+
+    @Override
     public String getDescription() {
         return "Teleport to a protection's home.";
     }

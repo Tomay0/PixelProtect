@@ -32,6 +32,10 @@ public class RemoveCommand extends AbstractCommand {
     }
 
     @Override
+    public boolean getConsole() {
+        return true;
+    }
+    @Override
     public void onCommand(CommandSender sender, String[] args) {
         // check name of protection is specified
         Protection protection = CommandUtil.getExistingProtection(getProtections(), sender, args);

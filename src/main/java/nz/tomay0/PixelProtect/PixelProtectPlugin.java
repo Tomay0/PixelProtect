@@ -19,7 +19,6 @@ public class PixelProtectPlugin extends JavaPlugin {
     /*
 
     TODO:
-    - command for admins to override permissions
     - dynmap integration
     - optimize offline player name recognition
     - help for players. eg: tell them "oh this is the wilderness you can't build here"

@@ -44,6 +44,7 @@ public class PluginConfig {
     private int blocksPerHome = 2000;
     private double costPerBlock = 0.5;
     private double initialCost = 25.5;
+    private String helpLink = "https://bit.ly/2zOvuoe";
     private List<String> disabledWorlds = new ArrayList<>();
 
     /**
@@ -62,7 +63,8 @@ public class PluginConfig {
         blocksPerHome = getValue(config, "blocks-per-home", blocksPerHome);
         costPerBlock = getValue(config, "cost-per-block", costPerBlock);
         initialCost = getValue(config, "initial-cost", initialCost);
-        disabledWorlds = getValue(config, "disabled-worlds", new ArrayList<>());
+        disabledWorlds = getValue(config, "disabled-worlds", disabledWorlds);
+        helpLink = getValue(config, "help-link", helpLink);
 
         // check for invalid values
         if (maxProtections < -1) maxProtections = -1;
@@ -198,5 +200,13 @@ public class PluginConfig {
      */
     public Set<String> getDisabledWorlds() {
         return new HashSet<>(disabledWorlds);
+    }
+
+    /**
+     * Help link
+     * @return
+     */
+    public String getHelpLink() {
+        return helpLink;
     }
 }

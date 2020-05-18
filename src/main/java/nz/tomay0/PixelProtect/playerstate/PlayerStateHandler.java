@@ -27,6 +27,12 @@ import static nz.tomay0.PixelProtect.playerstate.Confirmation.ConfirmationType.U
  * Handle player state, confirmations and border displaying
  */
 public class PlayerStateHandler implements Listener, Runnable {
+    private static PlayerStateHandler instance;
+
+    public static PlayerStateHandler getInstance() {
+        return instance;
+    }
+
     private ProtectionHandler protections;
 
     private Map<Player, PlayerState> playerStates = new HashMap<>();
@@ -40,6 +46,7 @@ public class PlayerStateHandler implements Listener, Runnable {
      * @param protections
      */
     public PlayerStateHandler(ProtectionHandler protections) {
+        instance = this;
         this.protections = protections;
 
         // add all players currently on the server to the set (for reloading)
@@ -157,6 +164,24 @@ public class PlayerStateHandler implements Listener, Runnable {
      */
     public void requestTeleport(Player player, Location location) {
         playerStates.get(player).requestTeleport(location);
+    }
+
+    /**
+     * Toggle permission override
+     *
+     * @param player player's permissions to override
+     */
+    public void togglePermissionOverride(Player player) {
+        playerStates.get(player).toggleOverride();
+    }
+
+    /**
+     * If the player is overriding permissions
+     *
+     * @param player player's permissions to check
+     */
+    public boolean hasPermissionOverride(Player player) {
+        return playerStates.get(player).getOverridePermissions();
     }
 
     /**

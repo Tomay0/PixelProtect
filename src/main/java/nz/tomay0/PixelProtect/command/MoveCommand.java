@@ -3,6 +3,7 @@ package nz.tomay0.PixelProtect.command;
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
 import nz.tomay0.PixelProtect.protection.AdminProtection;
+import nz.tomay0.PixelProtect.protection.ProtectionBuilder;
 import nz.tomay0.PixelProtect.protection.perms.Perm;
 import nz.tomay0.PixelProtect.protection.Protection;
 import org.bukkit.ChatColor;
@@ -32,6 +33,11 @@ public class MoveCommand extends AbstractCommand {
     @Override
     public String getDescription() {
         return "Move your protection to where you are standing.";
+    }
+
+    @Override
+    public boolean getConsole() {
+        return false;
     }
 
     @Override
@@ -123,17 +129,10 @@ public class MoveCommand extends AbstractCommand {
             return;
         }
 
-        int east = west + xlen;
-        int south = north + zlen;
 
         // new bounds are determined
         try {
-            Protection newBounds;
-            if (protection.isAdminProtection()) {
-                newBounds = new AdminProtection(protection.getName(), world.getName(), west, east, north, south);
-            } else {
-                newBounds = new Protection(protection.getName(), world.getName(), west, east, north, south, protection.getOwnerID(), protection.getHome(Protection.DEFAULT_HOME));
-            }
+            Protection newBounds = ProtectionBuilder.move(protection, north, west, world.getName(), getProtections());
 
             getPlayerStateHandler().requestUpdate(player, newBounds, 0);
 

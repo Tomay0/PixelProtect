@@ -65,6 +65,13 @@ public abstract class AbstractCommand {
     public abstract String getCommand();
 
     /**
+     * Return if the command can be used by console.
+     *
+     * @return
+     */
+    public abstract boolean getConsole();
+
+    /**
      * Get a short description of the command, used for the /pr help menu
      *
      * @return

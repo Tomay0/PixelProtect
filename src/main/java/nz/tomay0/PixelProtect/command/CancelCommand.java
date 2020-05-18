@@ -25,6 +25,11 @@ public class CancelCommand extends AbstractCommand {
     }
 
     @Override
+    public boolean getConsole() {
+        return false;
+    }
+
+    @Override
     public String getDescription() {
         return "Cancel a creation/update to a protection.";
     }

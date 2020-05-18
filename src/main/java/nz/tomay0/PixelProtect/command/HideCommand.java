@@ -25,6 +25,11 @@ public class HideCommand extends AbstractCommand {
     }
 
     @Override
+    public boolean getConsole() {
+        return false;
+    }
+
+    @Override
     public String getDescription() {
         return "Hide the borders of the protection currently being shown.";
     }

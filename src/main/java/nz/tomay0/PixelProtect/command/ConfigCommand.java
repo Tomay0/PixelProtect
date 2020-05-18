@@ -24,6 +24,11 @@ public class ConfigCommand extends AbstractCommand {
     }
 
     @Override
+    public boolean getConsole() {
+        return true;
+    }
+
+    @Override
     public String getDescription() {
         return "Display the configuration of a protection.";
     }

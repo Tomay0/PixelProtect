@@ -29,6 +29,11 @@ public class ExpandCommand extends AbstractCommand {
     }
 
     @Override
+    public boolean getConsole() {
+        return true;
+    }
+
+    @Override
     public String getDescription() {
         return "Expand/Contract the size of your protection.";
     }

@@ -33,6 +33,10 @@ public class SetHomeCommand extends AbstractCommand {
     }
 
     @Override
+    public boolean getConsole() {
+        return false;
+    }
+    @Override
     public void onCommand(CommandSender sender, String[] args) {
         if (!(sender instanceof Player)) {
             sender.sendMessage("This is a player only command.");
@@ -69,18 +73,21 @@ public class SetHomeCommand extends AbstractCommand {
             return;
         }
 
-        int homeCount = protection.getHomeCount();
-        int totalMaxHomes = PluginConfig.getInstance().getMaxHomes();
-        int blocksPerHome = PluginConfig.getInstance().getBlocksPerHome();
+        // if a new home, check if allowed to set multiple
+        if (protection.getHome(home) == null) {
+            int homeCount = protection.getHomeCount();
+            int totalMaxHomes = PluginConfig.getInstance().getMaxHomes();
+            int blocksPerHome = PluginConfig.getInstance().getBlocksPerHome();
 
-        if (totalMaxHomes != -1 && homeCount >= totalMaxHomes) {
-            sender.sendMessage(ChatColor.RED + "You are not allowed to set more than " + PluginConfig.getInstance().getMaxHomes() + " homes.");
-            return;
-        } else if (blocksPerHome > 0) {
-            int requiredArea = blocksPerHome * homeCount;
-            if (protection.getArea() < requiredArea) {
-                sender.sendMessage(ChatColor.RED + "Your protection is not big enough to set another home. You need to claim another " + (requiredArea - protection.getArea()) + " blocks.");
+            if (totalMaxHomes != -1 && homeCount >= totalMaxHomes) {
+                sender.sendMessage(ChatColor.RED + "You are not allowed to set more than " + PluginConfig.getInstance().getMaxHomes() + " homes.");
                 return;
+            } else if (blocksPerHome > 0) {
+                int requiredArea = blocksPerHome * homeCount;
+                if (protection.getArea() < requiredArea) {
+                    sender.sendMessage(ChatColor.RED + "Your protection is not big enough to set another home. You need to claim another " + (requiredArea - protection.getArea()) + " blocks.");
+                    return;
+                }
             }
         }
 

@@ -127,11 +127,8 @@ public class CommandUtil {
      * @param e      exception
      */
     public static void handleUpdateException(CommandSender sender, InvalidProtectionException e) {
-        sender.sendMessage(ChatColor.DARK_RED + e.getMessage());
+        sender.sendMessage(ChatColor.RED + e.getMessage());
         switch (e.getReason()) {
-            case PROTECTION_OVERLAPPING:
-                sender.sendMessage(ChatColor.YELLOW + "Try making your expansion smaller.");
-                break;
             case INVALID_BORDERS:
                 sender.sendMessage(ChatColor.YELLOW + "The minimum diameter of a protection for either direction is " + ChatColor.RED + PluginConfig.getInstance().getMinDiameter() +
                         ChatColor.YELLOW + " blocks.");

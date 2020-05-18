@@ -3,6 +3,7 @@ package nz.tomay0.PixelProtect.command;
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
 import nz.tomay0.PixelProtect.PluginConfig;
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
+import nz.tomay0.PixelProtect.exception.ProtectionExceptionReason;
 import nz.tomay0.PixelProtect.protection.Protection;
 import nz.tomay0.PixelProtect.protection.ProtectionBuilder;
 import org.bukkit.ChatColor;
@@ -25,6 +26,11 @@ public class CreateCommand extends AbstractCommand {
     @Override
     public String getCommand() {
         return "create";
+    }
+
+    @Override
+    public boolean getConsole() {
+        return false;
     }
 
     @Override
@@ -116,18 +122,18 @@ public class CreateCommand extends AbstractCommand {
 
             player.sendMessage(ChatColor.YELLOW + "Creating a new protection named " + ChatColor.GREEN + protectionName);
             player.sendMessage(ChatColor.YELLOW + "This will cost you " + ChatColor.AQUA + "$" + String.format("%.2f", cost));
-            player.sendMessage(ChatColor.YELLOW + "Confirm by typing " + ChatColor.AQUA + "/pr confirm");
-            player.sendMessage(ChatColor.LIGHT_PURPLE + "Retype " + ChatColor.RED + "/pr create <name> <size>" + ChatColor.LIGHT_PURPLE + " to change the name and/or size.");
-            player.sendMessage(ChatColor.LIGHT_PURPLE + "Type " + ChatColor.RED + "/pr cancel" + ChatColor.LIGHT_PURPLE + " to cancel your creation.");
+            player.sendMessage(ChatColor.YELLOW + "Type " + ChatColor.RED + "/pr cancel" + ChatColor.YELLOW + " to cancel.");
+            player.sendMessage(ChatColor.YELLOW + "Type " + ChatColor.AQUA + "/pr confirm" + ChatColor.YELLOW + " to confirm.");
         } catch (InvalidProtectionException e) {
             // invalid protection
-            player.sendMessage(ChatColor.DARK_RED + e.getMessage());
+            if (e.getReason() != ProtectionExceptionReason.PROTECTION_ALREADY_EXISTS || nameSpecified)
+                player.sendMessage(ChatColor.RED + e.getMessage());
+            else
+                player.sendMessage(ChatColor.RED + "/pr create <name> <size> " + ChatColor.LIGHT_PURPLE + " is the command to create a protection. Replace <name> with a different name that doesn't exist already.");
+
             switch (e.getReason()) {
                 case PROTECTION_OVERLAPPING:
                     player.sendMessage(ChatColor.YELLOW + "Try move somewhere else and type the command again.");
-                    break;
-                case PROTECTION_ALREADY_EXISTS:
-                    player.sendMessage(ChatColor.RED + "/pr create <name> <size> " + ChatColor.LIGHT_PURPLE + " is the command to create a protection. Replace <name> with a different name that doesn't exist already.");
                     break;
                 case INVALID_BORDERS:
                     int minRadius = (PluginConfig.getInstance().getMinDiameter() - 1) / 2;
@@ -144,7 +150,7 @@ public class CreateCommand extends AbstractCommand {
      * Show help when the formatting is incorrect
      */
     private void incorrectFormatting(Player player) {
-        player.sendMessage(ChatColor.DARK_RED + "Invalid formatting. Consider these example commands as a guide:");
+        player.sendMessage(ChatColor.RED + "Invalid formatting. Consider these example commands as a guide:");
         player.sendMessage(ChatColor.RED + "/pr create ExampleProtection1 20" + ChatColor.WHITE + " - " + ChatColor.LIGHT_PURPLE + "Create a protection called 'ExampleProtection1' with a radius of 20 from where you are standing.");
         player.sendMessage(ChatColor.RED + "/pr create ExampleProtection1 n5 s10 ew4" + ChatColor.WHITE + " - " + ChatColor.LIGHT_PURPLE + "Create a protection called 'ExampleProtection1' that expands 5 blocks north, 10 blocks south and 4 blocks east/west.");
         player.sendMessage(ChatColor.YELLOW + "Note that the name must not have spaces.");

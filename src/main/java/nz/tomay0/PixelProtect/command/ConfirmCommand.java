@@ -25,6 +25,11 @@ public class ConfirmCommand extends AbstractCommand {
     }
 
     @Override
+    public boolean getConsole() {
+        return false;
+    }
+
+    @Override
     public String getDescription() {
         return "Confirm a creation/update to a protection.";
     }

@@ -30,6 +30,11 @@ public class ConfigPresetCommand extends AbstractCommand {
     }
 
     @Override
+    public boolean getConsole() {
+        return true;
+    }
+
+    @Override
     public String getDescription() {
         return "Configure your protection based on a preset.";
     }

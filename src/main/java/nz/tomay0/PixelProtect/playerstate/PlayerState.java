@@ -31,6 +31,8 @@ public class PlayerState {
 
     private int teleportCountDown = 0;
 
+    private boolean overridePermissions = false;
+
     /**
      * Create player state
      *
@@ -140,6 +142,27 @@ public class PlayerState {
             y -= 2;
             z = protection.getSouth() + 1;
         }
+    }
+
+    /**
+     * Toggle if the permissions are overridden
+     */
+    public void toggleOverride() {
+        overridePermissions = !overridePermissions;
+        if (overridePermissions) {
+            player.sendMessage(ChatColor.GREEN + "You are now overriding protection permissions!");
+        } else {
+            player.sendMessage(ChatColor.GREEN + "You are no longer overriding protection permissions!");
+        }
+    }
+
+    /**
+     * If the player is overriding permissions
+     *
+     * @return
+     */
+    public boolean getOverridePermissions() {
+        return overridePermissions;
     }
 
     /**

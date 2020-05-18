@@ -1,6 +1,7 @@
 package nz.tomay0.PixelProtect.protection;
 
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
+import nz.tomay0.PixelProtect.playerstate.PlayerStateHandler;
 import nz.tomay0.PixelProtect.protection.perms.Perm;
 import nz.tomay0.PixelProtect.protection.perms.PermLevel;
 import nz.tomay0.PixelProtect.protection.perms.PlayerPerms;
@@ -233,6 +234,9 @@ public abstract class ProtectionHandler implements Iterable<Protection> {
      * @return boolean if allowed
      */
     public boolean hasPermission(Player player, Location location, Perm perm) {
+        PlayerStateHandler playerState = PlayerStateHandler.getInstance();
+        if (playerState != null && playerState.hasPermissionOverride(player)) return true;
+
         Set<Protection> protections = getProtectionsAt(location);
         if (protections.size() == 0) return true;
         else if (protections.size() == 1) {
@@ -298,9 +302,12 @@ public abstract class ProtectionHandler implements Iterable<Protection> {
 
             return true;
         }
+        Player player = (Player) sender;
+        PlayerStateHandler playerState = PlayerStateHandler.getInstance();
+        if (playerState != null && playerState.hasPermissionOverride(player)) return true;
 
         // player
-        String senderUuid = ((Player) sender).getUniqueId().toString();
+        String senderUuid = player.getUniqueId().toString();
 
         // rules: perm level must be lower to the person that is being updated, to a level that is lower.
         // this does not apply if the player is owner
@@ -325,6 +332,9 @@ public abstract class ProtectionHandler implements Iterable<Protection> {
             // console. Can't update permissions of the owner
             return protection.getPermissionLevel(uuid) != PermLevel.OWNER;
         }
+        Player player = (Player) sender;
+        PlayerStateHandler playerState = PlayerStateHandler.getInstance();
+        if (playerState != null && playerState.hasPermissionOverride(player)) return true;
 
         // player
         String senderUuid = ((Player) sender).getUniqueId().toString();
@@ -378,6 +388,9 @@ public abstract class ProtectionHandler implements Iterable<Protection> {
         if (!(sender instanceof Player)) return false;
 
         Player player = (Player) sender;
+
+        PlayerStateHandler playerState = PlayerStateHandler.getInstance();
+        if (playerState != null && playerState.hasPermissionOverride(player)) return true;
 
         // admin protection
         if (protection.isAdminProtection() && player.hasPermission("pixelprotect.admin")) {

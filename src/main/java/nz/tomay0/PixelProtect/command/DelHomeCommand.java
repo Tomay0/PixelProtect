@@ -27,6 +27,11 @@ public class DelHomeCommand extends AbstractCommand {
     }
 
     @Override
+    public boolean getConsole() {
+        return false;
+    }
+
+    @Override
     public String getDescription() {
         return "Delete a protection's home.";
     }

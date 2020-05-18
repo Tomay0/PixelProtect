@@ -28,6 +28,11 @@ public class CreateAdminCommand extends AbstractCommand {
     }
 
     @Override
+    public boolean getConsole() {
+        return false;
+    }
+
+    @Override
     public String getPermission() {
         return "pixelprotect.admin";
     }
@@ -101,9 +106,8 @@ public class CreateAdminCommand extends AbstractCommand {
             getPlayerStateHandler().requestCreate(player, protection, 0);
 
             player.sendMessage(ChatColor.YELLOW + "Creating a new admin protection named " + ChatColor.GREEN + protectionName);
-            player.sendMessage(ChatColor.YELLOW + "Confirm by typing " + ChatColor.AQUA + "/pr confirm");
-            player.sendMessage(ChatColor.LIGHT_PURPLE + "Retype " + ChatColor.RED + "/pr createadmin <name> <size>" + ChatColor.LIGHT_PURPLE + " to change the name and/or size.");
-            player.sendMessage(ChatColor.LIGHT_PURPLE + "Type " + ChatColor.RED + "/pr cancel" + ChatColor.LIGHT_PURPLE + " to cancel your creation.");
+            player.sendMessage(ChatColor.YELLOW + "Type " + ChatColor.RED + "/pr cancel" + ChatColor.YELLOW + " to cancel.");
+            player.sendMessage(ChatColor.YELLOW + "Type " + ChatColor.AQUA + "/pr confirm" + ChatColor.YELLOW + " to confirm.");
         } catch (InvalidProtectionException e) {
             // invalid protection
             player.sendMessage(ChatColor.DARK_RED + e.getMessage());

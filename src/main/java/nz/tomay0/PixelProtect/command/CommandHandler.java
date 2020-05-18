@@ -1,10 +1,12 @@
 package nz.tomay0.PixelProtect.command;
 
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
+import nz.tomay0.PixelProtect.PluginConfig;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.*;
 
@@ -47,13 +49,14 @@ public class CommandHandler implements CommandExecutor {
 
         // commands that require perms
         commandsList.add(new CreateAdminCommand(plugin));
-        commandsList.add(new ImportCommand(plugin));
+        commandsList.add(new ToggleOverrideCommand(plugin));
 
         commandsList.add(new HelpCommand(plugin, new ArrayList<>(commandsList)));
 
         // commands that don't appear in /pr help
         commandsList.add(new ConfirmCommand(plugin));
         commandsList.add(new CancelCommand(plugin));
+        commandsList.add(new ImportCommand(plugin));  // this command is a once only thing so it should not appear in the help menu
 
         // create map - for usage
         commandMap = new HashMap<>();
@@ -69,8 +72,8 @@ public class CommandHandler implements CommandExecutor {
 
         // no arguments - show very basic help
         if (args.length == 0) {
-            sender.sendMessage(ChatColor.LIGHT_PURPLE + "Type " + ChatColor.RED + "/pr create <name> <size>" + ChatColor.LIGHT_PURPLE + " to create a protection.");
-            sender.sendMessage(ChatColor.LIGHT_PURPLE + "Type " + ChatColor.RED + "/pr help" + ChatColor.LIGHT_PURPLE + " for more commands.");
+            sender.sendMessage(ChatColor.YELLOW + "Check out " + ChatColor.AQUA + PluginConfig.getInstance().getHelpLink() + ChatColor.YELLOW + " for an in-depth guide on how to use Pixel Protect.");
+            sender.sendMessage(ChatColor.LIGHT_PURPLE + "Or type " + ChatColor.RED + "/pr help" + ChatColor.LIGHT_PURPLE + " for a list of commands.");
             return true;
         }
 
@@ -81,6 +84,11 @@ public class CommandHandler implements CommandExecutor {
 
             if (command.getPermission() != null && !sender.hasPermission(command.getPermission())) {
                 sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to use this command.");
+                return false;
+            }
+            if (!(sender instanceof Player) && command.getConsole()) {
+                sender.sendMessage(ChatColor.DARK_RED + "This command cannot be executed from the console.");
+                return false;
             }
 
             command.onCommand(sender, args);

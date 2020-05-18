@@ -25,6 +25,11 @@ public class HereCommand extends AbstractCommand {
     }
 
     @Override
+    public boolean getConsole() {
+        return false;
+    }
+
+    @Override
     public String getDescription() {
         return "Say the protection you are standing in.";
     }

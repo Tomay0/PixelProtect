@@ -53,3 +53,7 @@ initial-cost: 25.5
 #
 # By default this is empty
 disabled-worlds: []
+
+# Use this command to choose a custom help page for the plugin. This could be on a server website or a youtube video.
+# By default this is the github wiki page for Pixel Protect
+help-link: https://bit.ly/2zOvuoe

@@ -26,6 +26,11 @@ public class FlagCommand extends AbstractCommand {
     }
 
     @Override
+    public boolean getConsole() {
+        return true;
+    }
+
+    @Override
     public String getDescription() {
         return "Update boolean configurations of the protection.";
     }

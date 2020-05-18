@@ -30,6 +30,10 @@ public class RenameCommand extends AbstractCommand {
     }
 
     @Override
+    public boolean getConsole() {
+        return true;
+    }
+    @Override
     public void onCommand(CommandSender sender, String[] args) {
         if (args.length < 3) {
             commandHelp(sender);
