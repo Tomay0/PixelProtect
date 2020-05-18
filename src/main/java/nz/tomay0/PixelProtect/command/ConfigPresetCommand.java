@@ -105,6 +105,7 @@ public class ConfigPresetCommand extends AbstractCommand {
             if (getProtections().hasPermission(sender, protection, Perm.BUILD)) {
                 protection.setDefaultPermissionLevel(Perm.BUILD, PermLevel.MEMBER);
             }
+            sender.sendMessage(ChatColor.YELLOW + "Changed the preset of " + ChatColor.GREEN + protection.getName() + ChatColor.YELLOW + " to " + ChatColor.GREEN + "public farm");
 
         } else {
             commandHelp(sender, protection.getName());

@@ -378,6 +378,7 @@ public class ProtectionBuilder {
                 // create a name based on the user's name
                 OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(owner));
                 String name = player.getName();
+                if (name == null) name = "protection"; // unknown player
 
                 if (protections.getProtection(name) != null) {
                     int i = 2;
@@ -399,6 +400,7 @@ public class ProtectionBuilder {
                 while (home.getBlock().getType() == Material.AIR) {
                     home = home.add(0, -1, 0);
                 }
+                home = home.add(0.5, 1, 0.5);
 
                 Map<String, Location> homes = new HashMap<>();
                 homes.put(Protection.DEFAULT_HOME, home);

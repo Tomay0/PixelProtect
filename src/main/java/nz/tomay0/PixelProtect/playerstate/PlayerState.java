@@ -15,6 +15,8 @@ import java.util.Set;
  * For example, the protection the player is currently in
  */
 public class PlayerState {
+    private static final int MAX_PARTICLE_DISTANCE = 80;
+
     private ProtectionHandler protections;
 
     private Player player;
@@ -165,7 +167,9 @@ public class PlayerState {
         if (borderParticles == null) return;
 
         for (Location location : borderParticles) {
-            player.spawnParticle(Particle.CLOUD, location, 1, 0, 0, 0, 0);
+            double distance = player.getLocation().distance(location);
+            if (distance < MAX_PARTICLE_DISTANCE)
+                player.spawnParticle(Particle.CLOUD, location, 1, 0, 0, 0, 0);
         }
     }
 }

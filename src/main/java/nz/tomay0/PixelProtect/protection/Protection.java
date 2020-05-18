@@ -247,8 +247,11 @@ public class Protection {
 
         // check world
         if (Bukkit.getWorld(world) == null) {
-            throw new InvalidProtectionException("The world name is invalid", YML_EXCEPTION);
+            throw new InvalidProtectionException("The world name is invalid", INVALID_WORLD);
         }
+
+        if(PluginConfig.getInstance().getDisabledWorlds().contains(world))
+            throw new InvalidProtectionException("You cannot create protections in this world", INVALID_WORLD);
 
         // check coordinates are valid. south > north, east > west
 

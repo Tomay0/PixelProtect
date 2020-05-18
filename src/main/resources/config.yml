@@ -9,26 +9,47 @@
 
 
 
-# Maximum amount of players a player is allowed to own. -1 = no limit
+# Maximum amount of players a player is allowed to own. (does not count protections with admin/member access)
+# Set this to -1 for no limit
 max-protections: -1
 
-# Maximum protection size in blocks. -1 = no limit
+# Maximum protection size in blocks. (width x height)
+# Set this to -1 for no limit
 max-area: -1
 
-# Default protection radius. The radius it enters for you if you don't include a size with /pr create. To force players to type a size set this as -1.
+# Default protection radius. The radius it enters for you if you don't include a size with /pr create.
+# Set to -1 to disable the default size.
 default-radius: 3
 
-# Minimum protection diameter. This limits how wide the protection can be in any direction. This number cannot be lower than 1.
+# Minimum protection diameter. This limits how wide the protection can be in any direction.
+# The lowest this can possible be is 1, which allows players to create 1 block protections or 1 block wide protections. By default this is 5.
 min-diameter: 5
 
-# Maximum number of homes a protection is allowed to have. -1 = no limit
+# Maximum number of homes a protection any protection allowed to have.
+# -1 = no limit
 max-homes: -1
 
-# Number of blocks needed to claim per extra home in a protection. -1 = number of homes are not limited by protection size
+# The number of homes you can set is limited by the size of the protection. Change this value to change how many blocks you need to claim for each additional home.
+# Set this to -1 to only use the max-homes limit.
 blocks-per-home: 2000
 
 # Cost per block for creating and expanding a protection.
+# Set this to 0 to make protections free to create
 cost-per-block: 0.5
 
-# An initial non=refundable fee for creating a protection.
+# When creating a protection, this extra cost is added in addition to the cost per block.
+# This additional fee is non-refundable.
+# Set to 0 to disable this.
 initial-cost: 25.5
+
+# Worlds where claiming is disabled. This is recommended for any worlds that are not a part of regular survival world (and potentially the end or nether, if you feel like it)
+# You are still allowed to create admin protections in these worlds, but it prevents other users from claiming in them.
+#
+# Below here is an example on how to format the disabled worlds:
+#
+# disabled-worlds:
+# - badworld1
+# - badworld2
+#
+# By default this is empty
+disabled-worlds: []

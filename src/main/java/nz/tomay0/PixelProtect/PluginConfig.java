@@ -1,8 +1,12 @@
 package nz.tomay0.PixelProtect;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.logging.Level;
 
 /**
  * Plugin config file
@@ -40,6 +44,7 @@ public class PluginConfig {
     private int blocksPerHome = 2000;
     private double costPerBlock = 0.5;
     private double initialCost = 25.5;
+    private List<String> disabledWorlds = new ArrayList<>();
 
     /**
      * Plugin config from a yml
@@ -57,6 +62,7 @@ public class PluginConfig {
         blocksPerHome = getValue(config, "blocks-per-home", blocksPerHome);
         costPerBlock = getValue(config, "cost-per-block", costPerBlock);
         initialCost = getValue(config, "initial-cost", initialCost);
+        disabledWorlds = getValue(config, "disabled-worlds", new ArrayList<>());
 
         // check for invalid values
         if (maxProtections < -1) maxProtections = -1;
@@ -91,13 +97,13 @@ public class PluginConfig {
      */
     private <T> T getValue(YamlConfiguration config, String key, T defaultValue) {
         if (!config.contains(key)) {
-            config.set(key, defaultValue);
+            Bukkit.getLogger().log(Level.WARNING, key + " was not found in the config.");
             return defaultValue;
         }
         Object value = config.get(key);
 
         if (!(defaultValue.getClass().isInstance(value))) {
-            config.set(key, defaultValue);
+            Bukkit.getLogger().log(Level.WARNING, key + " within the config is not the right data type.");
             return defaultValue;
         }
 
@@ -183,5 +189,14 @@ public class PluginConfig {
      */
     public int getDefaultRadius() {
         return defaultRadius;
+    }
+
+    /**
+     * Get disabled worlds
+     *
+     * @return
+     */
+    public Set<String> getDisabledWorlds() {
+        return new HashSet<>(disabledWorlds);
     }
 }

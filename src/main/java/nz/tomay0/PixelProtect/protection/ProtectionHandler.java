@@ -157,9 +157,11 @@ public abstract class ProtectionHandler implements Iterable<Protection> {
      * Remove all protections
      */
     public void removeAll() {
+        List<Protection> prs = new ArrayList<>();
         for (Protection protection : this) {
-            removeProtection(protection.getName());
+            prs.add(protection);
         }
+        prs.forEach(p -> removeProtection(p.getName()));
     }
 
     /**

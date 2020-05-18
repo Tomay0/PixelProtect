@@ -19,7 +19,9 @@ public class PixelProtectPlugin extends JavaPlugin {
     /*
 
     TODO:
-    - grief prevention importer
+    - reduce lag on command to show borders
+    - teleport timer
+    - fix disabled worlds
     - command for admins to override permissions
     - dynmap integration
     - optimize offline player name recognition
@@ -125,7 +127,7 @@ public class PixelProtectPlugin extends JavaPlugin {
             try {
                 // copy the file
                 InputStream is = PixelProtectPlugin.class.getResourceAsStream("/config.yml");
-                if(is == null) {
+                if (is == null) {
                     getLogger().log(Level.WARNING, "Could not load default config.yml. Resource not found in jar");
                     return null;
                 }
