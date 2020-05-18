@@ -2,14 +2,16 @@ package nz.tomay0.PixelProtect;
 
 import net.milkbowl.vault.economy.Economy;
 import nz.tomay0.PixelProtect.command.CommandHandler;
+import nz.tomay0.PixelProtect.dynmap.DynmapHandler;
+import nz.tomay0.PixelProtect.protection.HashedProtectionHandler;
 import nz.tomay0.PixelProtect.protection.ProtectionHandler;
-import nz.tomay0.PixelProtect.protection.SequentialProtectionHandler;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import nz.tomay0.PixelProtect.playerstate.PlayerStateHandler;
+import org.dynmap.DynmapAPI;
 
 import java.io.*;
-import java.net.URL;
 import java.util.logging.Level;
 
 /**
@@ -46,6 +48,10 @@ public class PixelProtectPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        // load the config
+        PluginConfig.loadConfig(getConfigFile());
+
+
         // init vault
         if (!setupEconomy() && REQUIRES_VAULT) {
             getLogger().log(Level.SEVERE, "Error: Could not load Economy. Vault 1.7 and an economy plugin are required to run Pixel Protect.");
@@ -53,20 +59,36 @@ public class PixelProtectPlugin extends JavaPlugin {
             return;
         }
 
-        // setup protection handler
-        protectionHandler = new SequentialProtectionHandler(getProtectionDirectory());
-        playerStateHandler = new PlayerStateHandler(protectionHandler);
-        PluginConfig.loadConfig(getConfigFile());
+        // init dynmap
+        if (PluginConfig.getInstance().getDynmapEnabled()) {
+            DynmapAPI api = setupDynmap();
+            if (api == null) {
+                getLogger().log(Level.WARNING, "Dynmap was enabled in the config, but the Dynmap plugin was not found.");
+            } else {
+                DynmapHandler.createInstance(api);
+            }
+        }
 
+        // load protections
+        protectionHandler = new HashedProtectionHandler(getProtectionDirectory());
+
+        // load player state handler
+        playerStateHandler = new PlayerStateHandler(protectionHandler);
+
+        // load grief listener
         GriefListener griefListener = new GriefListener(this);
 
+        // register listeners
         getServer().getPluginManager().registerEvents(playerStateHandler, this);
         getServer().getPluginManager().registerEvents(griefListener, this);
 
         getServer().getScheduler().scheduleSyncRepeatingTask(this, playerStateHandler, 20, 20);
 
-        // setup command handler
+        // register commands
         getCommand("protect").setExecutor(new CommandHandler(this));
+
+        // update the dynmap
+        DynmapHandler.getInstance().deleteInvalidRegions(protectionHandler);
 
         // log that the plugin has loaded successfully
         getLogger().log(Level.INFO, "Initialized PixelProtect successfully");
@@ -88,6 +110,20 @@ public class PixelProtectPlugin extends JavaPlugin {
         return vaultEconomy != null;
     }
 
+    /**
+     * Setup dynmap
+     *
+     * @return
+     */
+    private DynmapAPI setupDynmap() {
+        Plugin plugin = getServer().getPluginManager().getPlugin("dynmap");
+        if (plugin == null) return null;
+        if (!(plugin instanceof DynmapAPI)) return null;
+
+        DynmapAPI dynmapApi = (DynmapAPI) plugin;
+
+        return dynmapApi;
+    }
 
     /**
      * Return the claims/ directory

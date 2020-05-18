@@ -86,7 +86,7 @@ public class CommandHandler implements CommandExecutor {
                 sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to use this command.");
                 return false;
             }
-            if (!(sender instanceof Player) && command.getConsole()) {
+            if (!(sender instanceof Player) && !command.getConsole()) {
                 sender.sendMessage(ChatColor.DARK_RED + "This command cannot be executed from the console.");
                 return false;
             }

@@ -71,6 +71,13 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- Dynmap -->
+        <dependency>
+            <groupId>com.github.webbukkit</groupId>
+            <artifactId>dynmap-api</artifactId>
+            <version>2.5</version>
+        </dependency>
+
         <!-- Mockito 2 -->
         <dependency>
             <groupId>org.mockito</groupId>

@@ -54,6 +54,11 @@ initial-cost: 25.5
 # By default this is empty
 disabled-worlds: []
 
+# Disable dynmap integration by making this false.
+# If your server does not have dynmap, enabling this will show a warning in the console. The plugin will work still work perfectly fine though.
+enable-dynmap: true
+
 # Use this command to choose a custom help page for the plugin. This could be on a server website or a youtube video.
 # By default this is the github wiki page for Pixel Protect
 help-link: https://bit.ly/2zOvuoe
+

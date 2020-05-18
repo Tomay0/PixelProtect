@@ -46,6 +46,7 @@ public class PluginConfig {
     private double initialCost = 25.5;
     private String helpLink = "https://bit.ly/2zOvuoe";
     private List<String> disabledWorlds = new ArrayList<>();
+    private boolean enableDynmap = true;
 
     /**
      * Plugin config from a yml
@@ -65,6 +66,7 @@ public class PluginConfig {
         initialCost = getValue(config, "initial-cost", initialCost);
         disabledWorlds = getValue(config, "disabled-worlds", disabledWorlds);
         helpLink = getValue(config, "help-link", helpLink);
+        enableDynmap = getValue(config, "enable-dynmap", enableDynmap);
 
         // check for invalid values
         if (maxProtections < -1) maxProtections = -1;
@@ -204,9 +206,19 @@ public class PluginConfig {
 
     /**
      * Help link
+     *
      * @return
      */
     public String getHelpLink() {
         return helpLink;
+    }
+
+    /**
+     * Returns if dynmap is enabled
+     *
+     * @return
+     */
+    public boolean getDynmapEnabled() {
+        return true;
     }
 }

@@ -1,5 +1,6 @@
 package nz.tomay0.PixelProtect.protection;
 
+import nz.tomay0.PixelProtect.dynmap.DynmapHandler;
 import nz.tomay0.PixelProtect.exception.InvalidProtectionException;
 import nz.tomay0.PixelProtect.playerstate.PlayerStateHandler;
 import nz.tomay0.PixelProtect.protection.perms.Perm;
@@ -53,6 +54,7 @@ public abstract class ProtectionHandler implements Iterable<Protection> {
 
         // add to protection map
         add(protection);
+        DynmapHandler.getInstance().create(protection);
 
         protection.setDir(getDir());
     }
@@ -72,6 +74,8 @@ public abstract class ProtectionHandler implements Iterable<Protection> {
             throw new InvalidProtectionException("A protection cannot overlap another protection.", PROTECTION_OVERLAPPING);
 
         setBounds(protection, newBounds);
+
+        DynmapHandler.getInstance().deleteAndCreate(protection.getIdSafeName(), protection);
     }
 
     /**
@@ -96,9 +100,13 @@ public abstract class ProtectionHandler implements Iterable<Protection> {
         if (newName.contains(" "))
             throw new InvalidProtectionException("Name cannot contain spaces.", INVALID_NAME);
 
+        String oldId = protection.getIdSafeName();
+
         rename(protection, newName);
 
         protection.rename(newName);
+
+        DynmapHandler.getInstance().deleteAndCreate(oldId, protection);
     }
 
     /**
@@ -146,6 +154,7 @@ public abstract class ProtectionHandler implements Iterable<Protection> {
 
         // remove from map
         remove(protection);
+        DynmapHandler.getInstance().delete(protection.getIdSafeName());
 
         // remove file
         File f = protection.getFile();

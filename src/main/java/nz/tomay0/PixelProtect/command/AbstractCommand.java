@@ -1,8 +1,8 @@
 package nz.tomay0.PixelProtect.command;
 
 import net.milkbowl.vault.economy.Economy;
+import nz.tomay0.PixelProtect.dynmap.DynmapHandler;
 import nz.tomay0.PixelProtect.PixelProtectPlugin;
-import nz.tomay0.PixelProtect.PluginConfig;
 import nz.tomay0.PixelProtect.playerstate.PlayerStateHandler;
 import nz.tomay0.PixelProtect.protection.ProtectionHandler;
 import org.bukkit.command.CommandSender;

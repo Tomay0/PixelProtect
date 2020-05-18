@@ -13,6 +13,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -250,7 +251,7 @@ public class Protection {
             throw new InvalidProtectionException("The world name is invalid", INVALID_WORLD);
         }
 
-        if(PluginConfig.getInstance().getDisabledWorlds().contains(world))
+        if (PluginConfig.getInstance().getDisabledWorlds().contains(world))
             throw new InvalidProtectionException("You cannot create protections in this world", INVALID_WORLD);
 
         // check coordinates are valid. south > north, east > west
@@ -739,5 +740,15 @@ public class Protection {
      */
     public int getHomeCount() {
         return homes.size();
+    }
+
+    /**
+     * Get the dynmap colour of the protection
+     *
+     * @return
+     */
+    public int getColour() {
+        if (isAdminProtection()) return 0x0000FF;
+        else return 0x00FF00;
     }
 }
