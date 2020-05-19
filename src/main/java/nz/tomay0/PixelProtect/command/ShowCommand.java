@@ -43,7 +43,7 @@ public class ShowCommand extends AbstractCommand {
         Player player = (Player) sender;
 
         // check name of protection is specified
-        Protection protection = CommandUtil.getExistingProtection(getProtections(), player, args);
+        Protection protection = CommandUtil.getExistingProtection(getProtections(), player, args, 2);
 
         if (protection == null) {
             sender.sendMessage(ChatColor.RED + "/pr show <name>");

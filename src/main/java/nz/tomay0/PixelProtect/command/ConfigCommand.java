@@ -36,7 +36,7 @@ public class ConfigCommand extends AbstractCommand {
     @Override
     public void onCommand(CommandSender sender, String[] args) {
         // check name of protection is specified
-        Protection protection = CommandUtil.getExistingProtection(getProtections(), sender, args);
+        Protection protection = CommandUtil.getExistingProtection(getProtections(), sender, args, 2);
 
         if (protection == null) {
             sender.sendMessage(ChatColor.RED + "/pr config <name>");

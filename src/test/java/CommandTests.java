@@ -87,10 +87,6 @@ public class CommandTests {
         when(Bukkit.getWorld("world")).thenReturn(overworld);
         when(Bukkit.getWorld("world_nether")).thenReturn(nether);
         when(Bukkit.getConsoleSender()).thenReturn(console);
-        when(Bukkit.getOfflinePlayer("Owner1")).thenReturn(ownerPlayer);
-        when(Bukkit.getOfflinePlayer("Admin1")).thenReturn(adminPlayer);
-        when(Bukkit.getOfflinePlayer("Member1")).thenReturn(memberPlayer);
-        when(Bukkit.getOfflinePlayer("Noone1")).thenReturn(noonePlayer);
 
         // mock economy, give everyone a balance of 10000
         economy = mock(Economy.class);
@@ -128,6 +124,10 @@ public class CommandTests {
         when(plugin.getPlayerStateHandler()).thenReturn(playerState);
         when(plugin.getProtections()).thenReturn(protections);
         when(plugin.getEconomy()).thenReturn(economy);
+        when(plugin.getOfflinePlayer("Owner1")).thenReturn(ownerPlayer);
+        when(plugin.getOfflinePlayer("Admin1")).thenReturn(adminPlayer);
+        when(plugin.getOfflinePlayer("Member1")).thenReturn(memberPlayer);
+        when(plugin.getOfflinePlayer("Noone1")).thenReturn(noonePlayer);
 
     }
 
@@ -508,10 +508,6 @@ public class CommandTests {
         assertNotNull(protections.getProtection("Owner1"));
         assertNull(protections.getProtection("test"));
 
-        renameCommand.onCommand(ownerPlayer, "rename test".split(" "));
-        assertNotNull(protections.getProtection("Owner1"));
-        assertNull(protections.getProtection("test"));
-
         renameCommand.onCommand(ownerPlayer, "rename Owner1".split(" "));
         assertNotNull(protections.getProtection("Owner1"));
         assertNull(protections.getProtection("test"));
@@ -521,8 +517,12 @@ public class CommandTests {
         assertNull(protections.getProtection("test"));
 
         // rename valid
-        renameCommand.onCommand(ownerPlayer, "rename Owner1 test".split(" "));
+        renameCommand.onCommand(ownerPlayer, "rename ok".split(" "));
         assertNull(protections.getProtection("Owner1"));
+        assertNotNull(protections.getProtection("ok"));
+
+        renameCommand.onCommand(ownerPlayer, "rename ok test".split(" "));
+        assertNull(protections.getProtection("ok"));
         assertNotNull(protections.getProtection("test"));
 
         renameCommand.onCommand(console, "rename test hello".split(" "));
@@ -956,7 +956,7 @@ public class CommandTests {
     }
 
     /**
-     * Test createadmin
+     * Test createadmin and config preset
      */
     @Test
     public void testCreateAdmin() {

@@ -33,36 +33,49 @@ public class RenameCommand extends AbstractCommand {
     public boolean getConsole() {
         return true;
     }
+
     @Override
     public void onCommand(CommandSender sender, String[] args) {
-        if (args.length < 3) {
+        if (args.length < 2) {
             commandHelp(sender);
             return;
         }
 
-        Protection existing = getProtections().getProtection(args[1]);
-        Protection newTest = getProtections().getProtection(args[2]);
+        Protection protection = CommandUtil.getExistingProtection(getProtections(), sender, args, 3);
+        if (protection == null) {
+            commandHelp(sender);
+            return;
+        }
+        int newArg = (args.length >= 2 && getProtections().isProtection(args[1], protection)) ? 2 : 1;
 
-        if (existing == null) {
-            sender.sendMessage(ChatColor.DARK_RED + "This protection does not exist: " + args[1]);
+        if (newArg >= args.length) {
             commandHelp(sender);
             return;
         }
 
-        if (!getProtections().hasPermission(sender, existing, Perm.UPDATE)) {
-            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to update this protection: " + args[1]);
+        Protection newTest = getProtections().getProtection(args[newArg]);
+
+        if (protection == null) {
+            sender.sendMessage(ChatColor.DARK_RED + "This protection does not exist: " + protection.getName());
+            commandHelp(sender);
+            return;
+        }
+
+        if (!getProtections().hasPermission(sender, protection, Perm.UPDATE)) {
+            sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to update this protection: " + protection.getName());
             return;
         }
 
         if (newTest != null) {
-            sender.sendMessage(ChatColor.DARK_RED + "This protection already exists: " + args[2]);
+            sender.sendMessage(ChatColor.DARK_RED + "This protection already exists: " + args[newArg]);
             sender.sendMessage(ChatColor.YELLOW + "Pick a new protection name that doesn't already exist.");
             return;
         }
 
-        getProtections().renameProtection(args[1], args[2]);
+        String oldName = protection.getName();
+        getProtections().renameProtection(oldName, args[newArg]);
 
-        sender.sendMessage(ChatColor.YELLOW + "Renamed your protection to " + ChatColor.GREEN + args[2] + ChatColor.YELLOW + " successfully!");
+        sender.sendMessage(ChatColor.YELLOW + "Renamed "+ ChatColor.GREEN + oldName + " to " + ChatColor.GREEN + args[newArg] + ChatColor.YELLOW + " successfully!");
     }
 
     /**

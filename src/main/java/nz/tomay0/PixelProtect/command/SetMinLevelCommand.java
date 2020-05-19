@@ -38,7 +38,7 @@ public class SetMinLevelCommand extends AbstractCommand {
     }
     @Override
     public void onCommand(CommandSender sender, String[] args) {
-        Protection protection = CommandUtil.getExistingProtection(getProtections(), sender, args);
+        Protection protection = CommandUtil.getExistingProtection(getProtections(), sender, args, 4);
         if (protection == null) {
             commandHelp(sender);
             return;

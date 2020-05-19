@@ -45,7 +45,7 @@ public class SetPermCommand extends AbstractCommand {
             return;
         }
 
-        Protection protection = CommandUtil.getExistingProtection(getProtections(), sender, args);
+        Protection protection = CommandUtil.getExistingProtection(getProtections(), sender, args, 5);
         if (protection == null) {
             commandHelp(sender);
             return;
@@ -124,7 +124,7 @@ public class SetPermCommand extends AbstractCommand {
 
             sender.sendMessage(ChatColor.GREEN + username + ChatColor.YELLOW + " now has the " +
                     ChatColor.GREEN + perm.toString().toLowerCase() + ChatColor.YELLOW + " permission " +
-                    (enabled ? "enabled" : " disabled"));
+                    (enabled ? "enabled" : " disabled") + " in " + ChatColor.GREEN + protection.getName());
         }
 
         // perm level
@@ -144,7 +144,7 @@ public class SetPermCommand extends AbstractCommand {
             protection.setPermissionLevel(uuid, permLevel);
 
             sender.sendMessage(ChatColor.GREEN + username + ChatColor.YELLOW + " now has the permission level of " +
-                    ChatColor.GREEN + permLevel.toString().toLowerCase());
+                    ChatColor.GREEN + permLevel.toString().toLowerCase() + ChatColor.YELLOW + " in " + ChatColor.GREEN + protection.getName());
         }
     }
 

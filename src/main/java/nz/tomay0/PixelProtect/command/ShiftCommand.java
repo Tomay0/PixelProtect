@@ -36,10 +36,29 @@ public class ShiftCommand extends AbstractCommand {
     public boolean getConsole() {
         return true;
     }
+
     @Override
     public void onCommand(CommandSender sender, String[] args) {
-        // check name of protection is specified
-        Protection protection = CommandUtil.getExistingProtection(getProtections(), sender, args);
+        if (args.length < 2) {
+            commandHelp(sender);
+            return;
+        }
+        Protection protection = getProtections().getProtection(args[1]);
+        boolean isFirstArg = protection != null;
+
+        Integer[] shift;
+
+        if (!isFirstArg) {
+            protection = CommandUtil.getExistingProtection(getProtections(), sender, args, Integer.MAX_VALUE);
+            shift = CommandUtil.getSize(args, 1, true);
+
+            if (shift == null) {
+                commandHelp(sender);
+                return;
+            }
+        } else {
+            shift = CommandUtil.getSize(args, 2, true);
+        }
 
         if (protection == null) {
             commandHelp(sender);
@@ -52,28 +71,20 @@ public class ShiftCommand extends AbstractCommand {
             return;
         }
 
-        boolean isFirstArg = args.length >= 2 && getProtections().isProtection(args[1], protection);
-
-        // get the expansion parameters
-        Integer[] shift = CommandUtil.getSize(args, isFirstArg ? 2 : 1, true);
-
         // prevent typing both south and north and east and west
         if (shift == null) {
             sender.sendMessage(ChatColor.DARK_RED + "Incorrect formatting of direction and size.");
             commandHelp(sender);
             return;
-        }
-        else if((shift[0] != 0 && shift[1] != 0) && (shift[2] != 0 && shift[3] != 0)) {
+        } else if ((shift[0] != 0 && shift[1] != 0) && (shift[2] != 0 && shift[3] != 0)) {
             sender.sendMessage(ChatColor.DARK_RED + "You must specify a direction.");
             commandHelp(sender);
             return;
-        }
-        else if((shift[0] != 0 && shift[1] != 0)) {
+        } else if ((shift[0] != 0 && shift[1] != 0)) {
             sender.sendMessage(ChatColor.DARK_RED + "You cannot specify both west and east components.");
             commandHelp(sender);
             return;
-        }
-        else if((shift[2] != 0 && shift[3] != 0)) {
+        } else if ((shift[2] != 0 && shift[3] != 0)) {
             sender.sendMessage(ChatColor.DARK_RED + "You cannot specify both north and south components.");
             commandHelp(sender);
             return;
@@ -88,7 +99,7 @@ public class ShiftCommand extends AbstractCommand {
             sender.sendMessage(ChatColor.YELLOW + "Confirm by typing " + ChatColor.AQUA + "/pr confirm");
             sender.sendMessage(ChatColor.LIGHT_PURPLE + "Type " + ChatColor.RED + "/pr cancel" + ChatColor.LIGHT_PURPLE + " to cancel.");
 
-        }catch(InvalidProtectionException e) {
+        } catch (InvalidProtectionException e) {
             CommandUtil.handleUpdateException(sender, e);
         }
 

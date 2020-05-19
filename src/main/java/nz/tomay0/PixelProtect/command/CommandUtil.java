@@ -92,14 +92,20 @@ public class CommandUtil {
      * @param protections protection handler
      * @param sender      sender of command
      * @param args        command args
+     * @param maxArgs     expected maximum number of arguments, if you reach this value of arguments, then it is required that you specify the name correctly
      * @return the protection. Null if invalid or unspecified.
      */
-    public static Protection getExistingProtection(ProtectionHandler protections, CommandSender sender, String[] args) {
+    public static Protection getExistingProtection(ProtectionHandler protections, CommandSender sender, String[] args, int maxArgs) {
         if (args.length >= 2) {
             // test first arg
             Protection protection = protections.getProtection(args[1]);
 
             if (protection != null) return protection;
+        }
+
+        if (args.length >= maxArgs) {
+            sender.sendMessage(ChatColor.RED + "Unknown protection: " + args[1]);
+            return null;
         }
 
         if (!(sender instanceof Player)) {

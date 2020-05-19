@@ -40,8 +40,26 @@ public class ExpandCommand extends AbstractCommand {
 
     @Override
     public void onCommand(CommandSender sender, String[] args) {
-        // check name of protection is specified
-        Protection protection = CommandUtil.getExistingProtection(getProtections(), sender, args);
+        if (args.length < 2) {
+            commandHelp(sender);
+            return;
+        }
+        Protection protection = getProtections().getProtection(args[1]);
+        boolean isFirstArg = protection != null;
+
+        Integer[] size;
+
+        if (!isFirstArg) {
+            protection = CommandUtil.getExistingProtection(getProtections(), sender, args, Integer.MAX_VALUE);
+            size = CommandUtil.getSize(args, 1, true);
+
+            if (size == null) {
+                commandHelp(sender);
+                return;
+            }
+        } else {
+            size = CommandUtil.getSize(args, 2, true);
+        }
 
         if (protection == null) {
             commandHelp(sender);
@@ -54,11 +72,8 @@ public class ExpandCommand extends AbstractCommand {
             return;
         }
 
-        boolean isFirstArg = args.length >= 2 && getProtections().isProtection(args[1], protection);
 
         // get the expansion parameters
-        Integer[] size = CommandUtil.getSize(args, isFirstArg ? 2 : 1, true);
-
         if (size == null) {
             sender.sendMessage(ChatColor.DARK_RED + "Incorrect formatting of direction and size.");
             commandHelp(sender);

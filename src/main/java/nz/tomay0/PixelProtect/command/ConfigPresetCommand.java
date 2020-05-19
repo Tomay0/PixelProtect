@@ -41,7 +41,7 @@ public class ConfigPresetCommand extends AbstractCommand {
 
     @Override
     public void onCommand(CommandSender sender, String[] args) {
-        Protection protection = CommandUtil.getExistingProtection(getProtections(), sender, args);
+        Protection protection = CommandUtil.getExistingProtection(getProtections(), sender, args, 3);
         if (protection == null) {
             commandHelp(sender, "<name>");
             return;

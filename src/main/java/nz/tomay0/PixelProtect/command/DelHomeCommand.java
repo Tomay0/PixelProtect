@@ -45,7 +45,7 @@ public class DelHomeCommand extends AbstractCommand {
 
         Player player = (Player) sender;
 
-        Protection protection = CommandUtil.getExistingProtection(getProtections(), player, args);
+        Protection protection = CommandUtil.getExistingProtection(getProtections(), player, args, 3);
         if (protection == null) {
             commandHelp(player);
             return;
